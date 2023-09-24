@@ -1,60 +1,63 @@
 {
-	"type": "module",
-	"name": "express_static_server",
-	"version": "0.0.1",
-	"description": "Express Static Server",
-	"author": "First Last <first.last@example.com>",
-	"main": "out-tsc/index.js",
-	"scripts": {
-		"type": "tsc",
-		"prod:serve": "node",
-		"dev:type": "tsc --watch --preserveWatchOutput",
-		"dev:serve": "DB_PATH=\"$(pwd)/dev.sqlite3.db\" nodemon",
-		"dev:start": "npm ci && npm run dev:start:noinstall",
-		"dev:start:noinstall": "npm run dev:db:drop && npm run type && npm run dev:db:migrate:run && npm run dev:db:seed:run && concurrently -k -r \"npm run dev:type\" \"npm run dev:serve\"",
-		"dev:db:init": "knex init -x ts && mv knexfile.ts src/db/knexfile.ts",
-		"dev:db:drop": "rm -f dev.sqlite3.db",
-		"dev:db:migrate:make": "npm run type && knex migrate:make --debug --knexfile=out-tsc/db/knexfile.js --migrations-directory=../../src/db/migrations -x ts migration",
-		"dev:db:migrate:run": "npm run type && DB_PATH=\"$(pwd)/dev.sqlite3.db\" knex migrate:latest --debug --knexfile=out-tsc/db/knexfile.js",
-		"dev:db:seed:make": "npm run type && knex seed:make --debug --knexfile=out-tsc/db/knexfile.js -x ts seed && mv out-tsc/db/seeds/seed.ts src/db/seeds/seed.ts",
-		"dev:db:seed:run": "npm run type && DB_PATH=\"$(pwd)/dev.sqlite3.db\" knex seed:run --debug --knexfile=out-tsc/db/knexfile.js"
-	},
-	"eslintConfig": {
-		"parser": "@typescript-eslint/parser",
-		"extends": [
-			"@open-wc",
-			"prettier"
-		],
-		"plugins": [
-			"@typescript-eslint"
-		],
-		"rules": {
-			"no-unused-vars": "off",
-			"@typescript-eslint/no-unused-vars": [
-				"error"
-			],
-			"import/no-unresolved": "off",
-			"import/extensions": [
-				"error",
-				"always",
-				{
-					"ignorePackages": true
-				}
-			]
-		}
-	},
-	"prettier": {
-		"tabWidth": 4,
-		"singleQuote": true,
-		"arrowParens": "avoid"
-	},
-	"dependencies": {
-		"express": "^4.18.2"
-	},
-	"devDependencies": {
-		"@types/express": "^4.17.18",
-		"@types/node": "^20.6.5",
-		"nodemon": "^3.0.1",
-		"typescript": "^5.2.2"
-	}
+    "type": "module",
+    "name": "express_static_server",
+    "version": "0.0.1",
+    "description": "Express Static Server",
+    "author": "First Last <first.last@example.com>",
+    "main": "out-tsc/index.js",
+    "scripts": {
+        "type": "tsc",
+        "prod:serve": "node",
+        "dev:type": "tsc --watch --preserveWatchOutput",
+        "dev:serve": "nodemon",
+        "dev:start": "npm ci && npm run dev:start:noinstall",
+        "dev:start:noinstall": "npm run dev:db:drop && npm run type && npm run dev:db:migrate:run && npm run dev:db:seed:run && concurrently -k -r \"npm run dev:type\" \"npm run dev:serve\"",
+        "dev:db:init": "knex init -x ts && mv knexfile.ts src/db/knexfile.ts",
+        "dev:db:drop": "",
+        "dev:db:migrate:make": "npm run type && knex migrate:make --debug --knexfile=out-tsc/db/knexfile.js --migrations-directory=../../src/db/migrations -x ts migration",
+        "dev:db:migrate:run": "npm run type && knex migrate:latest --debug --knexfile=out-tsc/db/knexfile.js",
+        "dev:db:seed:make": "npm run type && knex seed:make --debug --knexfile=out-tsc/db/knexfile.js -x ts seed && mv out-tsc/db/seeds/seed.ts src/db/seeds/seed.ts",
+        "dev:db:seed:run": "npm run type && knex seed:run --debug --knexfile=out-tsc/db/knexfile.js"
+    },
+    "eslintConfig": {
+        "parser": "@typescript-eslint/parser",
+        "extends": [
+            "@open-wc",
+            "prettier"
+        ],
+        "plugins": [
+            "@typescript-eslint"
+        ],
+        "rules": {
+            "no-unused-vars": "off",
+            "@typescript-eslint/no-unused-vars": [
+                "error"
+            ],
+            "import/no-unresolved": "off",
+            "import/extensions": [
+                "error",
+                "always",
+                {
+                    "ignorePackages": true
+                }
+            ]
+        }
+    },
+    "prettier": {
+        "tabWidth": 4,
+        "singleQuote": true,
+        "arrowParens": "avoid"
+    },
+    "dependencies": {
+        "express": "^4.18.2",
+        "knex": "^2.5.1",
+        "mysql2": "^3.6.1",
+        "objection": "^3.1.1"
+    },
+    "devDependencies": {
+        "@types/express": "^4.17.18",
+        "@types/node": "^20.6.5",
+        "nodemon": "^3.0.1",
+        "typescript": "^5.2.2"
+    }
 }

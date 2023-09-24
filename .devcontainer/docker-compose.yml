@@ -1,17 +1,37 @@
-version: "3.8"
+version: '3.8'
 services:
     umerx_blackdog_configurator_backend:
+        depends_on:
+            - db
         build:
             context: .
             dockerfile: Dockerfile
         command: sleep infinity
         volumes:
             - ./..:/workspace
-
+    db:
+        image: mysql:latest
+        restart: always
+        volumes:
+            - db_data:/var/lib/mysql
+        environment:
+            MYSQL_ROOT_PASSWORD: example
+            MYSQL_DATABASE: example
+            MYSQL_USER: example
+            MYSQL_PASSWORD: example
+    adminer:
+        image: adminer
+        depends_on:
+            - db
+        restart: always
+        ports:
+            - 3024:8080
+volumes:
+    db_data:
 # https://tjtelan.com/blog/how-to-link-multiple-docker-compose-via-network/
 # https://containers.dev/guide/dockerfile
 # https://github.com/microsoft/vscode-remote-release/issues/2485
 networks:
     default:
         external: true
-        name: "umerx_blackdog"
+        name: 'umerx_blackdog'
