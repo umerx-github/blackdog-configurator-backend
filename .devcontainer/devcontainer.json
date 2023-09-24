@@ -1,7 +1,7 @@
 {
-    "name": "blackdog-configurator-backend",
+    "name": "umerx-blackdog-configurator-backend",
 	"dockerComposeFile": "docker-compose.yml",
-	"service": "blackdog_configurator_backend",
+	"service": "umerx_blackdog_configurator_backend",
 	"workspaceFolder": "/workspace",
     "postCreateCommand": "npm ci",
 	// https://tjtelan.com/blog/how-to-link-multiple-docker-compose-via-network/

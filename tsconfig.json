@@ -1,0 +1,24 @@
+{
+    // https://stackoverflow.com/a/72380008
+    "compilerOptions": {
+        "moduleResolution": "nodenext",
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "allowJs": true,
+        "baseUrl": ".",
+        "paths": {
+            "*": [
+                "node_modules/*"
+            ]
+        },
+        "strict": true,
+        "noImplicitAny": true,
+        "lib": ["ES2022"],
+        "skipLibCheck": true,
+        "outDir": "out-tsc",
+        "module": "NodeNext",
+        "target": "ES2022",
+        "sourceMap": true,
+    },
+    "include": ["**/*.ts"],
+}

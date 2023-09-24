@@ -1,6 +1,6 @@
 version: "3.8"
 services:
-    blackdog_configurator_backend:
+    umerx_blackdog_configurator_backend:
         build:
             context: .
             dockerfile: Dockerfile
