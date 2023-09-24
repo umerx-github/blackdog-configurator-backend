@@ -7,7 +7,7 @@
 	// https://tjtelan.com/blog/how-to-link-multiple-docker-compose-via-network/
 	// https://containers.dev/guide/dockerfile
 	// https://github.com/microsoft/vscode-remote-release/issues/2485
-	"initializeCommand": "docker network create blackdog || echo 'Already exists'",
+	"initializeCommand": "docker network create umerx_blackdog || echo 'Already exists'",
     "customizations": {
 		"vscode": {
 			"settings": {
