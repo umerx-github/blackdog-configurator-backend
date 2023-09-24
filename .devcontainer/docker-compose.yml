@@ -9,6 +9,8 @@ services:
         command: sleep infinity
         volumes:
             - ./..:/workspace
+        environment:
+            - DB_HOSTNAME=db
     db:
         image: mysql:latest
         restart: always
@@ -28,9 +30,9 @@ services:
             - 3024:8080
 volumes:
     db_data:
-# https://tjtelan.com/blog/how-to-link-multiple-docker-compose-via-network/
-# https://containers.dev/guide/dockerfile
-# https://github.com/microsoft/vscode-remote-release/issues/2485
+        # https://tjtelan.com/blog/how-to-link-multiple-docker-compose-via-network/
+        # https://containers.dev/guide/dockerfile
+        # https://github.com/microsoft/vscode-remote-release/issues/2485
 networks:
     default:
         external: true
