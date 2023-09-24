@@ -1,0 +1,17 @@
+version: "3.8"
+services:
+    blackdog_configurator_backend:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        command: sleep infinity
+        volumes:
+            - ./..:/workspace
+
+# https://tjtelan.com/blog/how-to-link-multiple-docker-compose-via-network/
+# https://containers.dev/guide/dockerfile
+# https://github.com/microsoft/vscode-remote-release/issues/2485
+networks:
+    default:
+        external: true
+        name: "blackdog"
