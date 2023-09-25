@@ -4,8 +4,11 @@ export async function up(knex: Knex): Promise<void> {
     return await knex.schema.createTable('config', table => {
         // id
         table.increments('id').primary();
-        // email
-        table.string('email').notNullable().index();
+        // createdAt
+        table
+            .dateTime('createdAt')
+            .notNullable()
+            .defaultTo(knex.raw('CURRENT_TIMESTAMP'));
     });
 }
 

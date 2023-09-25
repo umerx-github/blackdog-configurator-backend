@@ -1,20 +1,21 @@
 import { Model } from 'objection';
-import knex from 'knex';
 
 // Person model.
 class Config extends Model {
     id!: number;
-    name!: string;
+    // https://www.reddit.com/r/node/comments/7hxie6/objectionjs_and_timestamps/
+    // https://github.com/Vincit/objection.js/issues/647
+    createdAt!: string;
     static get tableName() {
         return 'config';
     }
     static get jsonSchema() {
         return {
             type: 'object',
-            required: ['name'],
+            required: ['createdAt'],
             properties: {
                 id: { type: 'number' },
-                name: { type: 'string', minLength: 1, maxLength: 255 },
+                createdAt: { type: 'string' },
             },
         };
     }
