@@ -1,7 +1,7 @@
 import { Model } from 'objection';
 
 // Person model.
-class Config extends Model {
+export class Config extends Model {
     id!: number;
     // https://www.reddit.com/r/node/comments/7hxie6/objectionjs_and_timestamps/
     // https://github.com/Vincit/objection.js/issues/647
@@ -12,7 +12,7 @@ class Config extends Model {
     static get jsonSchema() {
         return {
             type: 'object',
-            required: ['createdAt'],
+            // required: ['createdAt'],
             properties: {
                 id: { type: 'number' },
                 createdAt: { type: 'string' },
