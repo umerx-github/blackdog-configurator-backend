@@ -16,6 +16,8 @@ const PROTOCOL = 'http';
 const PORT = 80;
 const HOST = '0.0.0.0';
 
+app.use(express.json());
+
 app.get('/', (req, res) => {
     res.send('Hello World');
 });
