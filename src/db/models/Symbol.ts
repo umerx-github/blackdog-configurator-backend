@@ -1,14 +1,15 @@
 import { Model } from 'objection';
-import { Symbol } from './Symbol.js';
+import { Config } from './Config.js';
 
 // Person model.
-export class Config extends Model {
+export class Symbol extends Model {
     id!: number;
+    name!: string;
     // https://www.reddit.com/r/node/comments/7hxie6/objectionjs_and_timestamps/
     // https://github.com/Vincit/objection.js/issues/647
     createdAt!: string;
     static get tableName() {
-        return 'config';
+        return 'symbol';
     }
     static get jsonSchema() {
         return {
@@ -16,23 +17,24 @@ export class Config extends Model {
             // required: ['createdAt'],
             properties: {
                 id: { type: 'number' },
+                name: { type: 'string' },
                 createdAt: { type: 'string' },
             },
         };
     }
     static relationMappings = () => {
         return {
-            symbols: {
+            configs: {
                 relation: Model.ManyToManyRelation,
-                modelClass: Symbol,
+                modelClass: Config,
                 join: {
-                    from: 'config.id',
+                    from: 'symbol.id',
                     through: {
-                        // configSymbol is the join table
-                        from: 'configSymbol.configId',
-                        to: 'configSymbol.symbolId',
+                        // persons_movies is the join table.
+                        from: 'configSymbol.symbolId',
+                        to: 'configSymbol.configId',
                     },
-                    to: 'symbol.id',
+                    to: 'config.id',
                 },
             },
         };
