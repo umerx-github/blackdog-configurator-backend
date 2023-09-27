@@ -10,6 +10,7 @@ export const KNEXION_DEV = knex.knex(knexConfig.development);
 // the Model.bindKnex() method.
 Model.knex(KNEXION_DEV);
 import configRouter from './routes/config.js';
+import symbolRouter from './routes/symbol.js';
 
 const app = express();
 const PROTOCOL = 'http';
@@ -23,6 +24,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/config', configRouter);
+app.use('/symbol', symbolRouter);
 
 app.listen(PORT, HOST, () => {
     console.log(`Running on ${PROTOCOL}://${HOST}:${PORT}`);
