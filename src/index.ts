@@ -18,7 +18,13 @@ const PROTOCOL = 'http';
 const PORT = 80;
 const HOST = '0.0.0.0';
 
-app.use(cors());
+// https://expressjs.com/en/resources/middleware/cors.html#configuration-options
+app.use(
+    cors({
+        // origin: ['http://localhost', 'http://localhost:5173'],
+        origin: /^http:\/\/localhost(:[0-9]+)?/,
+    })
+);
 app.use(express.json());
 
 app.get('/', (req, res) => {
