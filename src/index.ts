@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from 'cors';
 import knex from 'knex';
 import knexConfig from './db/knexfile.js';
 import { Model } from 'objection';
@@ -17,6 +18,7 @@ const PROTOCOL = 'http';
 const PORT = 80;
 const HOST = '0.0.0.0';
 
+app.use(cors());
 app.use(express.json());
 
 app.get('/', (req, res) => {
