@@ -5,7 +5,11 @@ export async function seed(knex: Knex): Promise<void> {
     await knex('configSymbol').del();
     await knex('config').del();
     await knex('symbol').del();
-    await knex('config').insert([{ id: 1 }, { id: 2 }, { id: 3 }]);
+    await knex('config').insert([
+        { id: 1 },
+        { id: 2 },
+        { id: 3, isActive: true },
+    ]);
     // Inserts seed entries
     await knex('symbol').insert([
         { id: 1, name: 'TSLA' },

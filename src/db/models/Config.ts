@@ -7,6 +7,7 @@ export class Config extends Model {
     // https://www.reddit.com/r/node/comments/7hxie6/objectionjs_and_timestamps/
     // https://github.com/Vincit/objection.js/issues/647
     createdAt!: string;
+    isActive!: boolean;
     static get tableName() {
         return 'config';
     }
@@ -17,6 +18,7 @@ export class Config extends Model {
             properties: {
                 id: { type: 'number' },
                 createdAt: { type: 'string' },
+                isActive: { type: 'boolean' },
             },
         };
     }
