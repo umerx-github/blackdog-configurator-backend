@@ -23,7 +23,7 @@ const app = express();
 // https://expressjs.com/en/resources/middleware/cors.html#configuration-options
 app.use(
     cors({
-        origin: /^http:\/\/localhost(:[0-9]+)?/,
+        origin: /^http:\/\/(localhost|127\.0\.0\.1)(:[0-9]+)?/,
     })
 );
 app.use(express.json());
