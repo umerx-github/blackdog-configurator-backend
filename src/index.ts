@@ -3,25 +3,26 @@ import cors from 'cors';
 import knex from 'knex';
 import knexConfig from './db/knexfile.js';
 import { Model } from 'objection';
+import configRouter from './routes/config.js';
+import symbolRouter from './routes/symbol.js';
 
-export const KNEXION_DEV = knex.knex(knexConfig.development);
+const ENVIRONMENT = process.env.ENVIRONMENT || 'development';
+const SCHEME = process.env.SCHEME || 'http';
+const PORT = Number(process.env.PORT) || 80;
+const HOST = process.env.HOST || '0.0.0.0';
+
+export const KNEXION = knex.knex(knexConfig[ENVIRONMENT]);
 
 // Bind all Models to a knex instance. If you only have one database in
 // your server this is all you have to do. For multi database systems, see
 // the Model.bindKnex() method.
-Model.knex(KNEXION_DEV);
-import configRouter from './routes/config.js';
-import symbolRouter from './routes/symbol.js';
+Model.knex(KNEXION);
 
 const app = express();
-const PROTOCOL = 'http';
-const PORT = 80;
-const HOST = '0.0.0.0';
 
 // https://expressjs.com/en/resources/middleware/cors.html#configuration-options
 app.use(
     cors({
-        // origin: ['http://localhost', 'http://localhost:5173'],
         origin: /^http:\/\/localhost(:[0-9]+)?/,
     })
 );
@@ -35,5 +36,5 @@ app.use('/config', configRouter);
 app.use('/symbol', symbolRouter);
 
 app.listen(PORT, HOST, () => {
-    console.log(`Running on ${PROTOCOL}://${HOST}:${PORT}`);
+    console.log(`Running on ${SCHEME}://${HOST}:${PORT}`);
 });
