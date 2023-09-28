@@ -12,7 +12,7 @@ services:
         environment:
             - DB_HOSTNAME=db
         ports:
-            - 62452:80
+            - ${BLACKDOG_CONFIGURATOR_BACKEND_HOST_PORT}:80
 
     db:
         image: mysql:latest
