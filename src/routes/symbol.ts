@@ -1,5 +1,6 @@
-import { Router, Request } from 'express';
+import { Router, Request, Response } from 'express';
 import { Symbol } from '../db/models/Symbol.js';
+import { ResponseBase } from '../interfaces/response.js';
 
 const router = Router();
 
@@ -9,20 +10,49 @@ interface SymbolRequestPost {
     name: string;
 }
 
-router.get('/', async (req, res) => {
+router.get('/', async (req, res: Response<ResponseBase<Symbol[]>>) => {
     const symbols = await Symbol.query();
-    return res.json(symbols);
-});
-
-router.post('/', async (req: Request<{}, {}, SymbolRequestPost>, res) => {
-    // https://vincit.github.io/objection.js/guide/query-examples.html#relation-relate-queries
-    if (typeof req?.body?.name !== 'string') {
-        return res.status(400).json({
-            message: 'Invalid request body: "name" is required string',
+    if (!symbols) {
+        return res.status(404).json({
+            status: 'error',
+            message: 'No symbols found',
         });
     }
-    const symbol = await Symbol.query().insertAndFetch({ name: req.body.name });
-    return res.json(symbol);
+    return res.json({
+        status: 'success',
+        message: 'Symbols retrieved successfully',
+        data: symbols,
+    });
 });
+
+router.post(
+    '/',
+    async (
+        req: Request<{}, {}, SymbolRequestPost>,
+        res: Response<ResponseBase<Symbol>>
+    ) => {
+        // https://vincit.github.io/objection.js/guide/query-examples.html#relation-relate-queries
+        if (typeof req?.body?.name !== 'string') {
+            return res.status(400).json({
+                status: 'error',
+                message: 'Invalid request body: "name" is required string',
+            });
+        }
+        const symbol = await Symbol.query().insertAndFetch({
+            name: req.body.name,
+        });
+        if (!symbol) {
+            return res.status(500).json({
+                status: 'error',
+                message: 'Failed to create symbol',
+            });
+        }
+        return res.json({
+            status: 'success',
+            message: 'Symbol created successfully',
+            data: symbol,
+        });
+    }
+);
 
 export default router;
