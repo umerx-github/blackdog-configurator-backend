@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { Config } from '../db/models/Config.js';
+import { Config, OrderedSymbol } from '../db/models/Config.js';
 import { ResponseBase } from '../interfaces/response.js';
 
 const router = Router();
@@ -7,7 +7,7 @@ const router = Router();
 // Typing Express Request: https://stackoverflow.com/questions/48027563/typescript-type-annotation-for-res-body
 
 interface ConfigRequestPost {
-    symbolIds: number[];
+    symbols: OrderedSymbol[];
     isActive?: boolean;
 }
 
@@ -58,12 +58,13 @@ router.post(
             });
         }
         if (
-            undefined !== req?.body?.symbolIds &&
-            !Array.isArray(req?.body?.symbolIds)
+            undefined !== req?.body?.symbols &&
+            !Array.isArray(req?.body?.symbols)
         ) {
             return res.status(400).json({
                 status: 'error',
-                message: 'Invalid request body: "symbolIds" should be array',
+                message:
+                    'Invalid request body: "symbols" should be array of OrderedSymbol',
             });
         }
         const newConfig: { isActive?: boolean } = {};
@@ -78,10 +79,12 @@ router.post(
 
         const config = await Config.query().insertAndFetch(newConfig);
 
-        if (config && Array.isArray(req.body.symbolIds)) {
+        if (config && Array.isArray(req.body.symbols)) {
             // Can't do batch on MySQL - only Postgres and SQL Server
-            req.body.symbolIds.forEach(async symbolId => {
-                await config.$relatedQuery('symbols').relate(symbolId);
+            req.body.symbols.forEach(async symbol => {
+                await config
+                    .$relatedQuery('symbols')
+                    .relate({ id: symbol.id, order: symbol.order });
             });
             // await config.$relatedQuery('symbols').relate([1, 2, 3]);
         }

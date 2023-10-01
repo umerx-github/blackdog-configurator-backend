@@ -17,8 +17,8 @@ export async function seed(knex: Knex): Promise<void> {
         { id: 3, name: 'AMZN' },
     ]);
     await knex('configSymbol').insert([
-        { id: 1, configId: 1, symbolId: 1 },
-        { id: 2, configId: 1, symbolId: 2 },
-        { id: 3, configId: 1, symbolId: 3 },
+        { id: 1, configId: 3, symbolId: 1, order: 2 },
+        { id: 2, configId: 3, symbolId: 2, order: 1 },
+        { id: 3, configId: 3, symbolId: 3, order: 0 },
     ]);
 }

@@ -1,6 +1,10 @@
 import { Model } from 'objection';
 import { Symbol } from './Symbol.js';
 
+export interface OrderedSymbol extends Symbol {
+    order: number;
+}
+
 // Person model.
 export class Config extends Model {
     id!: number;
@@ -8,6 +12,7 @@ export class Config extends Model {
     // https://github.com/Vincit/objection.js/issues/647
     createdAt!: string;
     isActive!: boolean;
+    symbols!: OrderedSymbol[];
     static get tableName() {
         return 'config';
     }
@@ -33,6 +38,7 @@ export class Config extends Model {
                         // configSymbol is the join table
                         from: 'configSymbol.configId',
                         to: 'configSymbol.symbolId',
+                        extra: ['order'],
                     },
                     to: 'symbol.id',
                 },

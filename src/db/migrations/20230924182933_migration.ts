@@ -40,6 +40,12 @@ export async function up(knex: Knex): Promise<void> {
                 .dateTime('createdAt')
                 .notNullable()
                 .defaultTo(knex.raw('CURRENT_TIMESTAMP'));
+            table
+                .integer('order')
+                .unsigned()
+                .notNullable()
+                .defaultTo(0)
+                .index();
         });
 }
 
