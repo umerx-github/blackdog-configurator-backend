@@ -9,6 +9,16 @@ export async function up(knex: Knex): Promise<void> {
                 .notNullable()
                 .defaultTo(knex.raw('CURRENT_TIMESTAMP'));
             table.boolean('isActive').notNullable().defaultTo(false).index();
+            // - Percentile to sell
+            table.float('sellAtPercentile').notNullable().defaultTo(0.0);
+            // - Percentile to buy
+            table.float('buyAtPercentile').notNullable().defaultTo(0.0);
+            // - Limit order buy trailing percent
+            table.float('buyTrailingPercent').notNullable().defaultTo(0.0);
+            // - Limit order sell trailing percent
+            table.float('sellTrailingPercent').notNullable().defaultTo(0.0);
+            // - Timeframe (days) to evaluate
+            table.integer('timeframeInDays').notNullable().defaultTo(1);
         })
         .createTableIfNotExists('symbol', table => {
             table.increments('id').primary();

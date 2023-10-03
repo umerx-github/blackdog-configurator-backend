@@ -12,6 +12,11 @@ export class Config extends Model {
     // https://github.com/Vincit/objection.js/issues/647
     createdAt!: string;
     isActive!: boolean;
+    sellAtPercentile!: number;
+    buyAtPercentile!: number;
+    buyTrailingPercent!: number;
+    sellTrailingPercent!: number;
+    timeframeInDays!: number;
     symbols!: OrderedSymbol[];
     static get tableName() {
         return 'config';
@@ -24,6 +29,11 @@ export class Config extends Model {
                 id: { type: 'number' },
                 createdAt: { type: 'string' },
                 isActive: { type: 'boolean' },
+                sellAtPercentile: { type: 'number' },
+                buyAtPercentile: { type: 'number' },
+                buyTrailingPercent: { type: 'number' },
+                sellTrailingPercent: { type: 'number' },
+                timeframeInDays: { type: 'number' },
             },
         };
     }

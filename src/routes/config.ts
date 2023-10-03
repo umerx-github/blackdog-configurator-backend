@@ -6,9 +6,13 @@ const router = Router();
 
 // Typing Express Request: https://stackoverflow.com/questions/48027563/typescript-type-annotation-for-res-body
 
-interface ConfigRequestPost {
-    symbols: OrderedSymbol[];
+interface NewConfigInterface {
     isActive?: boolean;
+    sellAtPercentile: number;
+}
+
+interface ConfigRequestPost extends NewConfigInterface {
+    symbols: OrderedSymbol[];
 }
 
 router.get('/', async (req, res: Response<ResponseBase<Config[]>>) => {
@@ -67,7 +71,18 @@ router.post(
                     'Invalid request body: "symbols" should be array of OrderedSymbol',
             });
         }
-        const newConfig: { isActive?: boolean } = {};
+        if (typeof req?.body?.sellAtPercentile !== 'number') {
+            return res.status(400).json({
+                status: 'error',
+                message:
+                    'Invalid request body: "sellAtPercentile" is required number',
+            });
+        }
+
+        const newConfig: NewConfigInterface = {
+            isActive: false,
+            sellAtPercentile: req?.body?.sellAtPercentile,
+        };
 
         if (undefined !== req?.body?.isActive) {
             newConfig.isActive = req.body.isActive;
@@ -99,7 +114,6 @@ router.post(
                 message: 'Configuration not found',
             });
         }
-
         return res.json({
             status: 'success',
             message: 'Configuration created successfully',
