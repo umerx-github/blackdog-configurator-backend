@@ -10,13 +10,19 @@ export async function up(knex: Knex): Promise<void> {
                 .defaultTo(knex.raw('CURRENT_TIMESTAMP'));
             table.boolean('isActive').notNullable().defaultTo(false).index();
             // - Percentile to sell
-            table.float('sellAtPercentile', 2).notNullable().defaultTo(0.0);
+            table.double('sellAtPercentile', 8, 2).notNullable().defaultTo(0.0);
             // - Percentile to buy
-            table.float('buyAtPercentile', 2).notNullable().defaultTo(0.0);
+            table.double('buyAtPercentile', 8, 2).notNullable().defaultTo(0.0);
             // - Limit order buy trailing percent
-            table.float('buyTrailingPercent', 2).notNullable().defaultTo(0.0);
+            table
+                .double('buyTrailingPercent', 8, 2)
+                .notNullable()
+                .defaultTo(0.0);
             // - Limit order sell trailing percent
-            table.float('sellTrailingPercent', 2).notNullable().defaultTo(0.0);
+            table
+                .double('sellTrailingPercent', 8, 2)
+                .notNullable()
+                .defaultTo(0.0);
             // - Timeframe (days) to evaluate
             table.integer('timeframeInDays').notNullable().defaultTo(1);
         })
