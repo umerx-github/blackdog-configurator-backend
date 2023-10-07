@@ -9,6 +9,7 @@ const router = Router();
 interface NewConfigInterface {
     isActive?: boolean;
     sellAtPercentile: number;
+    buyAtPercentile: number;
 }
 
 interface ConfigRequestPost extends NewConfigInterface {
@@ -78,10 +79,18 @@ router.post(
                     'Invalid request body: "sellAtPercentile" is required number',
             });
         }
+        if (typeof req?.body?.buyAtPercentile !== 'number') {
+            return res.status(400).json({
+                status: 'error',
+                message:
+                    'Invalid request body: "buyAtPercentile" is required number',
+            });
+        }
 
         const newConfig: NewConfigInterface = {
             isActive: false,
             sellAtPercentile: req?.body?.sellAtPercentile,
+            buyAtPercentile: req?.body?.buyAtPercentile,
         };
 
         if (undefined !== req?.body?.isActive) {
