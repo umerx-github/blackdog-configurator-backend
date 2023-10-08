@@ -132,25 +132,28 @@ router.post(
             alpacaApiKey: req?.body?.alpacaApiKey,
             alpacaApiSecret: req?.body?.alpacaApiSecret,
         };
+        let responseObj: Config | undefined;
+        const returnValue = await Config.transaction(async trx => {
+            if (newConfig.isActive === true) {
+                await Config.query(trx).patch({ isActive: false });
+            }
 
-        if (newConfig.isActive === true) {
-            await Config.query().patch({ isActive: false });
-        }
+            const config = await Config.query(trx).insertAndFetch(newConfig);
 
-        const config = await Config.query().insertAndFetch(newConfig);
-        if (config && Array.isArray(req.body.symbols)) {
-            // Can't do batch on MySQL - only Postgres and SQL Server
-            req.body.symbols.forEach(async symbol => {
-                await config
-                    .$relatedQuery<OrderedSymbolModel>('symbols')
-                    .relate({ id: symbol.id, order: symbol.order });
-            });
-            // await config.$relatedQuery('symbols').relate([1, 2, 3]);
-        }
+            if (config && Array.isArray(req.body.symbols)) {
+                // Can't do batch on MySQL - only Postgres and SQL Server
+                req.body.symbols.forEach(async symbol => {
+                    await config
+                        .$relatedQuery<OrderedSymbolModel>('symbols', trx)
+                        .relate({ id: symbol.id, order: symbol.order });
+                });
+                // await config.$relatedQuery('symbols').relate([1, 2, 3]);
+            }
 
-        const responseObj = await Config.query()
-            .findById(config.id)
-            .withGraphFetched('symbols');
+            responseObj = await Config.query(trx)
+                .findById(config.id)
+                .withGraphFetched('symbols');
+        });
 
         if (!responseObj) {
             return res.status(404).json({
