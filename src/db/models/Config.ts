@@ -14,8 +14,8 @@ export class Config extends Model {
     isActive!: boolean;
     sellAtPercentile!: number;
     buyAtPercentile!: number;
-    buyTrailingPercent!: number;
     sellTrailingPercent!: number;
+    buyTrailingPercent!: number;
     timeframeInDays!: number;
     symbols!: OrderedSymbol[];
     static get tableName() {
@@ -31,8 +31,8 @@ export class Config extends Model {
                 isActive: { type: 'boolean' },
                 sellAtPercentile: { type: 'number' },
                 buyAtPercentile: { type: 'number' },
-                buyTrailingPercent: { type: 'number' },
                 sellTrailingPercent: { type: 'number' },
+                buyTrailingPercent: { type: 'number' },
                 timeframeInDays: { type: 'number' },
             },
         };

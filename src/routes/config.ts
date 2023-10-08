@@ -10,6 +10,9 @@ interface NewConfigInterface {
     isActive?: boolean;
     sellAtPercentile: number;
     buyAtPercentile: number;
+    buyTrailingPercent: number;
+    sellTrailingPercent: number;
+    timeframeInDays: number;
 }
 
 interface ConfigRequestPost extends NewConfigInterface {
@@ -72,6 +75,15 @@ router.post(
                     'Invalid request body: "symbols" should be array of OrderedSymbol',
             });
         }
+        if (
+            undefined !== req?.body?.isActive &&
+            typeof req?.body?.isActive !== 'boolean'
+        ) {
+            return res.status(400).json({
+                status: 'error',
+                message: 'Invalid request body: "isActive" should be boolean',
+            });
+        }
         if (typeof req?.body?.sellAtPercentile !== 'number') {
             return res.status(400).json({
                 status: 'error',
@@ -86,16 +98,36 @@ router.post(
                     'Invalid request body: "buyAtPercentile" is required number',
             });
         }
+        if (typeof req?.body?.sellTrailingPercent !== 'number') {
+            return res.status(400).json({
+                status: 'error',
+                message:
+                    'Invalid request body: "sellTrailingPercent" is required number',
+            });
+        }
+        if (typeof req?.body?.buyTrailingPercent !== 'number') {
+            return res.status(400).json({
+                status: 'error',
+                message:
+                    'Invalid request body: "buyTrailingPercent" is required number',
+            });
+        }
+        if (typeof req?.body?.timeframeInDays !== 'number') {
+            return res.status(400).json({
+                status: 'error',
+                message:
+                    'Invalid request body: "timeframeInDays" is required number',
+            });
+        }
 
         const newConfig: NewConfigInterface = {
-            isActive: false,
+            isActive: req.body.isActive ?? false,
             sellAtPercentile: req?.body?.sellAtPercentile,
             buyAtPercentile: req?.body?.buyAtPercentile,
+            sellTrailingPercent: req?.body?.sellTrailingPercent,
+            buyTrailingPercent: req?.body?.buyTrailingPercent,
+            timeframeInDays: req?.body?.timeframeInDays,
         };
-
-        if (undefined !== req?.body?.isActive) {
-            newConfig.isActive = req.body.isActive;
-        }
 
         if (newConfig.isActive === true) {
             await Config.query().patch({ isActive: false });
