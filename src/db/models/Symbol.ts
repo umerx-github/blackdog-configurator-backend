@@ -1,8 +1,9 @@
 import { Model } from 'objection';
 import { Config } from './Config.js';
+import { SymbolInterface } from '../../interfaces/db/models/index.js';
 
 // Person model.
-export class Symbol extends Model {
+export class Symbol extends Model implements SymbolInterface {
     id!: number;
     name!: string;
     // https://www.reddit.com/r/node/comments/7hxie6/objectionjs_and_timestamps/

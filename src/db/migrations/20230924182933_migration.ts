@@ -25,6 +25,10 @@ export async function up(knex: Knex): Promise<void> {
                 .defaultTo(0.0);
             // - Timeframe (days) to evaluate
             table.integer('timeframeInDays').notNullable().defaultTo(1);
+            // alpaca api key
+            table.string('alpacaApiKey').notNullable().defaultTo('');
+            // alpaca api secret
+            table.string('alpacaApiSecret').notNullable().defaultTo('');
         })
         .createTableIfNotExists('symbol', table => {
             table.increments('id').primary();

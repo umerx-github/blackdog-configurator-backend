@@ -1,12 +1,13 @@
 import { Model } from 'objection';
 import { Symbol } from './Symbol.js';
+import {
+    ConfigInterface,
+    OrderedSymbolInterface,
+} from '../../interfaces/db/models/index.js';
 
-export interface OrderedSymbol extends Symbol {
-    order: number;
-}
-
+export type OrderedSymbolModel = Symbol & OrderedSymbolInterface;
 // Person model.
-export class Config extends Model {
+export class Config extends Model implements ConfigInterface {
     id!: number;
     // https://www.reddit.com/r/node/comments/7hxie6/objectionjs_and_timestamps/
     // https://github.com/Vincit/objection.js/issues/647
@@ -17,7 +18,9 @@ export class Config extends Model {
     sellTrailingPercent!: number;
     buyTrailingPercent!: number;
     timeframeInDays!: number;
-    symbols!: OrderedSymbol[];
+    symbols!: OrderedSymbolInterface[];
+    alpacaApiKey!: string;
+    alpacaApiSecret!: string;
     static get tableName() {
         return 'config';
     }
@@ -34,6 +37,8 @@ export class Config extends Model {
                 sellTrailingPercent: { type: 'number' },
                 buyTrailingPercent: { type: 'number' },
                 timeframeInDays: { type: 'number' },
+                alpacaApiKey: { type: 'string' },
+                alpacaApiSecret: { type: 'string' },
             },
         };
     }

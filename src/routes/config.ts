@@ -1,23 +1,11 @@
 import { Router, Request, Response } from 'express';
-import { Config, OrderedSymbol } from '../db/models/Config.js';
+import { Config, OrderedSymbolModel } from '../db/models/Config.js';
 import { ResponseBase } from '../interfaces/response.js';
+import { NewConfigInterface } from '../interfaces/db/models/index.js';
 
 const router = Router();
 
 // Typing Express Request: https://stackoverflow.com/questions/48027563/typescript-type-annotation-for-res-body
-
-interface NewConfigInterface {
-    isActive?: boolean;
-    sellAtPercentile: number;
-    buyAtPercentile: number;
-    buyTrailingPercent: number;
-    sellTrailingPercent: number;
-    timeframeInDays: number;
-}
-
-interface ConfigRequestPost extends NewConfigInterface {
-    symbols: OrderedSymbol[];
-}
 
 router.get('/', async (req, res: Response<ResponseBase<Config[]>>) => {
     const configs = await Config.query()
@@ -52,7 +40,7 @@ router.get('/active', async (req, res: Response<ResponseBase<Config>>) => {
 router.post(
     '/',
     async (
-        req: Request<{}, {}, ConfigRequestPost>,
+        req: Request<{}, {}, NewConfigInterface>,
         res: Response<ResponseBase<Config>>
     ) => {
         // https://vincit.github.io/objection.js/guide/query-examples.html#relation-relate-queries
@@ -72,7 +60,7 @@ router.post(
             return res.status(400).json({
                 status: 'error',
                 message:
-                    'Invalid request body: "symbols" should be array of OrderedSymbol',
+                    'Invalid request body: "symbols" should be array of OrderedSymbolInterface',
             });
         }
         if (
@@ -119,6 +107,20 @@ router.post(
                     'Invalid request body: "timeframeInDays" is required number',
             });
         }
+        if (typeof req?.body?.alpacaApiKey !== 'string') {
+            return res.status(400).json({
+                status: 'error',
+                message:
+                    'Invalid request body: "alpacaApiKey" is required string',
+            });
+        }
+        if (typeof req?.body?.alpacaApiSecret !== 'string') {
+            return res.status(400).json({
+                status: 'error',
+                message:
+                    'Invalid request body: "alpacaApiSecret" is required string',
+            });
+        }
 
         const newConfig: NewConfigInterface = {
             isActive: req.body.isActive ?? false,
@@ -127,6 +129,8 @@ router.post(
             sellTrailingPercent: req?.body?.sellTrailingPercent,
             buyTrailingPercent: req?.body?.buyTrailingPercent,
             timeframeInDays: req?.body?.timeframeInDays,
+            alpacaApiKey: req?.body?.alpacaApiKey,
+            alpacaApiSecret: req?.body?.alpacaApiSecret,
         };
 
         if (newConfig.isActive === true) {
@@ -134,12 +138,11 @@ router.post(
         }
 
         const config = await Config.query().insertAndFetch(newConfig);
-
         if (config && Array.isArray(req.body.symbols)) {
             // Can't do batch on MySQL - only Postgres and SQL Server
             req.body.symbols.forEach(async symbol => {
                 await config
-                    .$relatedQuery('symbols')
+                    .$relatedQuery<OrderedSymbolModel>('symbols')
                     .relate({ id: symbol.id, order: symbol.order });
             });
             // await config.$relatedQuery('symbols').relate([1, 2, 3]);
