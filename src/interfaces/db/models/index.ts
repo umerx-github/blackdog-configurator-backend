@@ -1,4 +1,6 @@
-export interface RequiredConfigInterface {
+export interface NewConfigRequestInterface {
+    isActive?: boolean;
+    symbols?: OrderedSymbolInterface[];
     sellAtPercentile: number;
     buyAtPercentile: number;
     buyTrailingPercent: number;
@@ -6,30 +8,47 @@ export interface RequiredConfigInterface {
     timeframeInDays: number;
     alpacaApiKey: string;
     alpacaApiSecret: string;
+    cashInDollars: number;
 }
-
-export interface ConfigInterface extends RequiredConfigInterface {
-    id: number;
-    isActive: boolean;
-    createdAt: string;
-    symbols: OrderedSymbolInterface[];
-}
-
-export interface NewConfigInterface extends RequiredConfigInterface {
+export interface NewConfigInterface {
     isActive?: boolean;
     symbols?: OrderedSymbolInterface[];
+    sellAtPercentile?: number;
+    buyAtPercentile?: number;
+    sellTrailingPercent?: number;
+    buyTrailingPercent?: number;
+    timeframeInDays?: number;
+    alpacaApiKey?: string;
+    alpacaApiSecret?: string;
+    cashInCents?: number;
 }
-
-export interface RequiredSymbolInterface {
+export interface ConfigInterface {
+    id: number;
+    createdAt: string;
+    isActive: boolean;
+    symbols: OrderedSymbolInterface[];
+    sellAtPercentile: number;
+    buyAtPercentile: number;
+    buyTrailingPercent: number;
+    sellTrailingPercent: number;
+    timeframeInDays: number;
+    alpacaApiKey: string;
+    alpacaApiSecret: string;
+    cashInCents: number;
+    cashInDollars: number;
+}
+export interface NewSymbolRequestInterface {
+    name: string;
+}
+export interface NewSymbolInterface {
     name: string;
 }
 
-export interface SymbolInterface extends RequiredSymbolInterface {
+export interface SymbolInterface {
     id: number;
     createdAt: string;
+    name: string;
 }
-
-export interface NewSymbolInterface extends RequiredSymbolInterface {}
 
 export interface OrderedSymbolInterface extends SymbolInterface {
     order: number;

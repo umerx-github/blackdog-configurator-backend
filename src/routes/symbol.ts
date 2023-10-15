@@ -1,14 +1,11 @@
 import { Router, Request, Response } from 'express';
 import { Symbol } from '../db/models/Symbol.js';
 import { ResponseBase } from '../interfaces/response.js';
+import { NewSymbolRequestInterface } from '../interfaces/db/models/index.js';
 
 const router = Router();
 
 // Typing Express Request: https://stackoverflow.com/questions/48027563/typescript-type-annotation-for-res-body
-
-interface SymbolRequestPost {
-    name: string;
-}
 
 router.get('/', async (req, res: Response<ResponseBase<Symbol[]>>) => {
     const symbols = await Symbol.query();
@@ -28,7 +25,7 @@ router.get('/', async (req, res: Response<ResponseBase<Symbol[]>>) => {
 router.post(
     '/',
     async (
-        req: Request<{}, {}, SymbolRequestPost>,
+        req: Request<{}, {}, NewSymbolRequestInterface>,
         res: Response<ResponseBase<Symbol>>
     ) => {
         // https://vincit.github.io/objection.js/guide/query-examples.html#relation-relate-queries

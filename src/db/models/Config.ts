@@ -13,6 +13,7 @@ export class Config extends Model implements ConfigInterface {
     // https://github.com/Vincit/objection.js/issues/647
     createdAt!: string;
     isActive!: boolean;
+    cashInCents!: number;
     sellAtPercentile!: number;
     buyAtPercentile!: number;
     sellTrailingPercent!: number;
@@ -24,6 +25,12 @@ export class Config extends Model implements ConfigInterface {
     static get tableName() {
         return 'config';
     }
+    static get virtualAttributes() {
+        return ['cashInDollars'];
+    }
+    get cashInDollars() {
+        return this.cashInCents / 100;
+    }
     static get jsonSchema() {
         return {
             type: 'object',
@@ -32,6 +39,7 @@ export class Config extends Model implements ConfigInterface {
                 id: { type: 'number' },
                 createdAt: { type: 'string' },
                 isActive: { type: 'boolean' },
+                cashInCents: { type: 'number' },
                 sellAtPercentile: { type: 'number' },
                 buyAtPercentile: { type: 'number' },
                 sellTrailingPercent: { type: 'number' },

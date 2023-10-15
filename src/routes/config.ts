@@ -1,7 +1,10 @@
 import { Router, Request, Response } from 'express';
 import { Config, OrderedSymbolModel } from '../db/models/Config.js';
 import { ResponseBase } from '../interfaces/response.js';
-import { NewConfigInterface } from '../interfaces/db/models/index.js';
+import {
+    NewConfigRequestInterface,
+    NewConfigInterface,
+} from '../interfaces/db/models/index.js';
 import test, { Knex, knex } from 'knex';
 import { KNEXION } from '../index.js';
 
@@ -42,10 +45,10 @@ router.get('/active', async (req, res: Response<ResponseBase<Config>>) => {
 router.post(
     '/',
     async (
-        req: Request<{}, {}, NewConfigInterface>,
+        req: Request<{}, {}, NewConfigRequestInterface>,
         res: Response<ResponseBase<Config>>
     ) => {
-        // https://vincit.github.io/objection.js/guide/query-examples.html#relation-relate-queries
+        // https://vincit.github.io/objection.js/guide/query-examples.html#relation-relate-queries);
         if (
             undefined !== req?.body?.isActive &&
             typeof req?.body?.isActive !== 'boolean'
@@ -63,15 +66,6 @@ router.post(
                 status: 'error',
                 message:
                     'Invalid request body: "symbols" should be array of OrderedSymbolInterface',
-            });
-        }
-        if (
-            undefined !== req?.body?.isActive &&
-            typeof req?.body?.isActive !== 'boolean'
-        ) {
-            return res.status(400).json({
-                status: 'error',
-                message: 'Invalid request body: "isActive" should be boolean',
             });
         }
         if (typeof req?.body?.sellAtPercentile !== 'number') {
@@ -123,6 +117,13 @@ router.post(
                     'Invalid request body: "alpacaApiSecret" is required string',
             });
         }
+        if (typeof req?.body?.cashInDollars !== 'number') {
+            return res.status(400).json({
+                status: 'error',
+                message:
+                    'Invalid request body: "cashInDollars" is required number',
+            });
+        }
 
         const newConfig: NewConfigInterface = {
             isActive: req.body.isActive ?? false,
@@ -133,7 +134,11 @@ router.post(
             timeframeInDays: req?.body?.timeframeInDays,
             alpacaApiKey: req?.body?.alpacaApiKey,
             alpacaApiSecret: req?.body?.alpacaApiSecret,
+            cashInCents: req?.body?.cashInDollars
+                ? req.body.cashInDollars * 100
+                : 0,
         };
+        //
         let responseObj: Config | undefined;
         await KNEXION.transaction(
             async trx => {

@@ -9,6 +9,7 @@ export async function up(knex: Knex): Promise<void> {
                 .notNullable()
                 .defaultTo(knex.raw('CURRENT_TIMESTAMP'));
             table.boolean('isActive').notNullable().defaultTo(false).index();
+            table.bigint('cashInCents').notNullable().defaultTo(0);
             // - Percentile to sell
             table.double('sellAtPercentile', 8, 2).notNullable().defaultTo(0.0);
             // - Percentile to buy
