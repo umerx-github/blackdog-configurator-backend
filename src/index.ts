@@ -5,6 +5,7 @@ import knexConfig from './db/knexfile.js';
 import { Model } from 'objection';
 import configRouter from './routes/config.js';
 import symbolRouter from './routes/symbol.js';
+import orderRouter from './routes/order.js';
 
 const ENVIRONMENT = process.env.ENVIRONMENT || 'development';
 const SCHEME = process.env.SCHEME || 'http';
@@ -34,6 +35,7 @@ app.get('/', (req, res) => {
 
 app.use('/config', configRouter);
 app.use('/symbol', symbolRouter);
+app.use('/order', orderRouter);
 
 app.listen(PORT, HOST, () => {
     console.log(`Running on ${SCHEME}://${HOST}:${PORT}`);

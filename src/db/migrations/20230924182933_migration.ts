@@ -67,11 +67,65 @@ export async function up(knex: Knex): Promise<void> {
                 .notNullable()
                 .defaultTo(0)
                 .index();
+        })
+        .createTableIfNotExists('order', table => {
+            table.increments('id').primary();
+            table
+                .integer('configId')
+                .unsigned()
+                .references('id')
+                .inTable('config')
+                .notNullable()
+                .onDelete('CASCADE')
+                .index();
+            table
+                .integer('symbolId')
+                .unsigned()
+                .references('id')
+                .inTable('symbol')
+                .notNullable()
+                .onDelete('CASCADE')
+                .index();
+            table.string('alpacaOrderId').notNullable().index();
+            table
+                .dateTime('createdAt')
+                .notNullable()
+                .defaultTo(knex.raw('CURRENT_TIMESTAMP'));
+            table.enum('side', ['buy', 'sell']).notNullable().index();
+            table
+                .enum('type', [
+                    'market',
+                    'limit',
+                    'stop',
+                    'stop_limit',
+                    'trailing_stop',
+                ])
+                .notNullable()
+                .index();
+            table.bigInteger('priceInCents').notNullable();
+        })
+        .createTableIfNotExists('position', table => {
+            table.increments('id').primary();
+            table
+                .integer('symbolId')
+                .unsigned()
+                .references('id')
+                .inTable('symbol')
+                .notNullable()
+                .onDelete('CASCADE')
+                .index();
+            table
+                .dateTime('createdAt')
+                .notNullable()
+                .defaultTo(knex.raw('CURRENT_TIMESTAMP'));
+            table.bigInteger('priceInCents').notNullable();
         });
 }
 
 export async function down(knex: Knex): Promise<void> {
     await knex.schema
+        .dropTableIfExists('order')
+        .dropTableIfExists('position')
         .dropTableIfExists('configSymbol')
         .dropTableIfExists('config')
         .dropTableIfExists('symbol');

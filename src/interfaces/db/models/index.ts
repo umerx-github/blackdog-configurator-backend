@@ -53,3 +53,53 @@ export interface SymbolInterface {
 export interface OrderedSymbolInterface extends SymbolInterface {
     order: number;
 }
+
+export type Side = 'buy' | 'sell';
+export enum SideEnum {
+    buy = 'buy',
+    sell = 'sell',
+}
+
+// market, limit, stop, stop_limit, or trailing_stop
+export type OrderType =
+    | 'market'
+    | 'limit'
+    | 'stop'
+    | 'stop_limit'
+    | 'trailing_stop';
+
+export enum OrderTypeEnum {
+    market = 'market',
+    limit = 'limit',
+    stop = 'stop',
+    stop_limit = 'stop_limit',
+    trailing_stop = 'trailing_stop',
+}
+export interface NewOrderRequestInterface {
+    configId: number;
+    symbolId: number;
+    alpacaOrderId: string;
+    side: SideEnum;
+    type: OrderTypeEnum;
+    priceInDollars: number;
+}
+export interface NewOrderInterface {
+    configId: number;
+    symbolId: number;
+    alpacaOrderId: string;
+    side: SideEnum;
+    type: OrderTypeEnum;
+    priceInCents: number;
+}
+
+export interface OrderInterface {
+    id: number;
+    createdAt: string;
+    config: ConfigInterface;
+    symbol: SymbolInterface;
+    alpacaOrderId: string;
+    side: SideEnum;
+    type: OrderTypeEnum;
+    priceInCents: number;
+    priceInDollars: number;
+}

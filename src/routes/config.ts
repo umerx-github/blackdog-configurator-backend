@@ -5,7 +5,6 @@ import {
     NewConfigRequestInterface,
     NewConfigInterface,
 } from '../interfaces/db/models/index.js';
-import test, { Knex, knex } from 'knex';
 import { KNEXION } from '../index.js';
 
 const router = Router();
