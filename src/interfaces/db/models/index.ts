@@ -103,3 +103,16 @@ export interface OrderInterface {
     priceInCents: number;
     priceInDollars: number;
 }
+
+export interface NewPositionRequestInterface {
+    symbolId: number;
+}
+export interface NewPositionInterface {
+    symbolId: number;
+}
+
+export interface PositionInterface {
+    id: number;
+    createdAt: string;
+    symbol: SymbolInterface;
+}

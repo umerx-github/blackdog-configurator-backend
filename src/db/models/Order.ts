@@ -9,15 +9,14 @@ import {
 } from '../../interfaces/db/models/index.js';
 import { Config } from './Config.js';
 
-export type OrderedSymbolModel = Symbol & OrderedSymbolInterface;
 // Person model.
 export class Order extends Model implements OrderInterface {
     id!: number;
     // https://www.reddit.com/r/node/comments/7hxie6/objectionjs_and_timestamps/
     // https://github.com/Vincit/objection.js/issues/647
     createdAt!: string;
-    // configId!: number;
-    // symbolId!: number;
+    configId!: number;
+    symbolId!: number;
     config!: ConfigInterface;
     symbol!: Symbol;
     alpacaOrderId!: string;
