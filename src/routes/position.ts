@@ -40,6 +40,13 @@ router.post(
                 ).join(',')}`,
             });
         }
+        if (typeof req?.body?.buyOrderId !== 'number') {
+            return res.status(400).json({
+                status: 'error',
+                message:
+                    'Invalid request body: "buyOrderId" is required number',
+            });
+        }
         if (typeof req?.body?.symbolId !== 'number') {
             return res.status(400).json({
                 status: 'error',
@@ -48,10 +55,12 @@ router.post(
         }
         const newPosition: NewPositionInterface = {
             status: req.body.status,
+            buyOrderId: req.body.buyOrderId,
             symbolId: req.body.symbolId,
         };
         let responseObj = await Position.query()
             .insertAndFetch(newPosition)
+            .withGraphFetched('buyOrder')
             .withGraphFetched('symbol');
         if (!responseObj) {
             return res.status(404).json({

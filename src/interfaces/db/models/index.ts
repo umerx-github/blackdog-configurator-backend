@@ -54,11 +54,6 @@ export interface OrderedSymbolInterface extends SymbolInterface {
     order: number;
 }
 
-export enum SideEnum {
-    buy = 'buy',
-    sell = 'sell',
-}
-
 export enum PositionStatusEnum {
     open = 'open',
     closed = 'closed',
@@ -82,7 +77,6 @@ export interface NewBuyOrderRequestInterface {
     configId: number;
     symbolId: number;
     alpacaOrderId: string;
-    side: SideEnum;
     type: OrderTypeEnum;
     priceInDollars: number;
 }
@@ -91,19 +85,19 @@ export interface NewBuyOrderInterface {
     configId: number;
     symbolId: number;
     alpacaOrderId: string;
-    side: SideEnum;
     type: OrderTypeEnum;
     priceInCents: number;
 }
 
 export interface BuyOrderInterface {
     id: number;
-    status: OrderStatusEnum;
     createdAt: string;
+    status: OrderStatusEnum;
+    configId: number;
     config: ConfigInterface;
+    symbolId: number;
     symbol: SymbolInterface;
     alpacaOrderId: string;
-    side: SideEnum;
     type: OrderTypeEnum;
     priceInCents: number;
     priceInDollars: number;
@@ -111,16 +105,56 @@ export interface BuyOrderInterface {
 
 export interface NewPositionRequestInterface {
     status: PositionStatusEnum;
+    buyOrderId: number;
     symbolId: number;
 }
 export interface NewPositionInterface {
     status: PositionStatusEnum;
+    buyOrderId: number;
     symbolId: number;
 }
 
 export interface PositionInterface {
     id: number;
-    status: PositionStatusEnum;
     createdAt: string;
+    status: PositionStatusEnum;
+    buyOrderId: number;
+    buyOrder: BuyOrderInterface;
+    symbolId: number;
     symbol: SymbolInterface;
+}
+
+export interface NewSellOrderRequestInterface {
+    status: OrderStatusEnum;
+    positionId: number;
+    configId: number;
+    symbolId: number;
+    alpacaOrderId: string;
+    type: OrderTypeEnum;
+    priceInDollars: number;
+}
+export interface NewSellOrderInterface {
+    status: OrderStatusEnum;
+    positionId: number;
+    configId: number;
+    symbolId: number;
+    alpacaOrderId: string;
+    type: OrderTypeEnum;
+    priceInCents: number;
+}
+
+export interface SellOrderInterface {
+    id: number;
+    createdAt: string;
+    status: OrderStatusEnum;
+    positionId: number;
+    position: PositionInterface;
+    configId: number;
+    config: ConfigInterface;
+    symbolId: number;
+    symbol: SymbolInterface;
+    alpacaOrderId: string;
+    type: OrderTypeEnum;
+    priceInCents: number;
+    priceInDollars: number;
 }

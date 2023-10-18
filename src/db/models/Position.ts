@@ -28,7 +28,7 @@ export class Position extends Model implements PositionInterface {
             properties: {
                 id: { type: 'number' },
                 status: {
-                    type: 'number',
+                    type: 'string',
                     enum: Object.values(PositionStatusEnum),
                 },
                 buyOrderId: { type: 'number' },

@@ -4,7 +4,6 @@ import {
     ConfigInterface,
     BuyOrderInterface,
     OrderTypeEnum,
-    SideEnum,
     OrderStatusEnum,
 } from '../../interfaces/db/models/index.js';
 import { Config } from './Config.js';
@@ -23,7 +22,6 @@ export class SellOrder extends Model implements BuyOrderInterface {
     config!: ConfigInterface;
     symbol!: Symbol;
     alpacaOrderId!: string;
-    side!: SideEnum;
     type!: OrderTypeEnum;
     priceInCents!: number;
     createdAt!: string;
@@ -50,10 +48,6 @@ export class SellOrder extends Model implements BuyOrderInterface {
                 configId: { type: 'number' },
                 symbolId: { type: 'number' },
                 createdAt: { type: 'string' },
-                side: {
-                    type: 'string',
-                    enum: Object.values(SideEnum),
-                },
                 type: {
                     type: 'string',
                     enum: Object.values(OrderTypeEnum),
