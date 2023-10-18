@@ -68,8 +68,9 @@ export async function up(knex: Knex): Promise<void> {
                 .defaultTo(0)
                 .index();
         })
-        .createTableIfNotExists('order', table => {
+        .createTableIfNotExists('buyOrder', table => {
             table.increments('id').primary();
+            table.enum('status', ['open', 'closed']).notNullable().index();
             table
                 .integer('configId')
                 .unsigned()
@@ -91,7 +92,6 @@ export async function up(knex: Knex): Promise<void> {
                 .dateTime('createdAt')
                 .notNullable()
                 .defaultTo(knex.raw('CURRENT_TIMESTAMP'));
-            table.enum('side', ['buy', 'sell']).notNullable().index();
             table
                 .enum('type', [
                     'market',
@@ -106,6 +106,14 @@ export async function up(knex: Knex): Promise<void> {
         })
         .createTableIfNotExists('position', table => {
             table.increments('id').primary();
+            table.enum('status', ['open', 'closed']).notNullable().index();
+            table
+                .integer('buyOrderId')
+                .unsigned()
+                .references('id')
+                .inTable('buyOrder')
+                .onDelete('CASCADE')
+                .index();
             table
                 .integer('symbolId')
                 .unsigned()
@@ -118,13 +126,57 @@ export async function up(knex: Knex): Promise<void> {
                 .dateTime('createdAt')
                 .notNullable()
                 .defaultTo(knex.raw('CURRENT_TIMESTAMP'));
+        })
+        .createTable('sellOrder', table => {
+            table.enum('status', ['open', 'closed']).notNullable().index();
+            table.increments('id').primary();
+            table
+                .integer('positionId')
+                .unsigned()
+                .references('id')
+                .inTable('position')
+                .onDelete('CASCADE')
+                .index();
+            table
+                .integer('configId')
+                .unsigned()
+                .references('id')
+                .inTable('config')
+                .notNullable()
+                .onDelete('CASCADE')
+                .index();
+            table
+                .integer('symbolId')
+                .unsigned()
+                .references('id')
+                .inTable('symbol')
+                .notNullable()
+                .onDelete('CASCADE')
+                .index();
+            table.string('alpacaOrderId').notNullable().index();
+            table
+                .dateTime('createdAt')
+                .notNullable()
+                .defaultTo(knex.raw('CURRENT_TIMESTAMP'));
+            table
+                .enum('type', [
+                    'market',
+                    'limit',
+                    'stop',
+                    'stop_limit',
+                    'trailing_stop',
+                ])
+                .notNullable()
+                .index();
+            table.bigInteger('priceInCents').notNullable();
         });
 }
 
 export async function down(knex: Knex): Promise<void> {
     await knex.schema
-        .dropTableIfExists('order')
+        .dropTableIfExists('sellOrder')
         .dropTableIfExists('position')
+        .dropTableIfExists('buyOrder')
         .dropTableIfExists('configSymbol')
         .dropTableIfExists('config')
         .dropTableIfExists('symbol');

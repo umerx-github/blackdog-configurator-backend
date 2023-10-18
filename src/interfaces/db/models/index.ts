@@ -54,19 +54,15 @@ export interface OrderedSymbolInterface extends SymbolInterface {
     order: number;
 }
 
-export type Side = 'buy' | 'sell';
 export enum SideEnum {
     buy = 'buy',
     sell = 'sell',
 }
 
-// market, limit, stop, stop_limit, or trailing_stop
-export type OrderType =
-    | 'market'
-    | 'limit'
-    | 'stop'
-    | 'stop_limit'
-    | 'trailing_stop';
+export enum StatusEnum {
+    open = 'open',
+    closed = 'closed',
+}
 
 export enum OrderTypeEnum {
     market = 'market',

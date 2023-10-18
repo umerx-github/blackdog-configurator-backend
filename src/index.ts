@@ -5,7 +5,7 @@ import knexConfig from './db/knexfile.js';
 import { Model } from 'objection';
 import configRouter from './routes/config.js';
 import symbolRouter from './routes/symbol.js';
-import orderRouter from './routes/order.js';
+import orderRouter from './routes/buyOrder.js';
 import positionRouter from './routes/position.js';
 
 const ENVIRONMENT = process.env.ENVIRONMENT || 'development';

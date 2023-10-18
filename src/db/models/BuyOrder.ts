@@ -4,17 +4,17 @@ import {
     ConfigInterface,
     OrderInterface,
     OrderTypeEnum,
-    OrderedSymbolInterface,
     SideEnum,
+    StatusEnum,
 } from '../../interfaces/db/models/index.js';
 import { Config } from './Config.js';
 
 // Person model.
-export class Order extends Model implements OrderInterface {
+export class BuyOrder extends Model implements OrderInterface {
     id!: number;
+    status!: StatusEnum;
     // https://www.reddit.com/r/node/comments/7hxie6/objectionjs_and_timestamps/
     // https://github.com/Vincit/objection.js/issues/647
-    createdAt!: string;
     configId!: number;
     symbolId!: number;
     config!: ConfigInterface;
@@ -23,8 +23,9 @@ export class Order extends Model implements OrderInterface {
     side!: SideEnum;
     type!: OrderTypeEnum;
     priceInCents!: number;
+    createdAt!: string;
     static get tableName() {
-        return 'order';
+        return 'buyOrder';
     }
     static get virtualAttributes() {
         return ['cashInDollars'];
@@ -38,6 +39,10 @@ export class Order extends Model implements OrderInterface {
             // required: ['createdAt'],
             properties: {
                 id: { type: 'number' },
+                status: {
+                    type: 'string',
+                    enum: Object.values(StatusEnum),
+                },
                 configId: { type: 'number' },
                 symbolId: { type: 'number' },
                 createdAt: { type: 'string' },

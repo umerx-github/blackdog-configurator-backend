@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { Order } from '../db/models/Order.js';
+import { BuyOrder } from '../db/models/BuyOrder.js';
 import { ResponseBase } from '../interfaces/response.js';
 import {
     NewOrderRequestInterface,
@@ -12,8 +12,8 @@ const router = Router();
 
 // Typing Express Request: https://stackoverflow.com/questions/48027563/typescript-type-annotation-for-res-body
 
-router.get('/', async (req, res: Response<ResponseBase<Order[]>>) => {
-    const data = await Order.query()
+router.get('/', async (req, res: Response<ResponseBase<BuyOrder[]>>) => {
+    const data = await BuyOrder.query()
         .orderBy('id', 'desc')
         .withGraphFetched('config')
         .withGraphFetched('symbol');
@@ -28,7 +28,7 @@ router.post(
     '/',
     async (
         req: Request<{}, {}, NewOrderRequestInterface>,
-        res: Response<ResponseBase<Order>>
+        res: Response<ResponseBase<BuyOrder>>
     ) => {
         // https://vincit.github.io/objection.js/guide/query-examples.html#relation-relate-queries);
 
@@ -90,7 +90,7 @@ router.post(
             priceInCents: req.body.priceInDollars * 100,
         };
 
-        let responseObj = await Order.query()
+        let responseObj = await BuyOrder.query()
             .insertAndFetch(newOrder)
             .withGraphFetched('config')
             .withGraphFetched('symbol');
