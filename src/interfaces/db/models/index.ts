@@ -59,9 +59,15 @@ export enum SideEnum {
     sell = 'sell',
 }
 
-export enum StatusEnum {
+export enum PositionStatusEnum {
     open = 'open',
     closed = 'closed',
+}
+
+export enum OrderStatusEnum {
+    open = 'open',
+    closed = 'closed',
+    cancelled = 'cancelled',
 }
 
 export enum OrderTypeEnum {
@@ -71,7 +77,8 @@ export enum OrderTypeEnum {
     stop_limit = 'stop_limit',
     trailing_stop = 'trailing_stop',
 }
-export interface NewOrderRequestInterface {
+export interface NewBuyOrderRequestInterface {
+    status: OrderStatusEnum;
     configId: number;
     symbolId: number;
     alpacaOrderId: string;
@@ -79,7 +86,8 @@ export interface NewOrderRequestInterface {
     type: OrderTypeEnum;
     priceInDollars: number;
 }
-export interface NewOrderInterface {
+export interface NewBuyOrderInterface {
+    status: OrderStatusEnum;
     configId: number;
     symbolId: number;
     alpacaOrderId: string;
@@ -88,8 +96,9 @@ export interface NewOrderInterface {
     priceInCents: number;
 }
 
-export interface OrderInterface {
+export interface BuyOrderInterface {
     id: number;
+    status: OrderStatusEnum;
     createdAt: string;
     config: ConfigInterface;
     symbol: SymbolInterface;
@@ -101,14 +110,17 @@ export interface OrderInterface {
 }
 
 export interface NewPositionRequestInterface {
+    status: PositionStatusEnum;
     symbolId: number;
 }
 export interface NewPositionInterface {
+    status: PositionStatusEnum;
     symbolId: number;
 }
 
 export interface PositionInterface {
     id: number;
+    status: PositionStatusEnum;
     createdAt: string;
     symbol: SymbolInterface;
 }

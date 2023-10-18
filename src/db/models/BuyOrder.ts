@@ -2,17 +2,17 @@ import { Model } from 'objection';
 import { Symbol } from './Symbol.js';
 import {
     ConfigInterface,
-    OrderInterface,
+    BuyOrderInterface,
     OrderTypeEnum,
     SideEnum,
-    StatusEnum,
+    OrderStatusEnum,
 } from '../../interfaces/db/models/index.js';
 import { Config } from './Config.js';
 
 // Person model.
-export class BuyOrder extends Model implements OrderInterface {
+export class BuyOrder extends Model implements BuyOrderInterface {
     id!: number;
-    status!: StatusEnum;
+    status!: OrderStatusEnum;
     // https://www.reddit.com/r/node/comments/7hxie6/objectionjs_and_timestamps/
     // https://github.com/Vincit/objection.js/issues/647
     configId!: number;
@@ -41,7 +41,7 @@ export class BuyOrder extends Model implements OrderInterface {
                 id: { type: 'number' },
                 status: {
                     type: 'string',
-                    enum: Object.values(StatusEnum),
+                    enum: Object.values(OrderStatusEnum),
                 },
                 configId: { type: 'number' },
                 symbolId: { type: 'number' },

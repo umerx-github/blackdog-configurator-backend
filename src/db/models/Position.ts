@@ -2,14 +2,14 @@ import { Model } from 'objection';
 import { Symbol } from './Symbol.js';
 import {
     PositionInterface,
-    StatusEnum,
+    PositionStatusEnum,
 } from '../../interfaces/db/models/index.js';
 import { BuyOrder } from './BuyOrder.js';
 
 // Person model.
 export class Position extends Model implements PositionInterface {
     id!: number;
-    status!: StatusEnum;
+    status!: PositionStatusEnum;
     // https://www.reddit.com/r/node/comments/7hxie6/objectionjs_and_timestamps/
     // https://github.com/Vincit/objection.js/issues/647
     // configId!: number;
@@ -27,7 +27,10 @@ export class Position extends Model implements PositionInterface {
             // required: ['createdAt'],
             properties: {
                 id: { type: 'number' },
-                status: { type: 'number', enum: Object.values(StatusEnum) },
+                status: {
+                    type: 'number',
+                    enum: Object.values(PositionStatusEnum),
+                },
                 buyOrderId: { type: 'number' },
                 symbolId: { type: 'number' },
                 createdAt: { type: 'string' },

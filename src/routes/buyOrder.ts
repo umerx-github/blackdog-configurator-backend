@@ -2,10 +2,11 @@ import { Router, Request, Response } from 'express';
 import { BuyOrder } from '../db/models/BuyOrder.js';
 import { ResponseBase } from '../interfaces/response.js';
 import {
-    NewOrderRequestInterface,
-    NewOrderInterface,
+    NewBuyOrderRequestInterface,
+    NewBuyOrderInterface,
     OrderTypeEnum,
     SideEnum,
+    OrderStatusEnum,
 } from '../interfaces/db/models/index.js';
 
 const router = Router();
@@ -27,11 +28,22 @@ router.get('/', async (req, res: Response<ResponseBase<BuyOrder[]>>) => {
 router.post(
     '/',
     async (
-        req: Request<{}, {}, NewOrderRequestInterface>,
+        req: Request<{}, {}, NewBuyOrderRequestInterface>,
         res: Response<ResponseBase<BuyOrder>>
     ) => {
         // https://vincit.github.io/objection.js/guide/query-examples.html#relation-relate-queries);
 
+        if (
+            typeof req?.body?.status !== 'string' ||
+            !Object.values(OrderStatusEnum).includes(req?.body?.status)
+        ) {
+            return res.status(400).json({
+                status: 'error',
+                message: `Invalid request body: "status" is required string and must be one of ${Object.values(
+                    OrderStatusEnum
+                ).join(',')}`,
+            });
+        }
         if (typeof req?.body?.configId !== 'number') {
             return res.status(400).json({
                 status: 'error',
@@ -81,7 +93,8 @@ router.post(
             });
         }
 
-        const newOrder: NewOrderInterface = {
+        const newOrder: NewBuyOrderInterface = {
+            status: req.body.status,
             configId: req.body.configId,
             symbolId: req.body.symbolId,
             alpacaOrderId: req.body.alpacaOrderId,

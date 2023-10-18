@@ -70,7 +70,10 @@ export async function up(knex: Knex): Promise<void> {
         })
         .createTableIfNotExists('buyOrder', table => {
             table.increments('id').primary();
-            table.enum('status', ['open', 'closed']).notNullable().index();
+            table
+                .enum('status', ['open', 'closed', 'cancelled'])
+                .notNullable()
+                .index();
             table
                 .integer('configId')
                 .unsigned()
@@ -128,7 +131,10 @@ export async function up(knex: Knex): Promise<void> {
                 .defaultTo(knex.raw('CURRENT_TIMESTAMP'));
         })
         .createTable('sellOrder', table => {
-            table.enum('status', ['open', 'closed']).notNullable().index();
+            table
+                .enum('status', ['open', 'closed', 'cancelled'])
+                .notNullable()
+                .index();
             table.increments('id').primary();
             table
                 .integer('positionId')

@@ -4,10 +4,8 @@ import { ResponseBase } from '../interfaces/response.js';
 import {
     NewPositionRequestInterface,
     NewPositionInterface,
-    SideEnum,
+    PositionStatusEnum,
 } from '../interfaces/db/models/index.js';
-import { Config } from '../db/models/Config.js';
-import { PartialModelObject } from 'objection';
 
 const router = Router();
 
@@ -31,6 +29,17 @@ router.post(
         res: Response<ResponseBase<Position>>
     ) => {
         // https://vincit.github.io/objection.js/guide/query-examples.html#relation-relate-queries);
+        if (
+            typeof req?.body?.status !== 'string' ||
+            !Object.values(PositionStatusEnum).includes(req?.body?.status)
+        ) {
+            return res.status(400).json({
+                status: 'error',
+                message: `Invalid request body: "status" is required string and must be one of ${Object.values(
+                    PositionStatusEnum
+                ).join(',')}`,
+            });
+        }
         if (typeof req?.body?.symbolId !== 'number') {
             return res.status(400).json({
                 status: 'error',
@@ -38,6 +47,7 @@ router.post(
             });
         }
         const newPosition: NewPositionInterface = {
+            status: req.body.status,
             symbolId: req.body.symbolId,
         };
         let responseObj = await Position.query()
