@@ -95,6 +95,13 @@ router.post(
                     'Invalid request body: "buyTrailingPercent" is required number',
             });
         }
+        if (typeof req?.body?.minimumGainPercent !== 'number') {
+            return res.status(400).json({
+                status: 'error',
+                message:
+                    'Invalid request body: "minimumGainPercent" is required number',
+            });
+        }
         if (typeof req?.body?.timeframeInDays !== 'number') {
             return res.status(400).json({
                 status: 'error',
@@ -130,6 +137,7 @@ router.post(
             buyAtPercentile: req?.body?.buyAtPercentile,
             sellTrailingPercent: req?.body?.sellTrailingPercent,
             buyTrailingPercent: req?.body?.buyTrailingPercent,
+            minimumGainPercent: req?.body?.minimumGainPercent,
             timeframeInDays: req?.body?.timeframeInDays,
             alpacaApiKey: req?.body?.alpacaApiKey,
             alpacaApiSecret: req?.body?.alpacaApiSecret,

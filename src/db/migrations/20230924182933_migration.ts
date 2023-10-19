@@ -24,6 +24,11 @@ export async function up(knex: Knex): Promise<void> {
                 .double('buyTrailingPercent', 8, 2)
                 .notNullable()
                 .defaultTo(0.0);
+            // Current price must be a gain of at least this percent over purchase price before selling
+            table
+                .double('minimumGainPercent', 8, 2)
+                .notNullable()
+                .defaultTo(0.0);
             // - Timeframe (days) to evaluate
             table.integer('timeframeInDays').notNullable().defaultTo(1);
             // alpaca api key

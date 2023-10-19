@@ -18,6 +18,7 @@ export class Config extends Model implements ConfigInterface {
     buyAtPercentile!: number;
     sellTrailingPercent!: number;
     buyTrailingPercent!: number;
+    minimumGainPercent!: number;
     timeframeInDays!: number;
     symbols!: OrderedSymbolInterface[];
     alpacaApiKey!: string;
@@ -44,6 +45,7 @@ export class Config extends Model implements ConfigInterface {
                 buyAtPercentile: { type: 'number' },
                 sellTrailingPercent: { type: 'number' },
                 buyTrailingPercent: { type: 'number' },
+                minimumGainPercent: { type: 'number' },
                 timeframeInDays: { type: 'number' },
                 alpacaApiKey: { type: 'string' },
                 alpacaApiSecret: { type: 'string' },
