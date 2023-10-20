@@ -1,3 +1,4 @@
+import { ZodError, z } from 'zod';
 import { Router, Request, Response } from 'express';
 import { BuyOrder } from '../db/models/BuyOrder.js';
 import { ResponseBase } from '../interfaces/response.js';
@@ -6,23 +7,46 @@ import {
     NewBuyOrderInterface,
     OrderTypeEnum,
     OrderStatusEnum,
+    GetBuyOrderManyRequestInterface,
 } from '../interfaces/db/models/index.js';
 
 const router = Router();
 
 // Typing Express Request: https://stackoverflow.com/questions/48027563/typescript-type-annotation-for-res-body
 
-router.get('/', async (req, res: Response<ResponseBase<BuyOrder[]>>) => {
-    const data = await BuyOrder.query()
-        .orderBy('id', 'desc')
-        .withGraphFetched('config')
-        .withGraphFetched('symbol');
-    return res.json({
-        status: 'success',
-        message: 'Order retrieved successfully',
-        data,
-    });
+const ExpectedGetBuyOrderManyRequest = z.object({
+    status: z.nativeEnum(OrderStatusEnum).optional(),
 });
+
+router.get(
+    '/',
+    async (req: Request, res: Response<ResponseBase<BuyOrder[]>>) => {
+        const query = BuyOrder.query()
+            .orderBy('id', 'desc')
+            .withGraphFetched('config')
+            .withGraphFetched('symbol');
+        try {
+            const getBuyOrderManyRequestParsed: GetBuyOrderManyRequestInterface =
+                ExpectedGetBuyOrderManyRequest.parse(req.query);
+            if (getBuyOrderManyRequestParsed.status) {
+                query.where('status', getBuyOrderManyRequestParsed.status);
+            }
+            const data = await query;
+            return res.json({
+                status: 'success',
+                message: 'Order retrieved successfully',
+                data,
+            });
+        } catch (err) {
+            if (err instanceof ZodError) {
+                return res.status(400).json({
+                    status: 'error',
+                    message: `Invalid request query: ${err.message}`,
+                });
+            }
+        }
+    }
+);
 
 router.post(
     '/',

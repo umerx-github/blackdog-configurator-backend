@@ -75,6 +75,10 @@ export enum OrderTypeEnum {
     stop_limit = 'stop_limit',
     trailing_stop = 'trailing_stop',
 }
+
+export interface GetBuyOrderManyRequestInterface {
+    status?: OrderStatusEnum;
+}
 export interface NewBuyOrderRequestInterface {
     status: OrderStatusEnum;
     configId: number;
