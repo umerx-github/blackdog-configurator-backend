@@ -26,7 +26,7 @@ export class BuyOrder extends Model implements BuyOrderInterface {
         return 'buyOrder';
     }
     static get virtualAttributes() {
-        return ['cashInDollars'];
+        return ['priceInDollars'];
     }
     get priceInDollars() {
         return this.priceInCents / 100;

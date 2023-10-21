@@ -29,7 +29,7 @@ export class SellOrder extends Model implements BuyOrderInterface {
         return 'sellOrder';
     }
     static get virtualAttributes() {
-        return ['cashInDollars'];
+        return ['priceInDollars'];
     }
     get priceInDollars() {
         return this.priceInCents / 100;
