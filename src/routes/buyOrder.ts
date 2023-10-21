@@ -21,10 +21,9 @@ const ExpectedGetBuyOrderManyRequest = z.object({
 router.get(
     '/',
     async (req: Request, res: Response<ResponseBase<BuyOrder[]>>) => {
-        const query = BuyOrder.query()
-            .orderBy('id', 'desc')
-            .withGraphFetched('config')
-            .withGraphFetched('symbol');
+        const query = BuyOrder.query().orderBy('id', 'desc');
+        // .withGraphFetched('config')
+        // .withGraphFetched('symbol');
         try {
             const getBuyOrderManyRequestParsed: GetBuyOrderManyRequestInterface =
                 ExpectedGetBuyOrderManyRequest.parse(req.query);
@@ -114,10 +113,9 @@ router.post(
             priceInCents: req.body.priceInDollars * 100,
         };
 
-        let responseObj = await BuyOrder.query()
-            .insertAndFetch(newOrder)
-            .withGraphFetched('config')
-            .withGraphFetched('symbol');
+        let responseObj = await BuyOrder.query().insertAndFetch(newOrder);
+        // .withGraphFetched('config')
+        // .withGraphFetched('symbol');
         if (!responseObj) {
             return res.status(404).json({
                 status: 'error',
@@ -131,5 +129,30 @@ router.post(
         });
     }
 );
+
+router.delete('/:id', async (req, res: Response<ResponseBase<BuyOrder>>) => {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+        return res.status(400).json({
+            status: 'error',
+            message: 'Invalid request params: "id" is required number',
+        });
+    }
+    const buyOrder = await BuyOrder.query().findById(id);
+    // .withGraphFetched('config')
+    // .withGraphFetched('symbol');
+    if (!buyOrder) {
+        return res.status(404).json({
+            status: 'error',
+            message: 'Order not found',
+        });
+    }
+    const responseObj = await buyOrder.$query().delete();
+    return res.json({
+        status: 'success',
+        message: 'Order deleted successfully',
+        data: buyOrder,
+    });
+});
 
 export default router;
