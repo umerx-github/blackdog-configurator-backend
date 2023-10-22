@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { Symbol } from '../db/models/Symbol.js';
-import { ResponseBase } from '../interfaces/response.js';
+import { ResponseBase } from '../interfaces/db/models/index.js';
 import { NewSymbolRequestInterface } from '../interfaces/db/models/index.js';
 
 const router = Router();

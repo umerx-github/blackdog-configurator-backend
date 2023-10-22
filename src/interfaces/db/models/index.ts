@@ -1,3 +1,6 @@
+export type ResponseBase<T> =
+    | { status: 'success'; message: string; data: T }
+    | { status: 'error'; message: string };
 export interface NewConfigRequestInterface {
     isActive: boolean;
     sellAtPercentile: number;
@@ -80,7 +83,6 @@ export interface SymbolInterface {
     createdAt: string;
     name: string;
 }
-
 export interface NewConfigSymbolRequestInterface {
     configId: number;
     symbolId: number;
@@ -112,6 +114,7 @@ export interface UpdateConfigSymbolInterface {
 
 export interface ConfigSymbolInterface {
     id: number;
+    createdAt: string;
     configId: number;
     symbolId: number;
     order: number;

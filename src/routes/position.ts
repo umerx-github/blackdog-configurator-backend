@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { Position } from '../db/models/Position.js';
-import { ResponseBase } from '../interfaces/response.js';
+import { ResponseBase } from '../interfaces/db/models/index.js';
 import {
     NewPositionRequestInterface,
     NewPositionInterface,

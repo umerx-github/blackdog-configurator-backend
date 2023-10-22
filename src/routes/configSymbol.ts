@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { z, ZodError } from 'zod';
 import { ConfigSymbol } from '../db/models/ConfigSymbol.js';
-import { ResponseBase } from '../interfaces/response.js';
+import { ResponseBase } from '../interfaces/db/models/index.js';
 import {
     NewConfigSymbolRequestInterface,
     NewConfigSymbolInterface,

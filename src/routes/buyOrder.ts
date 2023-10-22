@@ -1,7 +1,7 @@
 import { ZodError, z } from 'zod';
 import { Router, Request, Response } from 'express';
 import { BuyOrder } from '../db/models/BuyOrder.js';
-import { ResponseBase } from '../interfaces/response.js';
+import { ResponseBase } from '../interfaces/db/models/index.js';
 import {
     NewBuyOrderRequestInterface,
     NewBuyOrderInterface,

@@ -7,6 +7,7 @@ import { symbol } from 'zod';
 // Person model.
 export class ConfigSymbol extends Model implements ConfigSymbolInterface {
     id!: number;
+    createdAt!: string;
     configId!: number;
     config!: Config;
     symbolId!: number;

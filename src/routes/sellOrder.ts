@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { SellOrder } from '../db/models/SellOrder.js';
-import { ResponseBase } from '../interfaces/response.js';
+import { ResponseBase } from '../interfaces/db/models/index.js';
 import {
     NewSellOrderRequestInterface,
     NewSellOrderInterface,
