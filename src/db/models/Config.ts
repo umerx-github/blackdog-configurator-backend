@@ -1,12 +1,10 @@
 import { Model } from 'objection';
-import { Symbol } from './Symbol.js';
 import {
     ConfigInterface,
-    OrderedSymbolInterface,
+    ConfigSymbolInterface,
 } from '../../interfaces/db/models/index.js';
+import { ConfigSymbol } from './ConfigSymbol.js';
 
-export type OrderedSymbolModel = Symbol & OrderedSymbolInterface;
-// Person model.
 export class Config extends Model implements ConfigInterface {
     id!: number;
     // https://www.reddit.com/r/node/comments/7hxie6/objectionjs_and_timestamps/
@@ -20,9 +18,9 @@ export class Config extends Model implements ConfigInterface {
     buyTrailingPercent!: number;
     minimumGainPercent!: number;
     timeframeInDays!: number;
-    symbols!: OrderedSymbolInterface[];
     alpacaApiKey!: string;
     alpacaApiSecret!: string;
+    configSymbols!: ConfigSymbolInterface[];
     static get tableName() {
         return 'config';
     }
@@ -54,18 +52,12 @@ export class Config extends Model implements ConfigInterface {
     }
     static relationMappings = () => {
         return {
-            symbols: {
-                relation: Model.ManyToManyRelation,
-                modelClass: Symbol,
+            configSymbols: {
+                relation: Model.HasManyRelation,
+                modelClass: ConfigSymbol,
                 join: {
                     from: 'config.id',
-                    through: {
-                        // configSymbol is the join table
-                        from: 'configSymbol.configId',
-                        to: 'configSymbol.symbolId',
-                        extra: ['order'],
-                    },
-                    to: 'symbol.id',
+                    to: 'configSymbol.configId',
                 },
             },
         };

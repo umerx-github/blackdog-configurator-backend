@@ -1,14 +1,16 @@
 import { Model } from 'objection';
 import { Config } from './Config.js';
-import { SymbolInterface } from '../../interfaces/db/models/index.js';
+import {
+    ConfigSymbolInterface,
+    SymbolInterface,
+} from '../../interfaces/db/models/index.js';
 
 // Person model.
 export class Symbol extends Model implements SymbolInterface {
     id!: number;
     name!: string;
-    // https://www.reddit.com/r/node/comments/7hxie6/objectionjs_and_timestamps/
-    // https://github.com/Vincit/objection.js/issues/647
     createdAt!: string;
+    configSymbols!: ConfigSymbolInterface[];
     static get tableName() {
         return 'symbol';
     }
@@ -25,17 +27,12 @@ export class Symbol extends Model implements SymbolInterface {
     }
     static relationMappings = () => {
         return {
-            configs: {
-                relation: Model.ManyToManyRelation,
+            configSymbols: {
+                relation: Model.HasManyRelation,
                 modelClass: Config,
                 join: {
                     from: 'symbol.id',
-                    through: {
-                        // persons_movies is the join table.
-                        from: 'configSymbol.symbolId',
-                        to: 'configSymbol.configId',
-                    },
-                    to: 'config.id',
+                    to: 'configSymbol.symbolId',
                 },
             },
         };

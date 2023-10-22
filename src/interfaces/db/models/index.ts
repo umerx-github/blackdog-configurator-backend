@@ -1,6 +1,5 @@
 export interface NewConfigRequestInterface {
-    isActive?: boolean;
-    symbols?: OrderedSymbolInterface[];
+    isActive: boolean;
     sellAtPercentile: number;
     buyAtPercentile: number;
     buyTrailingPercent: number;
@@ -10,10 +9,38 @@ export interface NewConfigRequestInterface {
     alpacaApiKey: string;
     alpacaApiSecret: string;
     cashInDollars: number;
+    configSymbols: NewConfigSymbolForConfigRequestInterface[];
 }
+
 export interface NewConfigInterface {
+    isActive: boolean;
+    sellAtPercentile: number;
+    buyAtPercentile: number;
+    sellTrailingPercent: number;
+    buyTrailingPercent: number;
+    minimumGainPercent: number;
+    timeframeInDays: number;
+    alpacaApiKey: string;
+    alpacaApiSecret: string;
+    cashInCents: number;
+    // configSymbols: NewConfigSymbolForConfigRequestInterface[];
+}
+
+export interface UpdateConfigRequestInterface {
     isActive?: boolean;
-    symbols?: OrderedSymbolInterface[];
+    sellAtPercentile?: number;
+    buyAtPercentile?: number;
+    buyTrailingPercent?: number;
+    sellTrailingPercent?: number;
+    minimumGainPercent?: number;
+    timeframeInDays?: number;
+    alpacaApiKey?: string;
+    alpacaApiSecret?: string;
+    cashInDollars?: number;
+    configSymbols?: NewConfigSymbolForConfigRequestInterface[];
+}
+export interface UpdateConfigInterface {
+    isActive?: boolean;
     sellAtPercentile?: number;
     buyAtPercentile?: number;
     sellTrailingPercent?: number;
@@ -23,12 +50,12 @@ export interface NewConfigInterface {
     alpacaApiKey?: string;
     alpacaApiSecret?: string;
     cashInCents?: number;
+    // configSymbols?: NewConfigSymbolRequestInterface[];
 }
 export interface ConfigInterface {
     id: number;
     createdAt: string;
     isActive: boolean;
-    symbols: OrderedSymbolInterface[];
     sellAtPercentile: number;
     buyAtPercentile: number;
     buyTrailingPercent: number;
@@ -39,6 +66,7 @@ export interface ConfigInterface {
     alpacaApiSecret: string;
     cashInCents: number;
     cashInDollars: number;
+    configSymbols: ConfigSymbolInterface[];
 }
 export interface NewSymbolRequestInterface {
     name: string;
@@ -53,7 +81,39 @@ export interface SymbolInterface {
     name: string;
 }
 
-export interface OrderedSymbolInterface extends SymbolInterface {
+export interface NewConfigSymbolRequestInterface {
+    configId: number;
+    symbolId: number;
+    order: number;
+}
+
+export interface NewConfigSymbolForConfigRequestInterface {
+    symbolId: number;
+    order: number;
+}
+
+export interface NewConfigSymbolInterface {
+    configId: number;
+    symbolId: number;
+    order: number;
+}
+
+export interface UpdateConfigSymbolRequestInterface {
+    configId?: number;
+    symbolId?: number;
+    order?: number;
+}
+
+export interface UpdateConfigSymbolInterface {
+    configId?: number;
+    symbolId?: number;
+    order?: number;
+}
+
+export interface ConfigSymbolInterface {
+    id: number;
+    configId: number;
+    symbolId: number;
     order: number;
 }
 

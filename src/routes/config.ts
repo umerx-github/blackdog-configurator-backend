@@ -1,45 +1,98 @@
 import { Router, Request, Response } from 'express';
-import { Config, OrderedSymbolModel } from '../db/models/Config.js';
+import { z, ZodError } from 'zod';
+import { Config } from '../db/models/Config.js';
 import { ResponseBase } from '../interfaces/response.js';
 import {
     NewConfigRequestInterface,
     NewConfigInterface,
+    UpdateConfigRequestInterface,
+    UpdateConfigInterface,
 } from '../interfaces/db/models/index.js';
-import { KNEXION } from '../index.js';
+import { parse } from 'path';
+import { ConfigSymbol } from '..//db/models/ConfigSymbol.js';
 
 const router = Router();
+const modelName = 'Config';
+
+const ExpectedRequestConfigPost = z.object({
+    isActive: z.boolean(),
+    sellAtPercentile: z.number(),
+    buyAtPercentile: z.number(),
+    sellTrailingPercent: z.number(),
+    buyTrailingPercent: z.number(),
+    minimumGainPercent: z.number(),
+    timeframeInDays: z.number(),
+    alpacaApiKey: z.string(),
+    alpacaApiSecret: z.string(),
+    cashInDollars: z.number(),
+    configSymbols: z.array(
+        z.object({
+            symbolId: z.number(),
+            order: z.number(),
+        })
+    ),
+});
+
+const ExpectedRequestConfigPatch = z.object({
+    isActive: z.boolean().optional(),
+    sellAtPercentile: z.number().optional(),
+    buyAtPercentile: z.number().optional(),
+    sellTrailingPercent: z.number().optional(),
+    buyTrailingPercent: z.number().optional(),
+    minimumGainPercent: z.number().optional(),
+    timeframeInDays: z.number().optional(),
+    alpacaApiKey: z.string().optional(),
+    alpacaApiSecret: z.string().optional(),
+    cashInDollars: z.number().optional(),
+    configSymbols: z
+        .array(
+            z.object({
+                symbolId: z.number(),
+                order: z.number(),
+            })
+        )
+        .optional(),
+});
 
 // Typing Express Request: https://stackoverflow.com/questions/48027563/typescript-type-annotation-for-res-body
 
 router.get('/', async (req, res: Response<ResponseBase<Config[]>>) => {
-    const configs = await Config.query()
+    const modelInstances = await Config.query()
         .orderBy('id', 'desc')
-        .withGraphFetched('symbols');
+        .withGraphFetched('configSymbols');
     return res.json({
         status: 'success',
-        message: 'Configurations retrieved successfully',
-        data: configs,
+        message: `${modelName} instances retrieved successfully`,
+        data: modelInstances,
     });
 });
 
-router.get('/active', async (req, res: Response<ResponseBase<Config>>) => {
-    const configs = await Config.query()
-        .where('isActive', true)
-        .orderBy('id', 'desc')
-        .first()
-        .withGraphFetched('symbols');
-    if (!configs) {
-        return res.status(404).json({
-            status: 'error',
-            message: 'No active configuration found',
+router.get(
+    '/:id',
+    async (req: Request, res: Response<ResponseBase<Config>>) => {
+        const id = parseInt(req.params.id);
+        if (isNaN(id)) {
+            return res.status(400).json({
+                status: 'error',
+                message: 'Invalid request params: "id" is required number',
+            });
+        }
+        const modelInstance = await Config.query()
+            .findById(id)
+            .withGraphFetched('configSymbols');
+        if (!modelInstance) {
+            return res.status(404).json({
+                status: 'error',
+                message: `${modelName} not found`,
+            });
+        }
+        return res.json({
+            status: 'success',
+            message: `${modelName} retrieved successfully`,
+            data: modelInstance,
         });
     }
-    return res.json({
-        status: 'success',
-        message: 'Active configuration retrieved successfully',
-        data: configs,
-    });
-});
+);
 
 router.post(
     '/',
@@ -48,142 +101,106 @@ router.post(
         res: Response<ResponseBase<Config>>
     ) => {
         // https://vincit.github.io/objection.js/guide/query-examples.html#relation-relate-queries);
-        if (
-            undefined !== req?.body?.isActive &&
-            typeof req?.body?.isActive !== 'boolean'
-        ) {
-            return res.status(400).json({
-                status: 'error',
-                message: 'Invalid request body: "isActive" should be boolean',
+        try {
+            const parsedRequest: NewConfigRequestInterface =
+                ExpectedRequestConfigPost.parse(req.body);
+            const modelData: NewConfigInterface = {
+                ...parsedRequest,
+                cashInCents: parsedRequest.cashInDollars * 100,
+            };
+            const initialModelInstance = await Config.query().insert({
+                ...modelData,
             });
-        }
-        if (
-            undefined !== req?.body?.symbols &&
-            !Array.isArray(req?.body?.symbols)
-        ) {
-            return res.status(400).json({
-                status: 'error',
-                message:
-                    'Invalid request body: "symbols" should be array of OrderedSymbolInterface',
+            parsedRequest.configSymbols.forEach(async configSymbol => {
+                await initialModelInstance
+                    .$relatedQuery<ConfigSymbol>('configSymbols')
+                    .insert(configSymbol);
             });
-        }
-        if (typeof req?.body?.sellAtPercentile !== 'number') {
-            return res.status(400).json({
-                status: 'error',
-                message:
-                    'Invalid request body: "sellAtPercentile" is required number',
+            const modelInstance = await Config.query()
+                .findById(initialModelInstance.id)
+                .withGraphFetched('configSymbols');
+            if (!modelInstance) {
+                throw new Error(`Failed to create ${modelName}`);
+            }
+            return res.json({
+                status: 'success',
+                message: `${modelName} created successfully`,
+                data: modelInstance,
             });
+        } catch (e) {
+            if (e instanceof ZodError) {
+                return res.status(400).json({
+                    status: 'error',
+                    message: `Invalid request body: ${e.message}`,
+                });
+            }
+            throw e;
         }
-        if (typeof req?.body?.buyAtPercentile !== 'number') {
-            return res.status(400).json({
-                status: 'error',
-                message:
-                    'Invalid request body: "buyAtPercentile" is required number',
-            });
-        }
-        if (typeof req?.body?.sellTrailingPercent !== 'number') {
-            return res.status(400).json({
-                status: 'error',
-                message:
-                    'Invalid request body: "sellTrailingPercent" is required number',
-            });
-        }
-        if (typeof req?.body?.buyTrailingPercent !== 'number') {
-            return res.status(400).json({
-                status: 'error',
-                message:
-                    'Invalid request body: "buyTrailingPercent" is required number',
-            });
-        }
-        if (typeof req?.body?.minimumGainPercent !== 'number') {
-            return res.status(400).json({
-                status: 'error',
-                message:
-                    'Invalid request body: "minimumGainPercent" is required number',
-            });
-        }
-        if (typeof req?.body?.timeframeInDays !== 'number') {
-            return res.status(400).json({
-                status: 'error',
-                message:
-                    'Invalid request body: "timeframeInDays" is required number',
-            });
-        }
-        if (typeof req?.body?.alpacaApiKey !== 'string') {
-            return res.status(400).json({
-                status: 'error',
-                message:
-                    'Invalid request body: "alpacaApiKey" is required string',
-            });
-        }
-        if (typeof req?.body?.alpacaApiSecret !== 'string') {
-            return res.status(400).json({
-                status: 'error',
-                message:
-                    'Invalid request body: "alpacaApiSecret" is required string',
-            });
-        }
-        if (typeof req?.body?.cashInDollars !== 'number') {
-            return res.status(400).json({
-                status: 'error',
-                message:
-                    'Invalid request body: "cashInDollars" is required number',
-            });
-        }
+    }
+);
 
-        const newConfig: NewConfigInterface = {
-            isActive: req.body.isActive ?? false,
-            sellAtPercentile: req?.body?.sellAtPercentile,
-            buyAtPercentile: req?.body?.buyAtPercentile,
-            sellTrailingPercent: req?.body?.sellTrailingPercent,
-            buyTrailingPercent: req?.body?.buyTrailingPercent,
-            minimumGainPercent: req?.body?.minimumGainPercent,
-            timeframeInDays: req?.body?.timeframeInDays,
-            alpacaApiKey: req?.body?.alpacaApiKey,
-            alpacaApiSecret: req?.body?.alpacaApiSecret,
-            cashInCents: req?.body?.cashInDollars
-                ? req.body.cashInDollars * 100
-                : 0,
-        };
-        //
-        let responseObj: Config | undefined;
-        await KNEXION.transaction(
-            async trx => {
-                if (newConfig.isActive === true) {
-                    await Config.query(trx).patch({ isActive: false });
-                }
-
-                const config = await Config.query(trx).insertAndFetch(
-                    newConfig
-                );
-
-                if (config && Array.isArray(req.body.symbols)) {
-                    // Can't do batch on MySQL - only Postgres and SQL Server
-                    req.body.symbols.forEach(async symbol => {
-                        await config
-                            .$relatedQuery<OrderedSymbolModel>('symbols', trx)
-                            .relate({ id: symbol.id, order: symbol.order });
-                    });
-                    // await config.$relatedQuery('symbols').relate([1, 2, 3]);
-                }
-
-                responseObj = await Config.query(trx)
-                    .findById(config.id)
-                    .withGraphFetched('symbols');
-            },
-            { isolationLevel: 'serializable' }
-        );
-        if (!responseObj) {
-            return res.status(404).json({
+router.patch(
+    '/:id',
+    async (
+        req: Request<{ id: string }, {}, UpdateConfigRequestInterface>,
+        res: Response<ResponseBase<Config>>
+    ) => {
+        const id = parseInt(req.params.id);
+        if (isNaN(id)) {
+            return res.status(400).json({
                 status: 'error',
-                message: 'Configuration not found',
+                message: 'Invalid request params: "id" is required number',
             });
         }
-        return res.json({
-            status: 'success',
-            message: 'Configuration created successfully',
-            data: responseObj,
-        });
+        // https://vincit.github.io/objection.js/guide/query-examples.html#relation-relate-queries);
+        try {
+            const parsedRequest: UpdateConfigRequestInterface =
+                ExpectedRequestConfigPatch.parse(req.body);
+            const modelData: UpdateConfigInterface = {
+                ...parsedRequest,
+            };
+            if (parsedRequest.cashInDollars) {
+                modelData.cashInCents = parsedRequest.cashInDollars * 100;
+            }
+            const initialModelInstance = await Config.query().patchAndFetchById(
+                id,
+                modelData
+            );
+            if (!initialModelInstance) {
+                throw new Error(`Failed to update ${modelName}`);
+            }
+            if (parsedRequest.configSymbols) {
+                // Delete existing
+                await initialModelInstance
+                    .$relatedQuery<ConfigSymbol>('configSymbols')
+                    .delete();
+                // Add new
+                parsedRequest.configSymbols.forEach(async configSymbol => {
+                    await initialModelInstance
+                        .$relatedQuery<ConfigSymbol>('configSymbols')
+                        .insert(configSymbol);
+                });
+            }
+            const modelInstance = await Config.query()
+                .findById(initialModelInstance.id)
+                .withGraphFetched('configSymbols');
+            if (!modelInstance) {
+                throw new Error(`Failed to update ${modelName}`);
+            }
+            return res.json({
+                status: 'success',
+                message: `${modelName} updated successfully`,
+                data: modelInstance,
+            });
+        } catch (e) {
+            if (e instanceof ZodError) {
+                return res.status(400).json({
+                    status: 'error',
+                    message: `Invalid request body: ${e.message}`,
+                });
+            }
+            throw e;
+        }
     }
 );
 
