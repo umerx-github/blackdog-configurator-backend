@@ -83,6 +83,9 @@ export interface SymbolInterface {
     createdAt: string;
     name: string;
 }
+export interface GetSymbolManyRequestInterface {
+    name?: string;
+}
 export interface NewConfigSymbolRequestInterface {
     configId: number;
     symbolId: number;

@@ -1,25 +1,42 @@
+import { ZodError, z } from 'zod';
 import { Router, Request, Response } from 'express';
 import { Symbol } from '../db/models/Symbol.js';
-import { ResponseBase } from '../interfaces/db/models/index.js';
+import {
+    GetSymbolManyRequestInterface,
+    ResponseBase,
+} from '../interfaces/db/models/index.js';
 import { NewSymbolRequestInterface } from '../interfaces/db/models/index.js';
 
 const router = Router();
 
 // Typing Express Request: https://stackoverflow.com/questions/48027563/typescript-type-annotation-for-res-body
+const ExpectedRequestSymbolGet = z.object({
+    name: z.string().optional(),
+});
 
 router.get('/', async (req, res: Response<ResponseBase<Symbol[]>>) => {
-    const symbols = await Symbol.query();
-    if (!symbols) {
-        return res.status(404).json({
-            status: 'error',
-            message: 'No symbols found',
+    const symbolQuery = Symbol.query();
+    try {
+        const getSymbolManyRequestParsed: GetSymbolManyRequestInterface =
+            ExpectedRequestSymbolGet.parse(req.query);
+        if (getSymbolManyRequestParsed.name) {
+            symbolQuery.where('name', getSymbolManyRequestParsed.name);
+        }
+        const symbols = await symbolQuery;
+        return res.json({
+            status: 'success',
+            message: 'Symbols retrieved successfully',
+            data: symbols,
         });
+    } catch (e) {
+        if (e instanceof ZodError) {
+            return res.status(400).json({
+                status: 'error',
+                message: `Invalid request query: ${e.message}`,
+            });
+        }
+        throw e;
     }
-    return res.json({
-        status: 'success',
-        message: 'Symbols retrieved successfully',
-        data: symbols,
-    });
 });
 
 router.post(
