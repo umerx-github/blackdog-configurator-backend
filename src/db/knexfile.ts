@@ -10,6 +10,20 @@ const config: { [key: string]: Knex.Config } = {
             database: 'example',
             user: 'example',
             password: 'example',
+            typeCast: (
+                field: {
+                    type: string;
+                    length: number;
+                    string: () => string;
+                },
+                next: () => void
+            ) => {
+                if (field.type === 'TINY' && field.length === 1) {
+                    const value = field.string();
+                    return value ? value === '1' : null;
+                }
+                return next();
+            },
         },
         pool: {
             min: 2,
