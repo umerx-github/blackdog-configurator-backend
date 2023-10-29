@@ -11,9 +11,10 @@ services:
             - ./..:/workspace
         environment:
             - DB_HOSTNAME=db
+            - BLACKDOG_CONFIGURATOR_BACKEND_DEV_ALPACA_API_KEY=${BLACKDOG_CONFIGURATOR_BACKEND_DEV_ALPACA_API_KEY}
+            - BLACKDOG_CONFIGURATOR_BACKEND_DEV_ALPACA_API_SECRET=${BLACKDOG_CONFIGURATOR_BACKEND_DEV_ALPACA_API_SECRET}
         ports:
             - ${BLACKDOG_CONFIGURATOR_BACKEND_HOST_PORT}:80
-
     db:
         image: mysql:latest
         restart: always

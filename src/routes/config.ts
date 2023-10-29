@@ -1,7 +1,10 @@
 import { Router, Request, Response } from 'express';
 import { z, ZodError } from 'zod';
 import { Config } from '../db/models/Config.js';
-import { ResponseBase } from '../interfaces/db/models/index.js';
+import {
+    GetConfigsRequestInterface,
+    ResponseBase,
+} from '../interfaces/db/models/index.js';
 import {
     NewConfigRequestInterface,
     NewConfigInterface,
@@ -13,6 +16,28 @@ import { ConfigSymbol } from '..//db/models/ConfigSymbol.js';
 
 const router = Router();
 const modelName = 'Config';
+
+const ExpectedGetConfigsRequest = z
+    .object({
+        isActive: z
+            .string()
+            .optional()
+            .transform(str => {
+                if (str === 'true') {
+                    return true;
+                }
+                if (str === 'false') {
+                    return false;
+                }
+                return undefined;
+            }),
+    })
+    .transform(obj => {
+        if (obj.isActive === undefined) {
+            delete obj.isActive;
+        }
+        return obj;
+    });
 
 const ExpectedRequestConfigPost = z.object({
     isActive: z.boolean(),
@@ -57,14 +82,30 @@ const ExpectedRequestConfigPatch = z.object({
 // Typing Express Request: https://stackoverflow.com/questions/48027563/typescript-type-annotation-for-res-body
 
 router.get('/', async (req, res: Response<ResponseBase<Config[]>>) => {
-    const modelInstances = await Config.query()
+    const query = Config.query()
         .orderBy('id', 'desc')
         .withGraphFetched('configSymbols');
-    return res.json({
-        status: 'success',
-        message: `${modelName} instances retrieved successfully`,
-        data: modelInstances,
-    });
+    try {
+        const expectedGetConfigsRequest: GetConfigsRequestInterface =
+            ExpectedGetConfigsRequest.parse(req.query);
+        if (undefined !== expectedGetConfigsRequest.isActive) {
+            query.where('isActive', expectedGetConfigsRequest.isActive);
+        }
+        const data = await query;
+        return res.json({
+            status: 'success',
+            message: `${modelName} instances retrieved successfully`,
+            data: data,
+        });
+    } catch (err) {
+        if (err instanceof ZodError) {
+            return res.status(400).json({
+                status: 'error',
+                message: `Invalid request query: ${err.message}`,
+            });
+        }
+        throw err;
+    }
 });
 
 router.get(

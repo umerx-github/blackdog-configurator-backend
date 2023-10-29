@@ -1,4 +1,9 @@
 import { Knex } from 'knex';
+import {
+    OrderStatusEnum,
+    OrderTypeEnum,
+    PositionStatusEnum,
+} from '../../interfaces/db/models/index.js';
 
 export async function up(knex: Knex): Promise<void> {
     return await knex.schema
@@ -76,7 +81,7 @@ export async function up(knex: Knex): Promise<void> {
         .createTableIfNotExists('buyOrder', table => {
             table.increments('id').primary();
             table
-                .enum('status', ['open', 'closed', 'cancelled'])
+                .enum('status', Object.values(OrderStatusEnum))
                 .notNullable()
                 .index();
             table
@@ -101,20 +106,17 @@ export async function up(knex: Knex): Promise<void> {
                 .notNullable()
                 .defaultTo(knex.raw('CURRENT_TIMESTAMP'));
             table
-                .enum('type', [
-                    'market',
-                    'limit',
-                    'stop',
-                    'stop_limit',
-                    'trailing_stop',
-                ])
+                .enum('type', Object.values(OrderTypeEnum))
                 .notNullable()
                 .index();
             table.bigInteger('priceInCents').notNullable();
         })
         .createTableIfNotExists('position', table => {
             table.increments('id').primary();
-            table.enum('status', ['open', 'closed']).notNullable().index();
+            table
+                .enum('status', Object.values(PositionStatusEnum))
+                .notNullable()
+                .index();
             table
                 .integer('buyOrderId')
                 .unsigned()
@@ -137,7 +139,7 @@ export async function up(knex: Knex): Promise<void> {
         })
         .createTable('sellOrder', table => {
             table
-                .enum('status', ['open', 'closed', 'cancelled'])
+                .enum('status', Object.values(OrderStatusEnum))
                 .notNullable()
                 .index();
             table.increments('id').primary();
@@ -170,13 +172,7 @@ export async function up(knex: Knex): Promise<void> {
                 .notNullable()
                 .defaultTo(knex.raw('CURRENT_TIMESTAMP'));
             table
-                .enum('type', [
-                    'market',
-                    'limit',
-                    'stop',
-                    'stop_limit',
-                    'trailing_stop',
-                ])
+                .enum('type', Object.values(OrderTypeEnum))
                 .notNullable()
                 .index();
             table.bigInteger('priceInCents').notNullable();

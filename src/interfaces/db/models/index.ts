@@ -1,6 +1,10 @@
 export type ResponseBase<T> =
     | { status: 'success'; message: string; data: T }
     | { status: 'error'; message: string };
+
+export interface GetConfigsRequestInterface {
+    isActive?: boolean;
+}
 export interface NewConfigRequestInterface {
     isActive: boolean;
     sellAtPercentile: number;
@@ -193,6 +197,10 @@ export interface NewPositionInterface {
     status: PositionStatusEnum;
     buyOrderId: number;
     symbolId: number;
+}
+
+export interface GetPositionsRequestInterface {
+    status?: PositionStatusEnum;
 }
 
 export interface PositionInterface {
