@@ -2,7 +2,7 @@ import { ZodError, z } from 'zod';
 import { Router, Request, Response } from 'express';
 import { Symbol } from '../db/models/Symbol.js';
 import {
-    GetSymbolManyRequestInterface,
+    GetSymbolsRequestInterface,
     ResponseBase,
 } from '../interfaces/db/models/index.js';
 import { NewSymbolRequestInterface } from '../interfaces/db/models/index.js';
@@ -17,7 +17,7 @@ const ExpectedRequestSymbolGet = z.object({
 router.get('/', async (req, res: Response<ResponseBase<Symbol[]>>) => {
     const symbolQuery = Symbol.query();
     try {
-        const getSymbolManyRequestParsed: GetSymbolManyRequestInterface =
+        const getSymbolManyRequestParsed: GetSymbolsRequestInterface =
             ExpectedRequestSymbolGet.parse(req.query);
         if (getSymbolManyRequestParsed.name) {
             symbolQuery.where('name', getSymbolManyRequestParsed.name);

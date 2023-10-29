@@ -7,7 +7,7 @@ import {
     NewBuyOrderInterface,
     OrderTypeEnum,
     OrderStatusEnum,
-    GetBuyOrderManyRequestInterface,
+    GetBuyOrdersRequestInterface,
     PatchBuyOrderRequestInterface,
     UpdateBuyOrderInterface,
 } from '../interfaces/db/models/index.js';
@@ -32,7 +32,7 @@ router.get(
         // .withGraphFetched('config')
         // .withGraphFetched('symbol');
         try {
-            const getBuyOrderManyRequestParsed: GetBuyOrderManyRequestInterface =
+            const getBuyOrderManyRequestParsed: GetBuyOrdersRequestInterface =
                 ExpectedGetBuyOrderManyRequest.parse(req.query);
             if (getBuyOrderManyRequestParsed.status) {
                 query.where('status', getBuyOrderManyRequestParsed.status);

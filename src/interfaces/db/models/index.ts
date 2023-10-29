@@ -83,7 +83,7 @@ export interface SymbolInterface {
     createdAt: string;
     name: string;
 }
-export interface GetSymbolManyRequestInterface {
+export interface GetSymbolsRequestInterface {
     name?: string;
 }
 export interface NewConfigSymbolRequestInterface {
@@ -142,7 +142,7 @@ export enum OrderTypeEnum {
     trailing_stop = 'trailing_stop',
 }
 
-export interface GetBuyOrderManyRequestInterface {
+export interface GetBuyOrdersRequestInterface {
     status?: OrderStatusEnum;
 }
 export interface NewBuyOrderRequestInterface {
