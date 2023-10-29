@@ -176,6 +176,14 @@ export interface BuyOrderInterface {
     priceInDollars: number;
 }
 
+export interface PatchBuyOrderRequestInterface {
+    status?: OrderStatusEnum;
+}
+
+export interface UpdateBuyOrderInterface {
+    status?: OrderStatusEnum;
+}
+
 export interface NewPositionRequestInterface {
     status: PositionStatusEnum;
     buyOrderId: number;

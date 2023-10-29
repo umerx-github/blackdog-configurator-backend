@@ -8,13 +8,20 @@ import {
     OrderTypeEnum,
     OrderStatusEnum,
     GetBuyOrderManyRequestInterface,
+    PatchBuyOrderRequestInterface,
+    UpdateBuyOrderInterface,
 } from '../interfaces/db/models/index.js';
 
 const router = Router();
+const modelName = 'BuyOrder';
 
 // Typing Express Request: https://stackoverflow.com/questions/48027563/typescript-type-annotation-for-res-body
 
 const ExpectedGetBuyOrderManyRequest = z.object({
+    status: z.nativeEnum(OrderStatusEnum).optional(),
+});
+
+const ExpectedPathBuyOrderRequest = z.object({
     status: z.nativeEnum(OrderStatusEnum).optional(),
 });
 
@@ -43,6 +50,7 @@ router.get(
                     message: `Invalid request query: ${err.message}`,
                 });
             }
+            throw err;
         }
     }
 );
@@ -154,5 +162,49 @@ router.delete('/:id', async (req, res: Response<ResponseBase<BuyOrder>>) => {
         data: buyOrder,
     });
 });
+
+router.patch(
+    '/:id',
+    async (
+        req: Request<{ id: string }>,
+        res: Response<ResponseBase<BuyOrder>>
+    ) => {
+        const id = parseInt(req.params.id);
+        if (isNaN(id)) {
+            return res.status(400).json({
+                status: 'error',
+                message: 'Invalid request params: "id" is required number',
+            });
+        }
+        // https://vincit.github.io/objection.js/guide/query-examples.html#relation-relate-queries);
+        try {
+            const parsedRequest: PatchBuyOrderRequestInterface =
+                ExpectedPathBuyOrderRequest.parse(req.body);
+            const modelData: UpdateBuyOrderInterface = {
+                ...parsedRequest,
+            };
+            const modelInstance = await BuyOrder.query().patchAndFetchById(
+                id,
+                modelData
+            );
+            if (!modelInstance) {
+                throw new Error(`Failed to update ${modelName}`);
+            }
+            return res.json({
+                status: 'success',
+                message: `${modelName} updated successfully`,
+                data: modelInstance,
+            });
+        } catch (e) {
+            if (e instanceof ZodError) {
+                return res.status(400).json({
+                    status: 'error',
+                    message: `Invalid request body: ${e.message}`,
+                });
+            }
+            throw e;
+        }
+    }
+);
 
 export default router;
