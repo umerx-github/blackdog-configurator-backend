@@ -9,7 +9,7 @@ import {
     OrderStatusEnum,
     PositionStatusEnum,
 } from '../../interfaces/db/models/index.js';
-
+console.log({ processEnv: process.env });
 export async function seed(knex: Knex): Promise<void> {
     // Deletes ALL existing entries
     await knex('sellOrder').del();
@@ -36,8 +36,12 @@ export async function seed(knex: Knex): Promise<void> {
             buyTrailingPercent: 0.05,
             minimumGainPercent: 0.05,
             timeframeInDays: 1,
-            alpacaApiKey: process.env?.alpacaApiKey ?? '',
-            alpacaApiSecret: process.env?.alpacaApiSecret ?? '',
+            alpacaApiKey:
+                process.env?.BLACKDOG_CONFIGURATOR_BACKEND_DEV_ALPACA_API_KEY ??
+                '',
+            alpacaApiSecret:
+                process.env
+                    ?.BLACKDOG_CONFIGURATOR_BACKEND_DEV_ALPACA_API_SECRET ?? '',
         },
         {
             id: 2,
@@ -49,8 +53,12 @@ export async function seed(knex: Knex): Promise<void> {
             buyTrailingPercent: 0.05,
             minimumGainPercent: 0.05,
             timeframeInDays: 1,
-            alpacaApiKey: process.env?.alpacaApiKey ?? '',
-            alpacaApiSecret: process.env?.alpacaApiSecret ?? '',
+            alpacaApiKey:
+                process.env?.BLACKDOG_CONFIGURATOR_BACKEND_DEV_ALPACA_API_KEY ??
+                '',
+            alpacaApiSecret:
+                process.env
+                    ?.BLACKDOG_CONFIGURATOR_BACKEND_DEV_ALPACA_API_SECRET ?? '',
         },
         {
             id: 3,
@@ -62,8 +70,12 @@ export async function seed(knex: Knex): Promise<void> {
             buyTrailingPercent: 0.05,
             minimumGainPercent: 0.05,
             timeframeInDays: 1,
-            alpacaApiKey: process.env?.alpacaApiKey ?? '',
-            alpacaApiSecret: process.env?.alpacaApiSecret ?? '',
+            alpacaApiKey:
+                process.env?.BLACKDOG_CONFIGURATOR_BACKEND_DEV_ALPACA_API_KEY ??
+                '',
+            alpacaApiSecret:
+                process.env
+                    ?.BLACKDOG_CONFIGURATOR_BACKEND_DEV_ALPACA_API_SECRET ?? '',
         },
     ]);
     await knex<NewConfigSymbolInterface & { id: number }>(
