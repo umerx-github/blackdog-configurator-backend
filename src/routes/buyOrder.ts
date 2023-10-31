@@ -29,8 +29,6 @@ router.get(
     '/',
     async (req: Request, res: Response<ResponseBase<BuyOrder[]>>) => {
         const query = BuyOrder.query().orderBy('id', 'desc');
-        // .withGraphFetched('config')
-        // .withGraphFetched('symbol');
         try {
             const getBuyOrderManyRequestParsed: GetBuyOrdersRequestInterface =
                 ExpectedGetBuyOrderManyRequest.parse(req.query);
@@ -122,8 +120,6 @@ router.post(
         };
 
         let responseObj = await BuyOrder.query().insertAndFetch(newOrder);
-        // .withGraphFetched('config')
-        // .withGraphFetched('symbol');
         if (!responseObj) {
             return res.status(404).json({
                 status: 'error',
@@ -147,8 +143,6 @@ router.delete('/:id', async (req, res: Response<ResponseBase<BuyOrder>>) => {
         });
     }
     const buyOrder = await BuyOrder.query().findById(id);
-    // .withGraphFetched('config')
-    // .withGraphFetched('symbol');
     if (!buyOrder) {
         return res.status(404).json({
             status: 'error',

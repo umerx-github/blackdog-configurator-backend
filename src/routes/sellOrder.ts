@@ -13,10 +13,7 @@ const router = Router();
 // Typing Express Request: https://stackoverflow.com/questions/48027563/typescript-type-annotation-for-res-body
 
 router.get('/', async (req, res: Response<ResponseBase<SellOrder[]>>) => {
-    const data = await SellOrder.query()
-        .orderBy('id', 'desc')
-        .withGraphFetched('config')
-        .withGraphFetched('symbol');
+    const data = await SellOrder.query().orderBy('id', 'desc');
     return res.json({
         status: 'success',
         message: 'Order retrieved successfully',
@@ -98,11 +95,7 @@ router.post(
             priceInCents: req.body.priceInDollars * 100,
         };
 
-        let responseObj = await SellOrder.query()
-            .insertAndFetch(newOrder)
-            .withGraphFetched('position')
-            .withGraphFetched('config')
-            .withGraphFetched('symbol');
+        let responseObj = await SellOrder.query().insertAndFetch(newOrder);
         if (!responseObj) {
             return res.status(404).json({
                 status: 'error',

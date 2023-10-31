@@ -20,9 +20,7 @@ const ExpectedPositionsGetRequest = z.object({
 });
 
 router.get('/', async (req, res: Response<ResponseBase<Position[]>>) => {
-    const query = Position.query()
-        .orderBy('id', 'desc')
-        .withGraphFetched('symbol');
+    const query = Position.query().orderBy('id', 'desc');
     try {
         const getPositionsManyRequestParsed: GetPositionsRequestInterface =
             ExpectedPositionsGetRequest.parse(req.query);
@@ -82,10 +80,7 @@ router.post(
             buyOrderId: req.body.buyOrderId,
             symbolId: req.body.symbolId,
         };
-        let responseObj = await Position.query()
-            .insertAndFetch(newPosition)
-            .withGraphFetched('buyOrder')
-            .withGraphFetched('symbol');
+        let responseObj = await Position.query().insertAndFetch(newPosition);
         if (!responseObj) {
             return res.status(404).json({
                 status: 'error',
