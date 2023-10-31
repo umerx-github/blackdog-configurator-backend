@@ -89,6 +89,7 @@ export interface SymbolInterface {
 }
 export interface GetSymbolsRequestInterface {
     name?: string;
+    ids?: string;
 }
 export interface NewConfigSymbolRequestInterface {
     configId: number;

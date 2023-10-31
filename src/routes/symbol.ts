@@ -10,17 +10,27 @@ import { NewSymbolRequestInterface } from '../interfaces/db/models/index.js';
 const router = Router();
 
 // Typing Express Request: https://stackoverflow.com/questions/48027563/typescript-type-annotation-for-res-body
-const ExpectedRequestSymbolGet = z.object({
+const ExpectedSymbolsGetRequest = z.object({
     name: z.string().optional(),
+    ids: z
+        .string()
+        .regex(/^\d+(,\d+)*$/)
+        .optional(),
 });
 
 router.get('/', async (req, res: Response<ResponseBase<Symbol[]>>) => {
     const symbolQuery = Symbol.query();
     try {
         const getSymbolManyRequestParsed: GetSymbolsRequestInterface =
-            ExpectedRequestSymbolGet.parse(req.query);
+            ExpectedSymbolsGetRequest.parse(req.query);
         if (getSymbolManyRequestParsed.name) {
             symbolQuery.where('name', getSymbolManyRequestParsed.name);
+        }
+        if (getSymbolManyRequestParsed.ids) {
+            symbolQuery.whereIn(
+                'id',
+                getSymbolManyRequestParsed.ids.split(',')
+            );
         }
         const symbols = await symbolQuery;
         return res.json({
