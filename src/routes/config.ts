@@ -1,3 +1,4 @@
+import {Strategy} from '@umerx/umerx-blackdog-configurator-types-typescript'
 import { Router, Request, Response } from 'express';
 import { z, ZodError } from 'zod';
 import { Config } from '../db/models/Config.js';
