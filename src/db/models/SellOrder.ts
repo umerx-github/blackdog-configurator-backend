@@ -6,7 +6,7 @@ import {
     OrderTypeEnum,
     OrderStatusEnum,
 } from '../../interfaces/db/models/index.js';
-import { Config } from './Config.js';
+import { StrategyTemplateSeaDogDiscountScheme } from './StrategyTemplateSeaDogDiscountScheme.js';
 import { Position } from './Position.js';
 
 // Person model.
@@ -60,7 +60,7 @@ export class SellOrder extends Model implements BuyOrderInterface {
         return {
             config: {
                 relation: Model.BelongsToOneRelation,
-                modelClass: Config,
+                modelClass: StrategyTemplateSeaDogDiscountScheme,
                 join: {
                     from: 'sellOrder.configId',
                     to: 'config.id',

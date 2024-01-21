@@ -5,7 +5,10 @@ import {
 } from '../../interfaces/db/models/index.js';
 import { ConfigSymbol } from './ConfigSymbol.js';
 
-export class Config extends Model implements ConfigInterface {
+export class StrategyTemplateSeaDogDiscountScheme
+    extends Model
+    implements ConfigInterface
+{
     id!: number;
     // https://www.reddit.com/r/node/comments/7hxie6/objectionjs_and_timestamps/
     // https://github.com/Vincit/objection.js/issues/647

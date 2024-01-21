@@ -1,5 +1,5 @@
 import { Model } from 'objection';
-import { Config } from './Config.js';
+import { StrategyTemplateSeaDogDiscountScheme } from './StrategyTemplateSeaDogDiscountScheme.js';
 import {
     ConfigSymbolInterface,
     SymbolInterface,
@@ -29,7 +29,7 @@ export class Symbol extends Model implements SymbolInterface {
         return {
             configSymbols: {
                 relation: Model.HasManyRelation,
-                modelClass: Config,
+                modelClass: StrategyTemplateSeaDogDiscountScheme,
                 join: {
                     from: 'symbol.id',
                     to: 'configSymbol.symbolId',

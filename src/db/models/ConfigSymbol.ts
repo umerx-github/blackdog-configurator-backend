@@ -1,6 +1,6 @@
 import { Model } from 'objection';
 import { Symbol } from './Symbol.js';
-import { Config } from './Config.js';
+import { StrategyTemplateSeaDogDiscountScheme } from './StrategyTemplateSeaDogDiscountScheme.js';
 import { ConfigSymbolInterface } from '../../interfaces/db/models/index.js';
 import { symbol } from 'zod';
 
@@ -9,7 +9,7 @@ export class ConfigSymbol extends Model implements ConfigSymbolInterface {
     id!: number;
     createdAt!: string;
     configId!: number;
-    config!: Config;
+    config!: StrategyTemplateSeaDogDiscountScheme;
     symbolId!: number;
     symbol!: Symbol;
     order!: number;
@@ -32,7 +32,7 @@ export class ConfigSymbol extends Model implements ConfigSymbolInterface {
         return {
             config: {
                 relation: Model.BelongsToOneRelation,
-                modelClass: Config,
+                modelClass: StrategyTemplateSeaDogDiscountScheme,
                 join: {
                     from: 'configSymbol.configId',
                     to: 'config.id',

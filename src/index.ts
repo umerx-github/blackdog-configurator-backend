@@ -3,7 +3,7 @@ import cors from 'cors';
 import knex from 'knex';
 import knexConfig from './db/knexfile.js';
 import { Model } from 'objection';
-import configRouter from './routes/config.js';
+import strategyRouter from './routes/strategy/index.js';
 import symbolRouter from './routes/symbol.js';
 import buyOrderRouter from './routes/buyOrder.js';
 import positionRouter from './routes/position.js';
@@ -35,11 +35,13 @@ app.get('/', (req, res) => {
     res.send('Hello World');
 });
 
-app.use('/config', configRouter);
-app.use('/symbol', symbolRouter);
-app.use('/buy-order', buyOrderRouter);
-app.use('/position', positionRouter);
-app.use('/sell-order', sellOrderRouter);
+app.use('/strategy', strategyRouter);
+
+// app.use('/config', configRouter);
+// app.use('/symbol', symbolRouter);
+// app.use('/buy-order', buyOrderRouter);
+// app.use('/position', positionRouter);
+// app.use('/sell-order', sellOrderRouter);
 
 app.listen(PORT, HOST, () => {
     console.log(`Running on ${SCHEME}://${HOST}:${PORT}`);

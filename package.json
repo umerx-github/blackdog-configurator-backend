@@ -1,8 +1,8 @@
 {
     "type": "module",
-    "name": "express_static_server",
+    "name": "@umerx/blackdog-configurator-backend",
     "version": "0.0.1",
-    "description": "Express Static Server",
+    "description": "Blackdog Configurator Backend",
     "author": "First Last <first.last@example.com>",
     "main": "out-tsc/index.js",
     "scripts": {

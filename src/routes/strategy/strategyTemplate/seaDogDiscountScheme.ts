@@ -1,19 +1,19 @@
-import {Strategy} from '@umerx/umerx-blackdog-configurator-types-typescript'
+import { Strategy } from '@umerx/umerx-blackdog-configurator-types-typescript';
 import { Router, Request, Response } from 'express';
 import { z, ZodError } from 'zod';
-import { Config } from '../db/models/Config.js';
+import { StrategyTemplateSeaDogDiscountScheme } from '../../../db/models/StrategyTemplateSeaDogDiscountScheme.js';
 import {
     GetConfigsRequestInterface,
     ResponseBase,
-} from '../interfaces/db/models/index.js';
+} from '../../../interfaces/db/models/index.js';
 import {
     NewConfigRequestInterface,
     NewConfigInterface,
     UpdateConfigRequestInterface,
     UpdateConfigInterface,
-} from '../interfaces/db/models/index.js';
+} from '../../../interfaces/db/models/index.js';
 import { parse } from 'path';
-import { ConfigSymbol } from '..//db/models/ConfigSymbol.js';
+import { ConfigSymbol } from '../../../db/models/ConfigSymbol.js';
 
 const router = Router();
 const modelName = 'Config';
@@ -82,36 +82,45 @@ const ExpectedRequestConfigPatch = z.object({
 
 // Typing Express Request: https://stackoverflow.com/questions/48027563/typescript-type-annotation-for-res-body
 
-router.get('/', async (req, res: Response<ResponseBase<Config[]>>) => {
-    const query = Config.query()
-        .orderBy('id', 'desc')
-        .withGraphFetched('configSymbols');
-    try {
-        const expectedGetConfigsRequest: GetConfigsRequestInterface =
-            ExpectedGetConfigsRequest.parse(req.query);
-        if (undefined !== expectedGetConfigsRequest.isActive) {
-            query.where('isActive', expectedGetConfigsRequest.isActive);
-        }
-        const data = await query;
-        return res.json({
-            status: 'success',
-            message: `${modelName} instances retrieved successfully`,
-            data: data,
-        });
-    } catch (err) {
-        if (err instanceof ZodError) {
-            return res.status(400).json({
-                status: 'error',
-                message: `Invalid request query: ${err.message}`,
+router.get(
+    '/',
+    async (
+        req,
+        res: Response<ResponseBase<StrategyTemplateSeaDogDiscountScheme[]>>
+    ) => {
+        const query = StrategyTemplateSeaDogDiscountScheme.query()
+            .orderBy('id', 'desc')
+            .withGraphFetched('configSymbols');
+        try {
+            const expectedGetConfigsRequest: GetConfigsRequestInterface =
+                ExpectedGetConfigsRequest.parse(req.query);
+            if (undefined !== expectedGetConfigsRequest.isActive) {
+                query.where('isActive', expectedGetConfigsRequest.isActive);
+            }
+            const data = await query;
+            return res.json({
+                status: 'success',
+                message: `${modelName} instances retrieved successfully`,
+                data: data,
             });
+        } catch (err) {
+            if (err instanceof ZodError) {
+                return res.status(400).json({
+                    status: 'error',
+                    message: `Invalid request query: ${err.message}`,
+                });
+            }
+            throw err;
         }
-        throw err;
     }
-});
+);
 
 router.get(
     '/:id',
-    async (req: Request, res: Response<ResponseBase<Config>>) => {
+    async (
+        req: Request,
+        res: Response<ResponseBase<StrategyTemplateSeaDogDiscountScheme>>
+    ) => {
         const id = parseInt(req.params.id);
         if (isNaN(id)) {
             return res.status(400).json({
@@ -119,7 +128,7 @@ router.get(
                 message: 'Invalid request params: "id" is required number',
             });
         }
-        const modelInstance = await Config.query()
+        const modelInstance = await StrategyTemplateSeaDogDiscountScheme.query()
             .findById(id)
             .withGraphFetched('configSymbols');
         if (!modelInstance) {
@@ -140,7 +149,7 @@ router.post(
     '/',
     async (
         req: Request<{}, {}, NewConfigRequestInterface>,
-        res: Response<ResponseBase<Config>>
+        res: Response<ResponseBase<StrategyTemplateSeaDogDiscountScheme>>
     ) => {
         // https://vincit.github.io/objection.js/guide/query-examples.html#relation-relate-queries);
         try {
@@ -150,17 +159,19 @@ router.post(
                 ...parsedRequest,
                 cashInCents: parsedRequest.cashInDollars * 100,
             };
-            const initialModelInstance = await Config.query().insert({
-                ...modelData,
-            });
+            const initialModelInstance =
+                await StrategyTemplateSeaDogDiscountScheme.query().insert({
+                    ...modelData,
+                });
             parsedRequest.configSymbols.forEach(async configSymbol => {
                 await initialModelInstance
                     .$relatedQuery<ConfigSymbol>('configSymbols')
                     .insert(configSymbol);
             });
-            const modelInstance = await Config.query()
-                .findById(initialModelInstance.id)
-                .withGraphFetched('configSymbols');
+            const modelInstance =
+                await StrategyTemplateSeaDogDiscountScheme.query()
+                    .findById(initialModelInstance.id)
+                    .withGraphFetched('configSymbols');
             if (!modelInstance) {
                 throw new Error(`Failed to create ${modelName}`);
             }
@@ -185,7 +196,7 @@ router.patch(
     '/:id',
     async (
         req: Request<{ id: string }, {}, UpdateConfigRequestInterface>,
-        res: Response<ResponseBase<Config>>
+        res: Response<ResponseBase<StrategyTemplateSeaDogDiscountScheme>>
     ) => {
         const id = parseInt(req.params.id);
         if (isNaN(id)) {
@@ -204,10 +215,11 @@ router.patch(
             if (parsedRequest.cashInDollars) {
                 modelData.cashInCents = parsedRequest.cashInDollars * 100;
             }
-            const initialModelInstance = await Config.query().patchAndFetchById(
-                id,
-                modelData
-            );
+            const initialModelInstance =
+                await StrategyTemplateSeaDogDiscountScheme.query().patchAndFetchById(
+                    id,
+                    modelData
+                );
             if (!initialModelInstance) {
                 throw new Error(`Failed to update ${modelName}`);
             }
@@ -223,9 +235,10 @@ router.patch(
                         .insert(configSymbol);
                 });
             }
-            const modelInstance = await Config.query()
-                .findById(initialModelInstance.id)
-                .withGraphFetched('configSymbols');
+            const modelInstance =
+                await StrategyTemplateSeaDogDiscountScheme.query()
+                    .findById(initialModelInstance.id)
+                    .withGraphFetched('configSymbols');
             if (!modelInstance) {
                 throw new Error(`Failed to update ${modelName}`);
             }
