@@ -60,10 +60,8 @@ router.get(
             const params = StrategyTypes.StrategyGetSingleRequestParamsFromRaw(
                 req.params
             );
-            const modelInstance = await StrategyModel.query().findById(
-                params.id
-            );
-            if (!modelInstance) {
+            const modelData = await StrategyModel.query().findById(params.id);
+            if (!modelData) {
                 return res.status(404).json({
                     status: 'error',
                     message: `${modelName} not found`,
@@ -72,7 +70,7 @@ router.get(
             return res.json({
                 status: 'success',
                 message: `${modelName} retrieved successfully`,
-                data: modelInstance,
+                data: modelData,
             });
         } catch (err) {
             if (err instanceof ZodError) {
@@ -108,6 +106,90 @@ router.post(
                 },
                 { isolationLevel: 'serializable' }
             );
+            return res.json({
+                status: 'success',
+                message: `${modelName} created successfully`,
+                data: modelData,
+            });
+        } catch (e) {
+            if (e instanceof ZodError) {
+                return res.status(400).json({
+                    status: 'error',
+                    message: `Invalid request body: ${e.message}`,
+                });
+            }
+            throw e;
+        }
+    }
+);
+
+router.patch(
+    '/',
+    async (
+        req: Request<any, any, StrategyTypes.StrategyPatchManyRequestBody>,
+        res: Response<StrategyTypes.StrategyPatchManyResponseBody>
+    ) => {
+        // https://vincit.github.io/objection.js/guide/query-examples.html#relation-relate-queries);
+        try {
+            const parsedRequest: StrategyTypes.StrategyPatchManyRequestBody =
+                StrategyTypes.StrategyPatchManyRequestBodyFromRaw(req.body);
+            const modelData: StrategyTypes.StrategyPatchManyResponseBodyData =
+                [];
+            await KNEXION.transaction(
+                async trx => {
+                    for (const strategy of parsedRequest) {
+                        const model = await StrategyModel.query(
+                            trx
+                        ).patchAndFetchById(strategy.id, strategy);
+                        modelData.push(model);
+                    }
+                },
+                { isolationLevel: 'serializable' }
+            );
+            return res.json({
+                status: 'success',
+                message: `${modelName} created successfully`,
+                data: modelData,
+            });
+        } catch (e) {
+            if (e instanceof ZodError) {
+                return res.status(400).json({
+                    status: 'error',
+                    message: `Invalid request body: ${e.message}`,
+                });
+            }
+            throw e;
+        }
+    }
+);
+
+router.patch(
+    '/:id',
+    async (
+        req: Request<
+            StrategyTypes.StrategyPatchSingleRequestParamsRaw,
+            any,
+            StrategyTypes.StrategyPatchSingleRequestBody
+        >,
+        res: Response<StrategyTypes.StrategyPatchSingleResponseBody>
+    ) => {
+        // https://vincit.github.io/objection.js/guide/query-examples.html#relation-relate-queries);
+        try {
+            const params = StrategyTypes.StrategyGetSingleRequestParamsFromRaw(
+                req.params
+            );
+            const parsedRequest: StrategyTypes.StrategyPatchSingleRequestBody =
+                StrategyTypes.StrategyPatchSingleRequestBodyFromRaw(req.body);
+            const modelData = await StrategyModel.query().patchAndFetchById(
+                params.id,
+                parsedRequest
+            );
+            if (!modelData) {
+                return res.status(404).json({
+                    status: 'error',
+                    message: `${modelName} not found`,
+                });
+            }
             return res.json({
                 status: 'success',
                 message: `${modelName} created successfully`,
