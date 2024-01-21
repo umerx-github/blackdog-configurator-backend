@@ -1,8 +1,8 @@
 import { Strategy as StrategyModel } from '../../db/models/Strategy.js';
 import { Strategy as StrategyTypes } from '@umerx/umerx-blackdog-configurator-types-typescript';
 import { Router, Request, Response } from 'express';
-import { parse } from 'path';
 import { z, ZodError } from 'zod';
+import * as Errors from '../../errors/index.js';
 import { KNEXION } from '../../index.js';
 
 const router = Router();
@@ -31,6 +31,9 @@ router.get(
                     'status',
                     expectedStrategyGetManyRequestQuery.status
                 );
+            }
+            if (undefined !== expectedStrategyGetManyRequestQuery.ids) {
+                query.whereIn('id', expectedStrategyGetManyRequestQuery.ids);
             }
             const data = await query;
             return res.json({
@@ -69,7 +72,7 @@ router.get(
             }
             return res.json({
                 status: 'success',
-                message: `${modelName} retrieved successfully`,
+                message: `${modelName} instance retrieved successfully`,
                 data: modelData,
             });
         } catch (err) {
@@ -108,7 +111,7 @@ router.post(
             );
             return res.json({
                 status: 'success',
-                message: `${modelName} created successfully`,
+                message: `${modelName} instances created successfully`,
                 data: modelData,
             });
         } catch (e) {
@@ -148,7 +151,7 @@ router.patch(
             );
             return res.json({
                 status: 'success',
-                message: `${modelName} created successfully`,
+                message: `${modelName} instances updated successfully`,
                 data: modelData,
             });
         } catch (e) {
@@ -192,7 +195,7 @@ router.patch(
             }
             return res.json({
                 status: 'success',
-                message: `${modelName} created successfully`,
+                message: `${modelName} instance updated successfully`,
                 data: modelData,
             });
         } catch (e) {
@@ -207,71 +210,178 @@ router.patch(
     }
 );
 
-// router.patch(
-//     '/:id',
-//     async (
-//         req: Request<{ id: string }, {}, UpdateConfigRequestInterface>,
-//         res: Response<ResponseBase<StrategyTemplateSeaDogDiscountScheme>>
-//     ) => {
-//         const id = parseInt(req.params.id);
-//         if (isNaN(id)) {
-//             return res.status(400).json({
-//                 status: 'error',
-//                 message: 'Invalid request params: "id" is required number',
-//             });
-//         }
-//         // https://vincit.github.io/objection.js/guide/query-examples.html#relation-relate-queries);
-//         try {
-//             const parsedRequest: UpdateConfigRequestInterface =
-//                 ExpectedRequestConfigPatch.parse(req.body);
-//             const modelData: UpdateConfigInterface = {
-//                 ...parsedRequest,
-//             };
-//             if (parsedRequest.cashInDollars) {
-//                 modelData.cashInCents = parsedRequest.cashInDollars * 100;
-//             }
-//             const initialModelInstance =
-//                 await StrategyTemplateSeaDogDiscountScheme.query().patchAndFetchById(
-//                     id,
-//                     modelData
-//                 );
-//             if (!initialModelInstance) {
-//                 throw new Error(`Failed to update ${modelName}`);
-//             }
-//             if (parsedRequest.configSymbols) {
-//                 // Delete existing
-//                 await initialModelInstance
-//                     .$relatedQuery<ConfigSymbol>('configSymbols')
-//                     .delete();
-//                 // Add new
-//                 parsedRequest.configSymbols.forEach(async configSymbol => {
-//                     await initialModelInstance
-//                         .$relatedQuery<ConfigSymbol>('configSymbols')
-//                         .insert(configSymbol);
-//                 });
-//             }
-//             const modelInstance =
-//                 await StrategyTemplateSeaDogDiscountScheme.query()
-//                     .findById(initialModelInstance.id)
-//                     .withGraphFetched('configSymbols');
-//             if (!modelInstance) {
-//                 throw new Error(`Failed to update ${modelName}`);
-//             }
-//             return res.json({
-//                 status: 'success',
-//                 message: `${modelName} updated successfully`,
-//                 data: modelInstance,
-//             });
-//         } catch (e) {
-//             if (e instanceof ZodError) {
-//                 return res.status(400).json({
-//                     status: 'error',
-//                     message: `Invalid request body: ${e.message}`,
-//                 });
-//             }
-//             throw e;
-//         }
-//     }
-// );
+router.put(
+    '/',
+    async (
+        req: Request<any, any, StrategyTypes.StrategyPutManyRequestBody>,
+        res: Response<StrategyTypes.StrategyPutManyResponseBody>
+    ) => {
+        // https://vincit.github.io/objection.js/guide/query-examples.html#relation-relate-queries);
+        try {
+            const parsedRequest: StrategyTypes.StrategyPutManyRequestBody =
+                StrategyTypes.StrategyPutManyRequestBodyFromRaw(req.body);
+            const modelData: StrategyTypes.StrategyPutManyResponseBodyData = [];
+            await KNEXION.transaction(
+                async trx => {
+                    for (const strategy of parsedRequest) {
+                        const model = await StrategyModel.query(
+                            trx
+                        ).patchAndFetchById(strategy.id, strategy);
+                        modelData.push(model);
+                    }
+                },
+                { isolationLevel: 'serializable' }
+            );
+            return res.json({
+                status: 'success',
+                message: `${modelName} instances updated successfully`,
+                data: modelData,
+            });
+        } catch (e) {
+            if (e instanceof ZodError) {
+                return res.status(400).json({
+                    status: 'error',
+                    message: `Invalid request body: ${e.message}`,
+                });
+            }
+            throw e;
+        }
+    }
+);
+
+router.put(
+    '/:id',
+    async (
+        req: Request<
+            StrategyTypes.StrategyPutSingleRequestParamsRaw,
+            any,
+            StrategyTypes.StrategyPutSingleRequestBody
+        >,
+        res: Response<StrategyTypes.StrategyPutSingleResponseBody>
+    ) => {
+        // https://vincit.github.io/objection.js/guide/query-examples.html#relation-relate-queries);
+        try {
+            const params = StrategyTypes.StrategyGetSingleRequestParamsFromRaw(
+                req.params
+            );
+            const parsedRequest: StrategyTypes.StrategyPutSingleRequestBody =
+                StrategyTypes.StrategyPutSingleRequestBodyFromRaw(req.body);
+            const modelData = await StrategyModel.query().patchAndFetchById(
+                params.id,
+                parsedRequest
+            );
+            if (!modelData) {
+                return res.status(404).json({
+                    status: 'error',
+                    message: `${modelName} not found`,
+                });
+            }
+            return res.json({
+                status: 'success',
+                message: `${modelName} instance updated successfully`,
+                data: modelData,
+            });
+        } catch (e) {
+            if (e instanceof ZodError) {
+                return res.status(400).json({
+                    status: 'error',
+                    message: `Invalid request body: ${e.message}`,
+                });
+            }
+            throw e;
+        }
+    }
+);
+
+router.delete(
+    '/',
+    async (
+        req: Request<
+            any,
+            any,
+            any,
+            StrategyTypes.StrategyDeleteManyRequestQueryRaw
+        >,
+        res: Response<StrategyTypes.StrategyDeleteManyResponseBody>
+    ) => {
+        const query = StrategyModel.query();
+        try {
+            const expectedStrategyDeleteManyRequestQuery: StrategyTypes.StrategyDeleteManyRequestQuery =
+                StrategyTypes.StrategyDeleteManyRequestQueryFromRaw(req.query);
+            const modelData: StrategyTypes.StrategyPutManyResponseBodyData = [];
+            await KNEXION.transaction(
+                async trx => {
+                    for (const id of expectedStrategyDeleteManyRequestQuery.ids) {
+                        const model = await StrategyModel.query(trx).findById(
+                            id
+                        );
+                        if (!model) {
+                            throw new Errors.ModelNotFoundError(
+                                `Unable to find ${modelName} with id ${id}`
+                            );
+                        }
+                        modelData.push(model);
+                        await StrategyModel.query(trx).deleteById(id);
+                    }
+                },
+                { isolationLevel: 'serializable' }
+            );
+            return res.json({
+                status: 'success',
+                message: `${modelName} instances deleted successfully`,
+                data: modelData,
+            });
+        } catch (e) {
+            if (e instanceof ZodError) {
+                return res.status(400).json({
+                    status: 'error',
+                    message: `Invalid request body: ${e.message}`,
+                });
+            }
+            if (e instanceof Errors.ModelNotFoundError) {
+                return res.status(404).json({
+                    status: 'error',
+                    message: e.message,
+                });
+            }
+            throw e;
+        }
+    }
+);
+
+router.delete(
+    '/:id',
+    async (
+        req: Request<StrategyTypes.StrategyDeleteSingleRequestParamsRaw>,
+        res: Response<StrategyTypes.StrategyDeleteSingleResponseBody>
+    ) => {
+        try {
+            const params =
+                StrategyTypes.StrategyDeleteSingleRequestParamsFromRaw(
+                    req.params
+                );
+            const modelData = await StrategyModel.query().findById(params.id);
+            if (!modelData) {
+                return res.status(404).json({
+                    status: 'error',
+                    message: `${modelName} not found`,
+                });
+            }
+            await StrategyModel.query().deleteById(params.id);
+            return res.json({
+                status: 'success',
+                message: `${modelName} instance deleted successfully`,
+                data: modelData,
+            });
+        } catch (err) {
+            if (err instanceof ZodError) {
+                return res.status(400).json({
+                    status: 'error',
+                    message: `Invalid request params: ${err.message}`,
+                });
+            }
+        }
+    }
+);
 
 export default router;
