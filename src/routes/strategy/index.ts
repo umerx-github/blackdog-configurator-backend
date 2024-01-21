@@ -1,7 +1,9 @@
 import { Strategy as StrategyModel } from '../../db/models/Strategy.js';
 import { Strategy as StrategyTypes } from '@umerx/umerx-blackdog-configurator-types-typescript';
 import { Router, Request, Response } from 'express';
+import { parse } from 'path';
 import { z, ZodError } from 'zod';
+import { KNEXION } from '../../index.js';
 
 const router = Router();
 const modelName = 'Strategy';
@@ -83,52 +85,45 @@ router.get(
     }
 );
 
-// router.post(
-//     '/',
-//     async (
-//         req: Request<{}, {}, NewConfigRequestInterface>,
-//         res: Response<ResponseBase<StrategyTemplateSeaDogDiscountScheme>>
-//     ) => {
-//         // https://vincit.github.io/objection.js/guide/query-examples.html#relation-relate-queries);
-//         try {
-//             const parsedRequest: NewConfigRequestInterface =
-//                 ExpectedRequestConfigPost.parse(req.body);
-//             const modelData: NewConfigInterface = {
-//                 ...parsedRequest,
-//                 cashInCents: parsedRequest.cashInDollars * 100,
-//             };
-//             const initialModelInstance =
-//                 await StrategyTemplateSeaDogDiscountScheme.query().insert({
-//                     ...modelData,
-//                 });
-//             parsedRequest.configSymbols.forEach(async configSymbol => {
-//                 await initialModelInstance
-//                     .$relatedQuery<ConfigSymbol>('configSymbols')
-//                     .insert(configSymbol);
-//             });
-//             const modelInstance =
-//                 await StrategyTemplateSeaDogDiscountScheme.query()
-//                     .findById(initialModelInstance.id)
-//                     .withGraphFetched('configSymbols');
-//             if (!modelInstance) {
-//                 throw new Error(`Failed to create ${modelName}`);
-//             }
-//             return res.json({
-//                 status: 'success',
-//                 message: `${modelName} created successfully`,
-//                 data: modelInstance,
-//             });
-//         } catch (e) {
-//             if (e instanceof ZodError) {
-//                 return res.status(400).json({
-//                     status: 'error',
-//                     message: `Invalid request body: ${e.message}`,
-//                 });
-//             }
-//             throw e;
-//         }
-//     }
-// );
+router.post(
+    '/',
+    async (
+        req: Request<any, any, StrategyTypes.StrategyPostManyRequestBody>,
+        res: Response<StrategyTypes.StrategyPostManyResponseBody>
+    ) => {
+        // https://vincit.github.io/objection.js/guide/query-examples.html#relation-relate-queries);
+        try {
+            const parsedRequest: StrategyTypes.StrategyPostManyRequestBody =
+                StrategyTypes.StrategyPostManyRequestBodyFromRaw(req.body);
+            const modelData: StrategyTypes.StrategyPostManyResponseBodyData =
+                [];
+            await KNEXION.transaction(
+                async trx => {
+                    for (const strategy of parsedRequest) {
+                        const model = await StrategyModel.query(trx).insert(
+                            strategy
+                        );
+                        modelData.push(model);
+                    }
+                },
+                { isolationLevel: 'serializable' }
+            );
+            return res.json({
+                status: 'success',
+                message: `${modelName} created successfully`,
+                data: modelData,
+            });
+        } catch (e) {
+            if (e instanceof ZodError) {
+                return res.status(400).json({
+                    status: 'error',
+                    message: `Invalid request body: ${e.message}`,
+                });
+            }
+            throw e;
+        }
+    }
+);
 
 // router.patch(
 //     '/:id',
