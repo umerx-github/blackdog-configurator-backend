@@ -15,19 +15,19 @@ router.get(
             any,
             any,
             any,
-            StrategyTypes.StrategyGetManyRequestParamsRaw
+            StrategyTypes.StrategyGetManyRequestQueryRaw
         >,
         res: Response<StrategyTypes.StrategyGetManyResponseBody>
     ) => {
         const query = StrategyModel.query().orderBy('id', 'desc');
         // .withGraphFetched('configSymbols');
         try {
-            const expectedStrategyGetManyRequestParams: StrategyTypes.StrategyGetManyRequestParams =
-                StrategyTypes.StrategyGetManyRequestParamsFromRaw(req.query);
-            if (undefined !== expectedStrategyGetManyRequestParams.status) {
+            const expectedStrategyGetManyRequestQuery: StrategyTypes.StrategyGetManyRequestQuery =
+                StrategyTypes.StrategyGetManyRequestQueryFromRaw(req.query);
+            if (undefined !== expectedStrategyGetManyRequestQuery.status) {
                 query.where(
                     'status',
-                    expectedStrategyGetManyRequestParams.status
+                    expectedStrategyGetManyRequestQuery.status
                 );
             }
             const data = await query;
@@ -48,35 +48,40 @@ router.get(
     }
 );
 
-// router.get(
-//     '/:id',
-//     async (
-//         req: Request,
-//         res: Response<ResponseBase<StrategyTemplateSeaDogDiscountScheme>>
-//     ) => {
-//         const id = parseInt(req.params.id);
-//         if (isNaN(id)) {
-//             return res.status(400).json({
-//                 status: 'error',
-//                 message: 'Invalid request params: "id" is required number',
-//             });
-//         }
-//         const modelInstance = await StrategyTemplateSeaDogDiscountScheme.query()
-//             .findById(id)
-//             .withGraphFetched('configSymbols');
-//         if (!modelInstance) {
-//             return res.status(404).json({
-//                 status: 'error',
-//                 message: `${modelName} not found`,
-//             });
-//         }
-//         return res.json({
-//             status: 'success',
-//             message: `${modelName} retrieved successfully`,
-//             data: modelInstance,
-//         });
-//     }
-// );
+router.get(
+    '/:id',
+    async (
+        req: Request<StrategyTypes.StrategyGetSingleRequestParamsRaw>,
+        res: Response<StrategyTypes.StrategyGetSingleResponseBody>
+    ) => {
+        try {
+            const params = StrategyTypes.StrategyGetSingleRequestParamsFromRaw(
+                req.params
+            );
+            const modelInstance = await StrategyModel.query().findById(
+                params.id
+            );
+            if (!modelInstance) {
+                return res.status(404).json({
+                    status: 'error',
+                    message: `${modelName} not found`,
+                });
+            }
+            return res.json({
+                status: 'success',
+                message: `${modelName} retrieved successfully`,
+                data: modelInstance,
+            });
+        } catch (err) {
+            if (err instanceof ZodError) {
+                return res.status(400).json({
+                    status: 'error',
+                    message: `Invalid request params: ${err.message}`,
+                });
+            }
+        }
+    }
+);
 
 // router.post(
 //     '/',
