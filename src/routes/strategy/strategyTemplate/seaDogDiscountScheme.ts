@@ -1,101 +1,62 @@
-import { Strategy } from '@umerx/umerx-blackdog-configurator-types-typescript';
+import { StrategyTemplateSeaDogDiscountScheme as StrategyTemplateSeaDogDiscountSchemeModel } from '../../../db/models/StrategyTemplateSeaDogDiscountScheme.js';
+import { StrategyTemplateSeaDogDiscountScheme as StrategyTemplateSeaDogDiscountSchemeTypes } from '@umerx/umerx-blackdog-configurator-types-typescript';
 import { Router, Request, Response } from 'express';
 import { z, ZodError } from 'zod';
-import { StrategyTemplateSeaDogDiscountScheme } from '../../../db/models/StrategyTemplateSeaDogDiscountScheme.js';
-import {
-    GetConfigsRequestInterface,
-    ResponseBase,
-} from '../../../interfaces/db/models/index.js';
-import {
-    NewConfigRequestInterface,
-    NewConfigInterface,
-    UpdateConfigRequestInterface,
-    UpdateConfigInterface,
-} from '../../../interfaces/db/models/index.js';
-import { parse } from 'path';
-import { ConfigSymbol } from '../../../db/models/ConfigSymbol.js';
+import * as Errors from '../../../errors/index.js';
+import { KNEXION } from '../../../../src/index.js';
 
 const router = Router();
-const modelName = 'Config';
-
-const ExpectedGetConfigsRequest = z
-    .object({
-        isActive: z
-            .string()
-            .optional()
-            .transform(str => {
-                if (str === 'true') {
-                    return true;
-                }
-                if (str === 'false') {
-                    return false;
-                }
-                return undefined;
-            }),
-    })
-    .transform(obj => {
-        if (obj.isActive === undefined) {
-            delete obj.isActive;
-        }
-        return obj;
-    });
-
-const ExpectedRequestConfigPost = z.object({
-    isActive: z.boolean(),
-    sellAtPercentile: z.number(),
-    buyAtPercentile: z.number(),
-    sellTrailingPercent: z.number(),
-    buyTrailingPercent: z.number(),
-    minimumGainPercent: z.number(),
-    timeframeInDays: z.number(),
-    alpacaApiKey: z.string(),
-    alpacaApiSecret: z.string(),
-    cashInDollars: z.number(),
-    configSymbols: z.array(
-        z.object({
-            symbolId: z.number(),
-            order: z.number(),
-        })
-    ),
-});
-
-const ExpectedRequestConfigPatch = z.object({
-    isActive: z.boolean().optional(),
-    sellAtPercentile: z.number().optional(),
-    buyAtPercentile: z.number().optional(),
-    sellTrailingPercent: z.number().optional(),
-    buyTrailingPercent: z.number().optional(),
-    minimumGainPercent: z.number().optional(),
-    timeframeInDays: z.number().optional(),
-    alpacaApiKey: z.string().optional(),
-    alpacaApiSecret: z.string().optional(),
-    cashInDollars: z.number().optional(),
-    configSymbols: z
-        .array(
-            z.object({
-                symbolId: z.number(),
-                order: z.number(),
-            })
-        )
-        .optional(),
-});
+const modelName = 'StrategyTemplateSeaDogDiscountScheme';
 
 // Typing Express Request: https://stackoverflow.com/questions/48027563/typescript-type-annotation-for-res-body
 
 router.get(
     '/',
     async (
-        req,
-        res: Response<ResponseBase<StrategyTemplateSeaDogDiscountScheme[]>>
+        req: Request<
+            any,
+            any,
+            any,
+            StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeGetManyRequestQueryRaw
+        >,
+        res: Response<StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeGetManyResponseBody>
     ) => {
-        const query = StrategyTemplateSeaDogDiscountScheme.query()
-            .orderBy('id', 'desc')
-            .withGraphFetched('configSymbols');
+        const query = StrategyTemplateSeaDogDiscountSchemeModel.query().orderBy(
+            'id',
+            'desc'
+        );
+        // .withGraphFetched('configSymbols');
         try {
-            const expectedGetConfigsRequest: GetConfigsRequestInterface =
-                ExpectedGetConfigsRequest.parse(req.query);
-            if (undefined !== expectedGetConfigsRequest.isActive) {
-                query.where('isActive', expectedGetConfigsRequest.isActive);
+            const expectedStrategyTemplateSeaDogDiscountSchemeGetManyRequestQuery: StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeGetManyRequestQuery =
+                StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeGetManyRequestQueryFromRaw(
+                    req.query
+                );
+            if (
+                undefined !==
+                expectedStrategyTemplateSeaDogDiscountSchemeGetManyRequestQuery.status
+            ) {
+                query.where(
+                    'status',
+                    expectedStrategyTemplateSeaDogDiscountSchemeGetManyRequestQuery.status
+                );
+            }
+            if (
+                undefined !==
+                expectedStrategyTemplateSeaDogDiscountSchemeGetManyRequestQuery.strategyId
+            ) {
+                query.where(
+                    'strategyId',
+                    expectedStrategyTemplateSeaDogDiscountSchemeGetManyRequestQuery.strategyId
+                );
+            }
+            if (
+                undefined !==
+                expectedStrategyTemplateSeaDogDiscountSchemeGetManyRequestQuery.ids
+            ) {
+                query.whereIn(
+                    'id',
+                    expectedStrategyTemplateSeaDogDiscountSchemeGetManyRequestQuery.ids
+                );
             }
             const data = await query;
             return res.json({
@@ -118,67 +79,124 @@ router.get(
 router.get(
     '/:id',
     async (
-        req: Request,
-        res: Response<ResponseBase<StrategyTemplateSeaDogDiscountScheme>>
+        req: Request<StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeGetSingleRequestParamsRaw>,
+        res: Response<StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeGetSingleResponseBody>
     ) => {
-        const id = parseInt(req.params.id);
-        if (isNaN(id)) {
-            return res.status(400).json({
-                status: 'error',
-                message: 'Invalid request params: "id" is required number',
+        try {
+            const params =
+                StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeGetSingleRequestParamsFromRaw(
+                    req.params
+                );
+            const modelData =
+                await StrategyTemplateSeaDogDiscountSchemeModel.query().findById(
+                    params.id
+                );
+            if (!modelData) {
+                return res.status(404).json({
+                    status: 'error',
+                    message: `${modelName} not found`,
+                });
+            }
+            return res.json({
+                status: 'success',
+                message: `${modelName} instance retrieved successfully`,
+                data: modelData,
             });
+        } catch (err) {
+            if (err instanceof ZodError) {
+                return res.status(400).json({
+                    status: 'error',
+                    message: `Invalid request params: ${err.message}`,
+                });
+            }
         }
-        const modelInstance = await StrategyTemplateSeaDogDiscountScheme.query()
-            .findById(id)
-            .withGraphFetched('configSymbols');
-        if (!modelInstance) {
-            return res.status(404).json({
-                status: 'error',
-                message: `${modelName} not found`,
-            });
-        }
-        return res.json({
-            status: 'success',
-            message: `${modelName} retrieved successfully`,
-            data: modelInstance,
-        });
     }
 );
 
 router.post(
     '/',
     async (
-        req: Request<{}, {}, NewConfigRequestInterface>,
-        res: Response<ResponseBase<StrategyTemplateSeaDogDiscountScheme>>
+        req: Request<
+            any,
+            any,
+            StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePostManyRequestBody
+        >,
+        res: Response<StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePostManyResponseBody>
     ) => {
         // https://vincit.github.io/objection.js/guide/query-examples.html#relation-relate-queries);
         try {
-            const parsedRequest: NewConfigRequestInterface =
-                ExpectedRequestConfigPost.parse(req.body);
-            const modelData: NewConfigInterface = {
-                ...parsedRequest,
-                cashInCents: parsedRequest.cashInDollars * 100,
-            };
-            const initialModelInstance =
-                await StrategyTemplateSeaDogDiscountScheme.query().insert({
-                    ...modelData,
-                });
-            parsedRequest.configSymbols.forEach(async configSymbol => {
-                await initialModelInstance
-                    .$relatedQuery<ConfigSymbol>('configSymbols')
-                    .insert(configSymbol);
-            });
-            const modelInstance =
-                await StrategyTemplateSeaDogDiscountScheme.query()
-                    .findById(initialModelInstance.id)
-                    .withGraphFetched('configSymbols');
-            if (!modelInstance) {
-                throw new Error(`Failed to create ${modelName}`);
-            }
+            const parsedRequest: StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePostManyRequestBody =
+                StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePostManyRequestBodyFromRaw(
+                    req.body
+                );
+            const modelData: StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePostManyResponseBodyData =
+                [];
+            await KNEXION.transaction(
+                async trx => {
+                    for (const strategyTemplateSeaDogDiscountScheme of parsedRequest) {
+                        const model =
+                            await StrategyTemplateSeaDogDiscountSchemeModel.query(
+                                trx
+                            ).insert(strategyTemplateSeaDogDiscountScheme);
+                        modelData.push(model);
+                    }
+                },
+                { isolationLevel: 'serializable' }
+            );
             return res.json({
                 status: 'success',
-                message: `${modelName} created successfully`,
-                data: modelInstance,
+                message: `${modelName} instances created successfully`,
+                data: modelData,
+            });
+        } catch (e) {
+            if (e instanceof ZodError) {
+                return res.status(400).json({
+                    status: 'error',
+                    message: `Invalid request body: ${e.message}`,
+                });
+            }
+            throw e;
+        }
+    }
+);
+
+router.patch(
+    '/',
+    async (
+        req: Request<
+            any,
+            any,
+            StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePatchManyRequestBody
+        >,
+        res: Response<StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePatchManyResponseBody>
+    ) => {
+        // https://vincit.github.io/objection.js/guide/query-examples.html#relation-relate-queries);
+        try {
+            const parsedRequest: StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePatchManyRequestBody =
+                StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePatchManyRequestBodyFromRaw(
+                    req.body
+                );
+            const modelData: StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePatchManyResponseBodyData =
+                [];
+            await KNEXION.transaction(
+                async trx => {
+                    for (const strategyTemplateSeaDogDiscountScheme of parsedRequest) {
+                        const model =
+                            await StrategyTemplateSeaDogDiscountSchemeModel.query(
+                                trx
+                            ).patchAndFetchById(
+                                strategyTemplateSeaDogDiscountScheme.id,
+                                strategyTemplateSeaDogDiscountScheme
+                            );
+                        modelData.push(model);
+                    }
+                },
+                { isolationLevel: 'serializable' }
+            );
+            return res.json({
+                status: 'success',
+                message: `${modelName} instances updated successfully`,
+                data: modelData,
             });
         } catch (e) {
             if (e instanceof ZodError) {
@@ -195,57 +213,38 @@ router.post(
 router.patch(
     '/:id',
     async (
-        req: Request<{ id: string }, {}, UpdateConfigRequestInterface>,
-        res: Response<ResponseBase<StrategyTemplateSeaDogDiscountScheme>>
+        req: Request<
+            StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePatchSingleRequestParamsRaw,
+            any,
+            StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePatchSingleRequestBody
+        >,
+        res: Response<StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePatchSingleResponseBody>
     ) => {
-        const id = parseInt(req.params.id);
-        if (isNaN(id)) {
-            return res.status(400).json({
-                status: 'error',
-                message: 'Invalid request params: "id" is required number',
-            });
-        }
         // https://vincit.github.io/objection.js/guide/query-examples.html#relation-relate-queries);
         try {
-            const parsedRequest: UpdateConfigRequestInterface =
-                ExpectedRequestConfigPatch.parse(req.body);
-            const modelData: UpdateConfigInterface = {
-                ...parsedRequest,
-            };
-            if (parsedRequest.cashInDollars) {
-                modelData.cashInCents = parsedRequest.cashInDollars * 100;
-            }
-            const initialModelInstance =
-                await StrategyTemplateSeaDogDiscountScheme.query().patchAndFetchById(
-                    id,
-                    modelData
+            const params =
+                StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeGetSingleRequestParamsFromRaw(
+                    req.params
                 );
-            if (!initialModelInstance) {
-                throw new Error(`Failed to update ${modelName}`);
-            }
-            if (parsedRequest.configSymbols) {
-                // Delete existing
-                await initialModelInstance
-                    .$relatedQuery<ConfigSymbol>('configSymbols')
-                    .delete();
-                // Add new
-                parsedRequest.configSymbols.forEach(async configSymbol => {
-                    await initialModelInstance
-                        .$relatedQuery<ConfigSymbol>('configSymbols')
-                        .insert(configSymbol);
+            const parsedRequest: StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePatchSingleRequestBody =
+                StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePatchSingleRequestBodyFromRaw(
+                    req.body
+                );
+            const modelData =
+                await StrategyTemplateSeaDogDiscountSchemeModel.query().patchAndFetchById(
+                    params.id,
+                    parsedRequest
+                );
+            if (!modelData) {
+                return res.status(404).json({
+                    status: 'error',
+                    message: `${modelName} not found`,
                 });
-            }
-            const modelInstance =
-                await StrategyTemplateSeaDogDiscountScheme.query()
-                    .findById(initialModelInstance.id)
-                    .withGraphFetched('configSymbols');
-            if (!modelInstance) {
-                throw new Error(`Failed to update ${modelName}`);
             }
             return res.json({
                 status: 'success',
-                message: `${modelName} updated successfully`,
-                data: modelInstance,
+                message: `${modelName} instance updated successfully`,
+                data: modelData,
             });
         } catch (e) {
             if (e instanceof ZodError) {
@@ -255,6 +254,206 @@ router.patch(
                 });
             }
             throw e;
+        }
+    }
+);
+
+router.put(
+    '/',
+    async (
+        req: Request<
+            any,
+            any,
+            StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePutManyRequestBody
+        >,
+        res: Response<StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePutManyResponseBody>
+    ) => {
+        // https://vincit.github.io/objection.js/guide/query-examples.html#relation-relate-queries);
+        try {
+            const parsedRequest: StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePutManyRequestBody =
+                StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePutManyRequestBodyFromRaw(
+                    req.body
+                );
+            const modelData: StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePutManyResponseBodyData =
+                [];
+            await KNEXION.transaction(
+                async trx => {
+                    for (const strategyTemplateSeaDogDiscountScheme of parsedRequest) {
+                        const model =
+                            await StrategyTemplateSeaDogDiscountSchemeModel.query(
+                                trx
+                            ).patchAndFetchById(
+                                strategyTemplateSeaDogDiscountScheme.id,
+                                strategyTemplateSeaDogDiscountScheme
+                            );
+                        modelData.push(model);
+                    }
+                },
+                { isolationLevel: 'serializable' }
+            );
+            return res.json({
+                status: 'success',
+                message: `${modelName} instances updated successfully`,
+                data: modelData,
+            });
+        } catch (e) {
+            if (e instanceof ZodError) {
+                return res.status(400).json({
+                    status: 'error',
+                    message: `Invalid request body: ${e.message}`,
+                });
+            }
+            throw e;
+        }
+    }
+);
+
+router.put(
+    '/:id',
+    async (
+        req: Request<
+            StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePutSingleRequestParamsRaw,
+            any,
+            StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePutSingleRequestBody
+        >,
+        res: Response<StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePutSingleResponseBody>
+    ) => {
+        // https://vincit.github.io/objection.js/guide/query-examples.html#relation-relate-queries);
+        try {
+            const params =
+                StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeGetSingleRequestParamsFromRaw(
+                    req.params
+                );
+            const parsedRequest: StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePutSingleRequestBody =
+                StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePutSingleRequestBodyFromRaw(
+                    req.body
+                );
+            const modelData =
+                await StrategyTemplateSeaDogDiscountSchemeModel.query().patchAndFetchById(
+                    params.id,
+                    parsedRequest
+                );
+            if (!modelData) {
+                return res.status(404).json({
+                    status: 'error',
+                    message: `${modelName} not found`,
+                });
+            }
+            return res.json({
+                status: 'success',
+                message: `${modelName} instance updated successfully`,
+                data: modelData,
+            });
+        } catch (e) {
+            if (e instanceof ZodError) {
+                return res.status(400).json({
+                    status: 'error',
+                    message: `Invalid request body: ${e.message}`,
+                });
+            }
+            throw e;
+        }
+    }
+);
+
+router.delete(
+    '/',
+    async (
+        req: Request<
+            any,
+            any,
+            any,
+            StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeDeleteManyRequestQueryRaw
+        >,
+        res: Response<StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeDeleteManyResponseBody>
+    ) => {
+        const query = StrategyTemplateSeaDogDiscountSchemeModel.query();
+        try {
+            const expectedStrategyTemplateSeaDogDiscountSchemeDeleteManyRequestQuery: StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeDeleteManyRequestQuery =
+                StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeDeleteManyRequestQueryFromRaw(
+                    req.query
+                );
+            const modelData: StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePutManyResponseBodyData =
+                [];
+            await KNEXION.transaction(
+                async trx => {
+                    for (const id of expectedStrategyTemplateSeaDogDiscountSchemeDeleteManyRequestQuery.ids) {
+                        const model =
+                            await StrategyTemplateSeaDogDiscountSchemeModel.query(
+                                trx
+                            ).findById(id);
+                        if (!model) {
+                            throw new Errors.ModelNotFoundError(
+                                `Unable to find ${modelName} with id ${id}`
+                            );
+                        }
+                        modelData.push(model);
+                        await StrategyTemplateSeaDogDiscountSchemeModel.query(
+                            trx
+                        ).deleteById(id);
+                    }
+                },
+                { isolationLevel: 'serializable' }
+            );
+            return res.json({
+                status: 'success',
+                message: `${modelName} instances deleted successfully`,
+                data: modelData,
+            });
+        } catch (e) {
+            if (e instanceof ZodError) {
+                return res.status(400).json({
+                    status: 'error',
+                    message: `Invalid request body: ${e.message}`,
+                });
+            }
+            if (e instanceof Errors.ModelNotFoundError) {
+                return res.status(404).json({
+                    status: 'error',
+                    message: e.message,
+                });
+            }
+            throw e;
+        }
+    }
+);
+
+router.delete(
+    '/:id',
+    async (
+        req: Request<StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeDeleteSingleRequestParamsRaw>,
+        res: Response<StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeDeleteSingleResponseBody>
+    ) => {
+        try {
+            const params =
+                StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeDeleteSingleRequestParamsFromRaw(
+                    req.params
+                );
+            const modelData =
+                await StrategyTemplateSeaDogDiscountSchemeModel.query().findById(
+                    params.id
+                );
+            if (!modelData) {
+                return res.status(404).json({
+                    status: 'error',
+                    message: `${modelName} not found`,
+                });
+            }
+            await StrategyTemplateSeaDogDiscountSchemeModel.query().deleteById(
+                params.id
+            );
+            return res.json({
+                status: 'success',
+                message: `${modelName} instance deleted successfully`,
+                data: modelData,
+            });
+        } catch (err) {
+            if (err instanceof ZodError) {
+                return res.status(400).json({
+                    status: 'error',
+                    message: `Invalid request params: ${err.message}`,
+                });
+            }
         }
     }
 );

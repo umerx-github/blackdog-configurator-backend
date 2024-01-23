@@ -1,31 +1,21 @@
 import { Model } from 'objection';
-import {
-    ConfigInterface,
-    ConfigSymbolInterface,
-} from '../../interfaces/db/models/index.js';
-import { ConfigSymbol } from './ConfigSymbol.js';
+import { StrategyTemplateSeaDogDiscountScheme as StrategyTemplateSeaDogDiscountSchemeTypes } from '@umerx/umerx-blackdog-configurator-types-typescript';
+import { Strategy as StrategyModel } from './Strategy.js';
 
 export class StrategyTemplateSeaDogDiscountScheme
     extends Model
-    implements ConfigInterface
+    implements
+        StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeModelInterface
 {
     id!: number;
-    // https://www.reddit.com/r/node/comments/7hxie6/objectionjs_and_timestamps/
-    // https://github.com/Vincit/objection.js/issues/647
-    createdAt!: string;
-    isActive!: boolean;
+    strategyId!: number;
+    status!: StrategyTemplateSeaDogDiscountSchemeTypes.Status;
     cashInCents!: number;
     sellAtPercentile!: number;
-    buyAtPercentile!: number;
-    sellTrailingPercent!: number;
-    buyTrailingPercent!: number;
-    minimumGainPercent!: number;
-    timeframeInDays!: number;
-    alpacaApiKey!: string;
-    alpacaApiSecret!: string;
-    configSymbols!: ConfigSymbolInterface[];
+    // https://www.reddit.com/r/node/comments/7hxie6/objectionjs_and_timestamps/
+    // https://github.com/Vincit/objection.js/issues/647
     static get tableName() {
-        return 'config';
+        return 'strategyTemplateSeaDogDiscountScheme';
     }
     static get virtualAttributes() {
         return ['cashInDollars'];
@@ -39,28 +29,21 @@ export class StrategyTemplateSeaDogDiscountScheme
             // required: ['createdAt'],
             properties: {
                 id: { type: 'number' },
-                createdAt: { type: 'string' },
-                isActive: { type: 'boolean' },
+                strategyId: { type: 'number' },
+                status: { type: 'string' },
                 cashInCents: { type: 'number' },
                 sellAtPercentile: { type: 'number' },
-                buyAtPercentile: { type: 'number' },
-                sellTrailingPercent: { type: 'number' },
-                buyTrailingPercent: { type: 'number' },
-                minimumGainPercent: { type: 'number' },
-                timeframeInDays: { type: 'number' },
-                alpacaApiKey: { type: 'string' },
-                alpacaApiSecret: { type: 'string' },
             },
         };
     }
     static relationMappings = () => {
         return {
-            configSymbols: {
-                relation: Model.HasManyRelation,
-                modelClass: ConfigSymbol,
+            strategy: {
+                relation: Model.HasOneRelation,
+                modelClass: StrategyModel,
                 join: {
-                    from: 'config.id',
-                    to: 'configSymbol.configId',
+                    from: `${StrategyTemplateSeaDogDiscountScheme.tableName}.strategyId`,
+                    to: 'strategy.id',
                 },
             },
         };
