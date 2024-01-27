@@ -20,5 +20,5 @@
         "target": "ES2022",
         "sourceMap": true,
     },
-    "include": ["**/*.ts"],
+    "include": ["**/*.ts", "src/db/models/SellOrder.tsa"],
 }

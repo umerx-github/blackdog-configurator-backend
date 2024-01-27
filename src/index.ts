@@ -5,10 +5,6 @@ import knexConfig from './db/knexfile.js';
 import { Model } from 'objection';
 import strategyRouter from './routes/strategy/index.js';
 import strategyTemplateRouter from './routes/strategyTemplate/index.js';
-import symbolRouter from './routes/symbol.js';
-import buyOrderRouter from './routes/buyOrder.js';
-import positionRouter from './routes/position.js';
-import sellOrderRouter from './routes/sellOrder.js';
 
 const ENVIRONMENT = process.env.ENVIRONMENT || 'development';
 const SCHEME = process.env.SCHEME || 'http';

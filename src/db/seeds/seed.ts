@@ -3,15 +3,38 @@ import {
     Strategy as StrategyTypes,
     StrategyTemplate as StrategyTemplateTypes,
     StrategyTemplateSeaDogDiscountScheme as StrategyTemplateSeaDogDiscountSchemeTypes,
+    StrategyTemplateSeaDogDiscountSchemeSymbol as StrategyTemplateSeaDogDiscountSchemeSymbolTypes,
+    Symbol as SymbolTypes,
 } from '@umerx/umerx-blackdog-configurator-types-typescript';
 import { Strategy as StrategyModel } from '../models/Strategy.js';
 import { StrategyTemplateSeaDogDiscountScheme as StrategyTemplateSeaDogDiscountSchemeModel } from '../models/StrategyTemplateSeaDogDiscountScheme.js';
+import { Symbol as SymbolModel } from '../models/Symbol.js';
 export async function seed(knex: Knex): Promise<void> {
     // Deletes ALL existing entries
+    await knex(
+        StrategyTemplateSeaDogDiscountSchemeModel.tableNameJunctionSymbol
+    ).del();
     await knex(StrategyTemplateSeaDogDiscountSchemeModel.tableName).del();
     await knex(StrategyModel.tableName).del();
+    await knex(SymbolModel.tableName).del();
 
     // Inserts seed entries
+    await knex<SymbolTypes.SymbolProps & { id: number }>(
+        SymbolModel.tableName
+    ).insert([
+        {
+            id: 1,
+            name: 'AAPL',
+        },
+        {
+            id: 2,
+            name: 'MSFT',
+        },
+        {
+            id: 3,
+            name: 'GOOG',
+        },
+    ]);
     await knex<StrategyTypes.StrategyProps & { id: number }>(
         StrategyModel.tableName
     ).insert([
@@ -69,5 +92,43 @@ export async function seed(knex: Knex): Promise<void> {
             sellAtPercentile: 100,
         },
     ]);
+    await knex<
+        StrategyTemplateSeaDogDiscountSchemeSymbolTypes.StrategyTemplateSeaDogDiscountSchemeSymbolProps & {
+            id: number;
+        }
+    >(StrategyTemplateSeaDogDiscountSchemeModel.tableNameJunctionSymbol).insert(
+        [
+            {
+                id: 1,
+                strategyTemplateSeaDogDiscountSchemeId: 1,
+                symbolId: 1,
+            },
+            {
+                id: 2,
+                strategyTemplateSeaDogDiscountSchemeId: 1,
+                symbolId: 2,
+            },
+            {
+                id: 3,
+                strategyTemplateSeaDogDiscountSchemeId: 2,
+                symbolId: 2,
+            },
+            {
+                id: 4,
+                strategyTemplateSeaDogDiscountSchemeId: 2,
+                symbolId: 3,
+            },
+            {
+                id: 5,
+                strategyTemplateSeaDogDiscountSchemeId: 3,
+                symbolId: 3,
+            },
+            {
+                id: 6,
+                strategyTemplateSeaDogDiscountSchemeId: 3,
+                symbolId: 1,
+            },
+        ]
+    );
     // process.env?.BLACKDOG_CONFIGURATOR_BACKEND_DEV_ALPACA_API_KEY ?? ''
 }

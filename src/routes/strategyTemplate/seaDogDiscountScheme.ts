@@ -4,11 +4,28 @@ import { Router, Request, Response } from 'express';
 import { z, ZodError } from 'zod';
 import * as Errors from '../../errors/index.js';
 import { KNEXION } from '../../index.js';
+import { Symbol as SymbolModel } from '../../db/models/Symbol.js';
 
 const router = Router();
 const modelName = 'StrategyTemplateSeaDogDiscountScheme';
 
 // Typing Express Request: https://stackoverflow.com/questions/48027563/typescript-type-annotation-for-res-body
+
+function modelToResponseBodyDataInstance(
+    model: StrategyTemplateSeaDogDiscountSchemeModel
+): StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeGetResponseBodyDataInstance {
+    if (!model.symbols) {
+        throw new Error('Expected symbols to be defined');
+    }
+    const symbols = model.symbols;
+    delete model.symbols;
+    const modelDataWithSymbolId: StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeGetResponseBodyDataInstance =
+        {
+            ...model,
+            symbolIds: symbols.map(symbol => symbol.id),
+        };
+    return modelDataWithSymbolId;
+}
 
 router.get(
     '/',
@@ -58,7 +75,10 @@ router.get(
                     expectedStrategyTemplateSeaDogDiscountSchemeGetManyRequestQuery.ids
                 );
             }
-            const data = await query;
+            const queryResults = await query.withGraphFetched('symbols');
+            const data = queryResults.map(dataItem => {
+                return modelToResponseBodyDataInstance(dataItem);
+            });
             return res.json({
                 status: 'success',
                 message: `${modelName} instances retrieved successfully`,
@@ -88,9 +108,9 @@ router.get(
                     req.params
                 );
             const modelData =
-                await StrategyTemplateSeaDogDiscountSchemeModel.query().findById(
-                    params.id
-                );
+                await StrategyTemplateSeaDogDiscountSchemeModel.query()
+                    .findById(params.id)
+                    .withGraphFetched('symbols');
             if (!modelData) {
                 return res.status(404).json({
                     status: 'error',
@@ -100,7 +120,7 @@ router.get(
             return res.json({
                 status: 'success',
                 message: `${modelName} instance retrieved successfully`,
-                data: modelData,
+                data: modelToResponseBodyDataInstance(modelData),
             });
         } catch (err) {
             if (err instanceof ZodError) {
@@ -137,8 +157,10 @@ router.post(
                         const model =
                             await StrategyTemplateSeaDogDiscountSchemeModel.query(
                                 trx
-                            ).insert(strategyTemplateSeaDogDiscountScheme);
-                        modelData.push(model);
+                            )
+                                .insert(strategyTemplateSeaDogDiscountScheme)
+                                .withGraphFetched('symbols');
+                        modelData.push(modelToResponseBodyDataInstance(model));
                     }
                 },
                 { isolationLevel: 'serializable' }
@@ -184,11 +206,13 @@ router.patch(
                         const model =
                             await StrategyTemplateSeaDogDiscountSchemeModel.query(
                                 trx
-                            ).patchAndFetchById(
-                                strategyTemplateSeaDogDiscountScheme.id,
-                                strategyTemplateSeaDogDiscountScheme
-                            );
-                        modelData.push(model);
+                            )
+                                .patchAndFetchById(
+                                    strategyTemplateSeaDogDiscountScheme.id,
+                                    strategyTemplateSeaDogDiscountScheme
+                                )
+                                .withGraphFetched('symbols');
+                        modelData.push(modelToResponseBodyDataInstance(model));
                     }
                 },
                 { isolationLevel: 'serializable' }
@@ -231,10 +255,9 @@ router.patch(
                     req.body
                 );
             const modelData =
-                await StrategyTemplateSeaDogDiscountSchemeModel.query().patchAndFetchById(
-                    params.id,
-                    parsedRequest
-                );
+                await StrategyTemplateSeaDogDiscountSchemeModel.query()
+                    .patchAndFetchById(params.id, parsedRequest)
+                    .withGraphFetched('symbols');
             if (!modelData) {
                 return res.status(404).json({
                     status: 'error',
@@ -244,7 +267,7 @@ router.patch(
             return res.json({
                 status: 'success',
                 message: `${modelName} instance updated successfully`,
-                data: modelData,
+                data: modelToResponseBodyDataInstance(modelData),
             });
         } catch (e) {
             if (e instanceof ZodError) {
@@ -282,11 +305,13 @@ router.put(
                         const model =
                             await StrategyTemplateSeaDogDiscountSchemeModel.query(
                                 trx
-                            ).patchAndFetchById(
-                                strategyTemplateSeaDogDiscountScheme.id,
-                                strategyTemplateSeaDogDiscountScheme
-                            );
-                        modelData.push(model);
+                            )
+                                .patchAndFetchById(
+                                    strategyTemplateSeaDogDiscountScheme.id,
+                                    strategyTemplateSeaDogDiscountScheme
+                                )
+                                .withGraphFetched('symbols');
+                        modelData.push(modelToResponseBodyDataInstance(model));
                     }
                 },
                 { isolationLevel: 'serializable' }
@@ -329,10 +354,9 @@ router.put(
                     req.body
                 );
             const modelData =
-                await StrategyTemplateSeaDogDiscountSchemeModel.query().patchAndFetchById(
-                    params.id,
-                    parsedRequest
-                );
+                await StrategyTemplateSeaDogDiscountSchemeModel.query()
+                    .patchAndFetchById(params.id, parsedRequest)
+                    .withGraphFetched('symbols');
             if (!modelData) {
                 return res.status(404).json({
                     status: 'error',
@@ -342,7 +366,7 @@ router.put(
             return res.json({
                 status: 'success',
                 message: `${modelName} instance updated successfully`,
-                data: modelData,
+                data: modelToResponseBodyDataInstance(modelData),
             });
         } catch (e) {
             if (e instanceof ZodError) {
@@ -381,13 +405,15 @@ router.delete(
                         const model =
                             await StrategyTemplateSeaDogDiscountSchemeModel.query(
                                 trx
-                            ).findById(id);
+                            )
+                                .findById(id)
+                                .withGraphFetched('symbols');
                         if (!model) {
                             throw new Errors.ModelNotFoundError(
                                 `Unable to find ${modelName} with id ${id}`
                             );
                         }
-                        modelData.push(model);
+                        modelData.push(modelToResponseBodyDataInstance(model));
                         await StrategyTemplateSeaDogDiscountSchemeModel.query(
                             trx
                         ).deleteById(id);
@@ -430,9 +456,9 @@ router.delete(
                     req.params
                 );
             const modelData =
-                await StrategyTemplateSeaDogDiscountSchemeModel.query().findById(
-                    params.id
-                );
+                await StrategyTemplateSeaDogDiscountSchemeModel.query()
+                    .findById(params.id)
+                    .withGraphFetched('symbols');
             if (!modelData) {
                 return res.status(404).json({
                     status: 'error',
@@ -445,7 +471,7 @@ router.delete(
             return res.json({
                 status: 'success',
                 message: `${modelName} instance deleted successfully`,
-                data: modelData,
+                data: modelToResponseBodyDataInstance(modelData),
             });
         } catch (err) {
             if (err instanceof ZodError) {
