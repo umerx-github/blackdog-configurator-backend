@@ -5,12 +5,44 @@ import { z, ZodError } from 'zod';
 import * as Errors from '../../errors/index.js';
 import { KNEXION } from '../../index.js';
 import { Symbol as SymbolModel } from '../../db/models/Symbol.js';
+import { SymbolModelInterface } from '@umerx/umerx-blackdog-configurator-types-typescript/build/src/symbol.js';
 
 const router = Router();
 const modelName = 'StrategyTemplateSeaDogDiscountScheme';
 
 // Typing Express Request: https://stackoverflow.com/questions/48027563/typescript-type-annotation-for-res-body
 
+function postRequestBodyDataInstanceToRequiredFields(
+    requestBodyData: StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePostRequestBodyDataInstance
+): StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeRequiredFields {
+    const modelData: StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeRequiredFields =
+        {
+            strategyId: requestBodyData.strategyId,
+            status: requestBodyData.status,
+            cashInCents: requestBodyData.cashInCents,
+            sellAtPercentile: requestBodyData.sellAtPercentile,
+        };
+    return modelData;
+}
+function patchRequestBodyDataInstanceToRequiredFields(
+    requestBodyData: StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePatchRequestBodyDataInstance
+): StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeRequiredFieldsOptional {
+    let modelData: StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeRequiredFieldsOptional =
+        {};
+    if (undefined !== requestBodyData.strategyId) {
+        modelData.strategyId = requestBodyData.strategyId;
+    }
+    if (undefined !== requestBodyData.status) {
+        modelData.status = requestBodyData.status;
+    }
+    if (undefined !== requestBodyData.cashInCents) {
+        modelData.cashInCents = requestBodyData.cashInCents;
+    }
+    if (undefined !== requestBodyData.sellAtPercentile) {
+        modelData.sellAtPercentile = requestBodyData.sellAtPercentile;
+    }
+    return modelData;
+}
 function modelToResponseBodyDataInstance(
     model: StrategyTemplateSeaDogDiscountSchemeModel
 ): StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeGetResponseBodyDataInstance {
@@ -154,13 +186,45 @@ router.post(
             await KNEXION.transaction(
                 async trx => {
                     for (const strategyTemplateSeaDogDiscountScheme of parsedRequest) {
+                        // Insert into junction table first
+                        const symbolIds =
+                            strategyTemplateSeaDogDiscountScheme.symbolIds;
+                        const dataToInsert =
+                            postRequestBodyDataInstanceToRequiredFields(
+                                strategyTemplateSeaDogDiscountScheme
+                            );
                         const model =
                             await StrategyTemplateSeaDogDiscountSchemeModel.query(
                                 trx
                             )
-                                .insert(strategyTemplateSeaDogDiscountScheme)
+                                .insert(dataToInsert)
                                 .withGraphFetched('symbols');
-                        modelData.push(modelToResponseBodyDataInstance(model));
+                        if (!model) {
+                            throw new Error(
+                                `Unable to create ${modelName} instance`
+                            );
+                        }
+                        // Insert into junction table
+                        for (const symbolId of symbolIds) {
+                            await model
+                                .$relatedQuery<SymbolModel>('symbols', trx)
+                                .relate(symbolId);
+                        }
+                        // fetch model with symbols
+                        const modelWithSymbols =
+                            await StrategyTemplateSeaDogDiscountSchemeModel.query(
+                                trx
+                            )
+                                .findById(model.id)
+                                .withGraphFetched('symbols');
+                        if (!modelWithSymbols) {
+                            throw new Error(
+                                `Unable to find ${modelName} instance`
+                            );
+                        }
+                        modelData.push(
+                            modelToResponseBodyDataInstance(modelWithSymbols)
+                        );
                     }
                 },
                 { isolationLevel: 'serializable' }
@@ -203,16 +267,71 @@ router.patch(
             await KNEXION.transaction(
                 async trx => {
                     for (const strategyTemplateSeaDogDiscountScheme of parsedRequest) {
-                        const model =
+                        // Insert into junction table first
+                        const symbolIds =
+                            strategyTemplateSeaDogDiscountScheme.symbolIds;
+                        const dataToInsert =
+                            patchRequestBodyDataInstanceToRequiredFields(
+                                strategyTemplateSeaDogDiscountScheme
+                            );
+                        // Check if there are any properties to update
+                        let model:
+                            | StrategyTemplateSeaDogDiscountSchemeModel
+                            | undefined;
+                        if (Object.keys(dataToInsert).length > 0) {
+                            model =
+                                await StrategyTemplateSeaDogDiscountSchemeModel.query(
+                                    trx
+                                ).patchAndFetchById(
+                                    strategyTemplateSeaDogDiscountScheme.id,
+                                    dataToInsert
+                                );
+                        } else {
+                            model =
+                                await StrategyTemplateSeaDogDiscountSchemeModel.query(
+                                    trx
+                                )
+                                    .findById(
+                                        strategyTemplateSeaDogDiscountScheme.id
+                                    )
+                                    .withGraphFetched('symbols');
+                        }
+                        if (!model) {
+                            throw new Error(
+                                `Unable to create ${modelName} instance`
+                            );
+                        }
+                        if (undefined !== symbolIds) {
+                            // Unrelate all symbols
+                            await model
+                                .$relatedQuery<SymbolModel>('symbols', trx)
+                                .unrelate();
+                            // .where(
+                            //     'strategyTemplateSeaDogDiscountSchemeId',
+                            //     strategyTemplateSeaDogDiscountScheme.id
+                            // );
+                            // Insert into junction table
+                            for (const symbolId of symbolIds ?? []) {
+                                await model
+                                    .$relatedQuery<SymbolModel>('symbols', trx)
+                                    .relate(symbolId);
+                            }
+                        }
+                        // fetch model with symbols
+                        const modelWithSymbols =
                             await StrategyTemplateSeaDogDiscountSchemeModel.query(
                                 trx
                             )
-                                .patchAndFetchById(
-                                    strategyTemplateSeaDogDiscountScheme.id,
-                                    strategyTemplateSeaDogDiscountScheme
-                                )
+                                .findById(model.id)
                                 .withGraphFetched('symbols');
-                        modelData.push(modelToResponseBodyDataInstance(model));
+                        if (!modelWithSymbols) {
+                            throw new Error(
+                                `Unable to find ${modelName} instance`
+                            );
+                        }
+                        modelData.push(
+                            modelToResponseBodyDataInstance(modelWithSymbols)
+                        );
                     }
                 },
                 { isolationLevel: 'serializable' }
@@ -256,7 +375,12 @@ router.patch(
                 );
             const modelData =
                 await StrategyTemplateSeaDogDiscountSchemeModel.query()
-                    .patchAndFetchById(params.id, parsedRequest)
+                    .patchAndFetchById(
+                        params.id,
+                        patchRequestBodyDataInstanceToRequiredFields(
+                            parsedRequest
+                        )
+                    )
                     .withGraphFetched('symbols');
             if (!modelData) {
                 return res.status(404).json({

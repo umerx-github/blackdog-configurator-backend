@@ -5,7 +5,8 @@ import knexConfig from './db/knexfile.js';
 import { Model } from 'objection';
 import strategyRouter from './routes/strategy/index.js';
 import strategyTemplateRouter from './routes/strategyTemplate/index.js';
-
+import { ResponseBase } from '@umerx/umerx-blackdog-configurator-types-typescript/build/src/response.js';
+import { Request, Response, NextFunction } from 'express';
 const ENVIRONMENT = process.env.ENVIRONMENT || 'development';
 const SCHEME = process.env.SCHEME || 'http';
 const PORT = Number(process.env.PORT) || 80;
@@ -29,11 +30,18 @@ app.use(
 app.use(express.json());
 
 app.get('/', (req, res) => {
-    res.send('Hello World');
+    return res.send('Hello World');
 });
 
 app.use('/strategy', strategyRouter);
 app.use('/strategyTemplate', strategyTemplateRouter);
+app.use(function (err: Error, req: Request, res: Response, next: NextFunction) {
+    const response: ResponseBase<null> = {
+        status: 'error',
+        message: err.message,
+    };
+    return res.status(500).send(response);
+});
 
 // app.use('/config', configRouter);
 // app.use('/symbol', symbolRouter);
