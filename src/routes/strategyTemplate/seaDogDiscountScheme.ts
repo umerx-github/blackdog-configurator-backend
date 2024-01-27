@@ -1,9 +1,9 @@
-import { StrategyTemplateSeaDogDiscountScheme as StrategyTemplateSeaDogDiscountSchemeModel } from '../../../db/models/StrategyTemplateSeaDogDiscountScheme.js';
+import { StrategyTemplateSeaDogDiscountScheme as StrategyTemplateSeaDogDiscountSchemeModel } from '../../db/models/StrategyTemplateSeaDogDiscountScheme.js';
 import { StrategyTemplateSeaDogDiscountScheme as StrategyTemplateSeaDogDiscountSchemeTypes } from '@umerx/umerx-blackdog-configurator-types-typescript';
 import { Router, Request, Response } from 'express';
 import { z, ZodError } from 'zod';
-import * as Errors from '../../../errors/index.js';
-import { KNEXION } from '../../../../src/index.js';
+import * as Errors from '../../errors/index.js';
+import { KNEXION } from '../../index.js';
 
 const router = Router();
 const modelName = 'StrategyTemplateSeaDogDiscountScheme';

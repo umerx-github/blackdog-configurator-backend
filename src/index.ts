@@ -4,6 +4,7 @@ import knex from 'knex';
 import knexConfig from './db/knexfile.js';
 import { Model } from 'objection';
 import strategyRouter from './routes/strategy/index.js';
+import strategyTemplateRouter from './routes/strategyTemplate/index.js';
 import symbolRouter from './routes/symbol.js';
 import buyOrderRouter from './routes/buyOrder.js';
 import positionRouter from './routes/position.js';
@@ -36,6 +37,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/strategy', strategyRouter);
+app.use('/strategyTemplate', strategyTemplateRouter);
 
 // app.use('/config', configRouter);
 // app.use('/symbol', symbolRouter);
