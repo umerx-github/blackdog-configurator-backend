@@ -7,6 +7,8 @@ import strategyRouter from './routes/strategy/index.js';
 import strategyTemplateRouter from './routes/strategyTemplate/index.js';
 import { ResponseBase } from '@umerx/umerx-blackdog-configurator-types-typescript/build/src/response.js';
 import { Request, Response, NextFunction } from 'express';
+import { z, ZodError } from 'zod';
+import * as Errors from './errors/index.js';
 const ENVIRONMENT = process.env.ENVIRONMENT || 'development';
 const SCHEME = process.env.SCHEME || 'http';
 const PORT = Number(process.env.PORT) || 80;
@@ -36,11 +38,22 @@ app.get('/', (req, res) => {
 app.use('/strategy', strategyRouter);
 app.use('/strategyTemplate', strategyTemplateRouter);
 app.use(function (err: Error, req: Request, res: Response, next: NextFunction) {
-    const response: ResponseBase<null> = {
+    if (err instanceof ZodError) {
+        return res.status(400).json({
+            status: 'error',
+            message: `Invalid request params: ${err.message}`,
+        });
+    }
+    if (err instanceof Errors.ModelNotFoundError) {
+        return res.status(404).json({
+            status: 'error',
+            message: err.message,
+        });
+    }
+    return res.status(500).json({
         status: 'error',
         message: err.message,
-    };
-    return res.status(500).send(response);
+    });
 });
 
 // app.use('/config', configRouter);

@@ -1,18 +1,16 @@
 import { StrategyTemplateSeaDogDiscountScheme as StrategyTemplateSeaDogDiscountSchemeModel } from '../../db/models/StrategyTemplateSeaDogDiscountScheme.js';
 import { StrategyTemplateSeaDogDiscountScheme as StrategyTemplateSeaDogDiscountSchemeTypes } from '@umerx/umerx-blackdog-configurator-types-typescript';
-import { Router, Request, Response } from 'express';
-import { z, ZodError } from 'zod';
+import { Router, Request, Response, ErrorRequestHandler } from 'express';
 import * as Errors from '../../errors/index.js';
 import { KNEXION } from '../../index.js';
 import { Symbol as SymbolModel } from '../../db/models/Symbol.js';
-import { SymbolModelInterface } from '@umerx/umerx-blackdog-configurator-types-typescript/build/src/symbol.js';
 import { Knex } from 'knex';
+import { NextFunction } from 'express';
 
 const router = Router();
 const modelName = 'StrategyTemplateSeaDogDiscountScheme';
 
 // Typing Express Request: https://stackoverflow.com/questions/48027563/typescript-type-annotation-for-res-body
-
 function postRequestBodyDataInstanceToRequiredFields(
     requestBodyData: StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePostRequestBodyDataInstance
 ): StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeRequiredFields {
@@ -104,6 +102,26 @@ async function patchSingle(
     return modelToResponseBodyDataInstance(modelWithSymbols);
 }
 
+async function deleteSingle(
+    id: number,
+    trx: Knex.Transaction
+): Promise<StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeResponseBodyDataInstance> {
+    let model = await StrategyTemplateSeaDogDiscountSchemeModel.query(trx)
+        .findById(id)
+        .withGraphFetched('symbols');
+    // get the model's data before deleting it
+    if (!model) {
+        throw new Errors.ModelNotFoundError(
+            `Unable to find ${modelName} with id ${id}`
+        );
+    }
+    // const data = modelToResponseBodyDataInstance(model);
+    // Unrelate all symbols without removing them from the model
+    await model.$relatedQuery<SymbolModel>('symbols', trx).unrelate();
+    await StrategyTemplateSeaDogDiscountSchemeModel.query(trx).deleteById(id);
+    return modelToResponseBodyDataInstance(model);
+}
+
 router.get(
     '/',
     async (
@@ -113,14 +131,15 @@ router.get(
             any,
             StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeGetManyRequestQueryRaw
         >,
-        res: Response<StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeGetManyResponseBody>
+        res: Response<StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeGetManyResponseBody>,
+        next: NextFunction
     ) => {
-        const query = StrategyTemplateSeaDogDiscountSchemeModel.query().orderBy(
-            'id',
-            'desc'
-        );
-        // .withGraphFetched('configSymbols');
         try {
+            const query =
+                StrategyTemplateSeaDogDiscountSchemeModel.query().orderBy(
+                    'id',
+                    'desc'
+                );
             const expectedStrategyTemplateSeaDogDiscountSchemeGetManyRequestQuery: StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeGetManyRequestQuery =
                 StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeGetManyRequestQueryFromRaw(
                     req.query
@@ -162,13 +181,7 @@ router.get(
                 data: data,
             });
         } catch (err) {
-            if (err instanceof ZodError) {
-                return res.status(400).json({
-                    status: 'error',
-                    message: `Invalid request query: ${err.message}`,
-                });
-            }
-            throw err;
+            next(err);
         }
     }
 );
@@ -177,7 +190,8 @@ router.get(
     '/:id',
     async (
         req: Request<StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeGetSingleRequestParamsRaw>,
-        res: Response<StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeGetSingleResponseBody>
+        res: Response<StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeGetSingleResponseBody>,
+        next: NextFunction
     ) => {
         try {
             const params =
@@ -200,12 +214,7 @@ router.get(
                 data: modelToResponseBodyDataInstance(modelData),
             });
         } catch (err) {
-            if (err instanceof ZodError) {
-                return res.status(400).json({
-                    status: 'error',
-                    message: `Invalid request params: ${err.message}`,
-                });
-            }
+            next(err);
         }
     }
 );
@@ -218,7 +227,8 @@ router.post(
             any,
             StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePostManyRequestBody
         >,
-        res: Response<StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePostManyResponseBody>
+        res: Response<StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePostManyResponseBody>,
+        next: NextFunction
     ) => {
         // https://vincit.github.io/objection.js/guide/query-examples.html#relation-relate-queries);
         try {
@@ -279,14 +289,8 @@ router.post(
                 message: `${modelName} instances created successfully`,
                 data: modelData,
             });
-        } catch (e) {
-            if (e instanceof ZodError) {
-                return res.status(400).json({
-                    status: 'error',
-                    message: `Invalid request body: ${e.message}`,
-                });
-            }
-            throw e;
+        } catch (err) {
+            next(err);
         }
     }
 );
@@ -299,7 +303,8 @@ router.patch(
             any,
             StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePatchManyRequestBody
         >,
-        res: Response<StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePatchManyResponseBody>
+        res: Response<StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePatchManyResponseBody>,
+        next: NextFunction
     ) => {
         // https://vincit.github.io/objection.js/guide/query-examples.html#relation-relate-queries);
         try {
@@ -329,14 +334,8 @@ router.patch(
                 message: `${modelName} instances updated successfully`,
                 data: modelData,
             });
-        } catch (e) {
-            if (e instanceof ZodError) {
-                return res.status(400).json({
-                    status: 'error',
-                    message: `Invalid request body: ${e.message}`,
-                });
-            }
-            throw e;
+        } catch (err) {
+            next(err);
         }
     }
 );
@@ -349,7 +348,8 @@ router.patch(
             any,
             StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePatchSingleRequestBody
         >,
-        res: Response<StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePatchSingleResponseBody>
+        res: Response<StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePatchSingleResponseBody>,
+        next: NextFunction
     ) => {
         // https://vincit.github.io/objection.js/guide/query-examples.html#relation-relate-queries);
         try {
@@ -385,14 +385,8 @@ router.patch(
                 message: `${modelName} instance updated successfully`,
                 data: modelData,
             });
-        } catch (e) {
-            if (e instanceof ZodError) {
-                return res.status(400).json({
-                    status: 'error',
-                    message: `Invalid request body: ${e.message}`,
-                });
-            }
-            throw e;
+        } catch (err) {
+            next(err);
         }
     }
 );
@@ -405,7 +399,8 @@ router.put(
             any,
             StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePutManyRequestBody
         >,
-        res: Response<StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePutManyResponseBody>
+        res: Response<StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePutManyResponseBody>,
+        next: NextFunction
     ) => {
         // https://vincit.github.io/objection.js/guide/query-examples.html#relation-relate-queries);
         try {
@@ -433,14 +428,8 @@ router.put(
                 message: `${modelName} instances updated successfully`,
                 data: modelData,
             });
-        } catch (e) {
-            if (e instanceof ZodError) {
-                return res.status(400).json({
-                    status: 'error',
-                    message: `Invalid request body: ${e.message}`,
-                });
-            }
-            throw e;
+        } catch (err) {
+            next(err);
         }
     }
 );
@@ -453,7 +442,8 @@ router.put(
             any,
             StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePutSingleRequestBody
         >,
-        res: Response<StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePutSingleResponseBody>
+        res: Response<StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePutSingleResponseBody>,
+        next: NextFunction
     ) => {
         // https://vincit.github.io/objection.js/guide/query-examples.html#relation-relate-queries);
         try {
@@ -489,14 +479,8 @@ router.put(
                 message: `${modelName} instance updated successfully`,
                 data: modelData,
             });
-        } catch (e) {
-            if (e instanceof ZodError) {
-                return res.status(400).json({
-                    status: 'error',
-                    message: `Invalid request body: ${e.message}`,
-                });
-            }
-            throw e;
+        } catch (err) {
+            next(err);
         }
     }
 );
@@ -510,10 +494,11 @@ router.delete(
             any,
             StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeDeleteManyRequestQueryRaw
         >,
-        res: Response<StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeDeleteManyResponseBody>
+        res: Response<StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeDeleteManyResponseBody>,
+        next: NextFunction
     ) => {
-        const query = StrategyTemplateSeaDogDiscountSchemeModel.query();
         try {
+            const query = StrategyTemplateSeaDogDiscountSchemeModel.query();
             const expectedStrategyTemplateSeaDogDiscountSchemeDeleteManyRequestQuery: StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeDeleteManyRequestQuery =
                 StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeDeleteManyRequestQueryFromRaw(
                     req.query
@@ -523,21 +508,8 @@ router.delete(
             await KNEXION.transaction(
                 async trx => {
                     for (const id of expectedStrategyTemplateSeaDogDiscountSchemeDeleteManyRequestQuery.ids) {
-                        const model =
-                            await StrategyTemplateSeaDogDiscountSchemeModel.query(
-                                trx
-                            )
-                                .findById(id)
-                                .withGraphFetched('symbols');
-                        if (!model) {
-                            throw new Errors.ModelNotFoundError(
-                                `Unable to find ${modelName} with id ${id}`
-                            );
-                        }
-                        modelData.push(modelToResponseBodyDataInstance(model));
-                        await StrategyTemplateSeaDogDiscountSchemeModel.query(
-                            trx
-                        ).deleteById(id);
+                        const modelDataInstance = await deleteSingle(id, trx);
+                        modelData.push(modelDataInstance);
                     }
                 },
                 { isolationLevel: 'serializable' }
@@ -547,20 +519,8 @@ router.delete(
                 message: `${modelName} instances deleted successfully`,
                 data: modelData,
             });
-        } catch (e) {
-            if (e instanceof ZodError) {
-                return res.status(400).json({
-                    status: 'error',
-                    message: `Invalid request body: ${e.message}`,
-                });
-            }
-            if (e instanceof Errors.ModelNotFoundError) {
-                return res.status(404).json({
-                    status: 'error',
-                    message: e.message,
-                });
-            }
-            throw e;
+        } catch (err) {
+            next(err);
         }
     }
 );
@@ -569,38 +529,36 @@ router.delete(
     '/:id',
     async (
         req: Request<StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeDeleteSingleRequestParamsRaw>,
-        res: Response<StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeDeleteSingleResponseBody>
+        res: Response<StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeDeleteSingleResponseBody>,
+        next: NextFunction
     ) => {
         try {
             const params =
                 StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeDeleteSingleRequestParamsFromRaw(
                     req.params
                 );
-            const modelData =
-                await StrategyTemplateSeaDogDiscountSchemeModel.query()
-                    .findById(params.id)
-                    .withGraphFetched('symbols');
-            if (!modelData) {
+            let modelData:
+                | StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeDeleteSingleResponseBodyData
+                | undefined;
+            await KNEXION.transaction(
+                async trx => {
+                    modelData = await deleteSingle(params.id, trx);
+                },
+                { isolationLevel: 'serializable' }
+            );
+            if (undefined === modelData) {
                 return res.status(404).json({
                     status: 'error',
                     message: `${modelName} not found`,
                 });
             }
-            await StrategyTemplateSeaDogDiscountSchemeModel.query().deleteById(
-                params.id
-            );
             return res.json({
                 status: 'success',
                 message: `${modelName} instance deleted successfully`,
-                data: modelToResponseBodyDataInstance(modelData),
+                data: modelData,
             });
         } catch (err) {
-            if (err instanceof ZodError) {
-                return res.status(400).json({
-                    status: 'error',
-                    message: `Invalid request params: ${err.message}`,
-                });
-            }
+            next(err);
         }
     }
 );
