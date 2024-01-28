@@ -1,7 +1,6 @@
 import { Strategy as StrategyModel } from '../../db/models/Strategy.js';
 import { Strategy as StrategyTypes } from '@umerx/umerx-blackdog-configurator-types-typescript';
-import { Router, Request, Response } from 'express';
-import { z, ZodError } from 'zod';
+import { Router, Request, Response, NextFunction } from 'express';
 import * as Errors from '../../errors/index.js';
 import { KNEXION } from '../../index.js';
 
@@ -19,7 +18,8 @@ router.get(
             any,
             StrategyTypes.StrategyGetManyRequestQueryRaw
         >,
-        res: Response<StrategyTypes.StrategyGetManyResponseBody>
+        res: Response<StrategyTypes.StrategyGetManyResponseBody>,
+        next: NextFunction
     ) => {
         const query = StrategyModel.query().orderBy('id', 'desc');
         // .withGraphFetched('configSymbols');
@@ -42,13 +42,7 @@ router.get(
                 data: data,
             });
         } catch (err) {
-            if (err instanceof ZodError) {
-                return res.status(400).json({
-                    status: 'error',
-                    message: `Invalid request query: ${err.message}`,
-                });
-            }
-            throw err;
+            next(err);
         }
     }
 );
@@ -57,7 +51,8 @@ router.get(
     '/:id',
     async (
         req: Request<StrategyTypes.StrategyGetSingleRequestParamsRaw>,
-        res: Response<StrategyTypes.StrategyGetSingleResponseBody>
+        res: Response<StrategyTypes.StrategyGetSingleResponseBody>,
+        next: NextFunction
     ) => {
         try {
             const params = StrategyTypes.StrategyGetSingleRequestParamsFromRaw(
@@ -76,12 +71,7 @@ router.get(
                 data: modelData,
             });
         } catch (err) {
-            if (err instanceof ZodError) {
-                return res.status(400).json({
-                    status: 'error',
-                    message: `Invalid request params: ${err.message}`,
-                });
-            }
+            next(err);
         }
     }
 );
@@ -90,7 +80,8 @@ router.post(
     '/',
     async (
         req: Request<any, any, StrategyTypes.StrategyPostManyRequestBody>,
-        res: Response<StrategyTypes.StrategyPostManyResponseBody>
+        res: Response<StrategyTypes.StrategyPostManyResponseBody>,
+        next: NextFunction
     ) => {
         // https://vincit.github.io/objection.js/guide/query-examples.html#relation-relate-queries);
         try {
@@ -114,14 +105,8 @@ router.post(
                 message: `${modelName} instances created successfully`,
                 data: modelData,
             });
-        } catch (e) {
-            if (e instanceof ZodError) {
-                return res.status(400).json({
-                    status: 'error',
-                    message: `Invalid request body: ${e.message}`,
-                });
-            }
-            throw e;
+        } catch (err) {
+            next(err);
         }
     }
 );
@@ -130,7 +115,8 @@ router.patch(
     '/',
     async (
         req: Request<any, any, StrategyTypes.StrategyPatchManyRequestBody>,
-        res: Response<StrategyTypes.StrategyPatchManyResponseBody>
+        res: Response<StrategyTypes.StrategyPatchManyResponseBody>,
+        next: NextFunction
     ) => {
         // https://vincit.github.io/objection.js/guide/query-examples.html#relation-relate-queries);
         try {
@@ -154,14 +140,8 @@ router.patch(
                 message: `${modelName} instances updated successfully`,
                 data: modelData,
             });
-        } catch (e) {
-            if (e instanceof ZodError) {
-                return res.status(400).json({
-                    status: 'error',
-                    message: `Invalid request body: ${e.message}`,
-                });
-            }
-            throw e;
+        } catch (err) {
+            next(err);
         }
     }
 );
@@ -174,7 +154,8 @@ router.patch(
             any,
             StrategyTypes.StrategyPatchSingleRequestBody
         >,
-        res: Response<StrategyTypes.StrategyPatchSingleResponseBody>
+        res: Response<StrategyTypes.StrategyPatchSingleResponseBody>,
+        next: NextFunction
     ) => {
         // https://vincit.github.io/objection.js/guide/query-examples.html#relation-relate-queries);
         try {
@@ -198,14 +179,8 @@ router.patch(
                 message: `${modelName} instance updated successfully`,
                 data: modelData,
             });
-        } catch (e) {
-            if (e instanceof ZodError) {
-                return res.status(400).json({
-                    status: 'error',
-                    message: `Invalid request body: ${e.message}`,
-                });
-            }
-            throw e;
+        } catch (err) {
+            next(err);
         }
     }
 );
@@ -214,7 +189,8 @@ router.put(
     '/',
     async (
         req: Request<any, any, StrategyTypes.StrategyPutManyRequestBody>,
-        res: Response<StrategyTypes.StrategyPutManyResponseBody>
+        res: Response<StrategyTypes.StrategyPutManyResponseBody>,
+        next: NextFunction
     ) => {
         // https://vincit.github.io/objection.js/guide/query-examples.html#relation-relate-queries);
         try {
@@ -237,14 +213,8 @@ router.put(
                 message: `${modelName} instances updated successfully`,
                 data: modelData,
             });
-        } catch (e) {
-            if (e instanceof ZodError) {
-                return res.status(400).json({
-                    status: 'error',
-                    message: `Invalid request body: ${e.message}`,
-                });
-            }
-            throw e;
+        } catch (err) {
+            next(err);
         }
     }
 );
@@ -257,7 +227,8 @@ router.put(
             any,
             StrategyTypes.StrategyPutSingleRequestBody
         >,
-        res: Response<StrategyTypes.StrategyPutSingleResponseBody>
+        res: Response<StrategyTypes.StrategyPutSingleResponseBody>,
+        next: NextFunction
     ) => {
         // https://vincit.github.io/objection.js/guide/query-examples.html#relation-relate-queries);
         try {
@@ -281,14 +252,8 @@ router.put(
                 message: `${modelName} instance updated successfully`,
                 data: modelData,
             });
-        } catch (e) {
-            if (e instanceof ZodError) {
-                return res.status(400).json({
-                    status: 'error',
-                    message: `Invalid request body: ${e.message}`,
-                });
-            }
-            throw e;
+        } catch (err) {
+            next(err);
         }
     }
 );
@@ -302,7 +267,8 @@ router.delete(
             any,
             StrategyTypes.StrategyDeleteManyRequestQueryRaw
         >,
-        res: Response<StrategyTypes.StrategyDeleteManyResponseBody>
+        res: Response<StrategyTypes.StrategyDeleteManyResponseBody>,
+        next: NextFunction
     ) => {
         const query = StrategyModel.query();
         try {
@@ -331,20 +297,8 @@ router.delete(
                 message: `${modelName} instances deleted successfully`,
                 data: modelData,
             });
-        } catch (e) {
-            if (e instanceof ZodError) {
-                return res.status(400).json({
-                    status: 'error',
-                    message: `Invalid request body: ${e.message}`,
-                });
-            }
-            if (e instanceof Errors.ModelNotFoundError) {
-                return res.status(404).json({
-                    status: 'error',
-                    message: e.message,
-                });
-            }
-            throw e;
+        } catch (err) {
+            next(err);
         }
     }
 );
@@ -353,7 +307,8 @@ router.delete(
     '/:id',
     async (
         req: Request<StrategyTypes.StrategyDeleteSingleRequestParamsRaw>,
-        res: Response<StrategyTypes.StrategyDeleteSingleResponseBody>
+        res: Response<StrategyTypes.StrategyDeleteSingleResponseBody>,
+        next: NextFunction
     ) => {
         try {
             const params =
@@ -374,12 +329,7 @@ router.delete(
                 data: modelData,
             });
         } catch (err) {
-            if (err instanceof ZodError) {
-                return res.status(400).json({
-                    status: 'error',
-                    message: `Invalid request params: ${err.message}`,
-                });
-            }
+            next(err);
         }
     }
 );
