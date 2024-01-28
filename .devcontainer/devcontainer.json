@@ -3,7 +3,7 @@
 	"dockerComposeFile": "docker-compose.yml",
 	"service": "umerx_blackdog_configurator_backend",
 	"workspaceFolder": "/workspace",
-    "postCreateCommand": "npm ci",
+    // "postCreateCommand": "npm ci",
 	// https://tjtelan.com/blog/how-to-link-multiple-docker-compose-via-network/
 	// https://containers.dev/guide/dockerfile
 	// https://github.com/microsoft/vscode-remote-release/issues/2485
