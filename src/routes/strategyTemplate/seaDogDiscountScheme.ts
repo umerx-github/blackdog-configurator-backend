@@ -46,13 +46,13 @@ function patchRequestBodyDataInstanceToRequiredFields(
 }
 function modelToResponseBodyDataInstance(
     model: StrategyTemplateSeaDogDiscountSchemeModel
-): StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeGetResponseBodyDataInstance {
+): StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeResponseBodyDataInstance {
     if (!model.symbols) {
         throw new Error('Expected symbols to be defined');
     }
     const symbols = model.symbols;
     delete model.symbols;
-    const modelDataWithSymbolId: StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeGetResponseBodyDataInstance =
+    const modelDataWithSymbolId: StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeResponseBodyDataInstance =
         {
             ...model,
             symbolIds: symbols.map(symbol => symbol.id),
@@ -62,7 +62,7 @@ function modelToResponseBodyDataInstance(
 
 async function patchSingle(
     id: number,
-    strategyTemplateSeaDogDiscountScheme: StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePatchRequestBodyDataInstance,
+    strategyTemplateSeaDogDiscountScheme: StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePropsOptional,
     trx: Knex.Transaction
 ) {
     const symbolIds = strategyTemplateSeaDogDiscountScheme.symbolIds;
@@ -86,10 +86,6 @@ async function patchSingle(
     if (undefined !== symbolIds) {
         // Unrelate all symbols
         await model.$relatedQuery<SymbolModel>('symbols', trx).unrelate();
-        // .where(
-        //     'strategyTemplateSeaDogDiscountSchemeId',
-        //     strategyTemplateSeaDogDiscountScheme.id
-        // );
         // Insert into junction table
         for (const symbolId of symbolIds ?? []) {
             await model
@@ -97,7 +93,7 @@ async function patchSingle(
                 .relate(symbolId);
         }
     }
-    // fetch model with symbols
+    // Fetch model with symbols
     const modelWithSymbols =
         await StrategyTemplateSeaDogDiscountSchemeModel.query(trx)
             .findById(model.id)
@@ -422,16 +418,12 @@ router.put(
             await KNEXION.transaction(
                 async trx => {
                     for (const strategyTemplateSeaDogDiscountScheme of parsedRequest) {
-                        const model =
-                            await StrategyTemplateSeaDogDiscountSchemeModel.query(
-                                trx
-                            )
-                                .patchAndFetchById(
-                                    strategyTemplateSeaDogDiscountScheme.id,
-                                    strategyTemplateSeaDogDiscountScheme
-                                )
-                                .withGraphFetched('symbols');
-                        modelData.push(modelToResponseBodyDataInstance(model));
+                        const modelDataInstance = await patchSingle(
+                            strategyTemplateSeaDogDiscountScheme.id,
+                            strategyTemplateSeaDogDiscountScheme,
+                            trx
+                        );
+                        modelData.push(modelDataInstance);
                     }
                 },
                 { isolationLevel: 'serializable' }
@@ -473,10 +465,19 @@ router.put(
                 StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePutSingleRequestBodyFromRaw(
                     req.body
                 );
-            const modelData =
-                await StrategyTemplateSeaDogDiscountSchemeModel.query()
-                    .patchAndFetchById(params.id, parsedRequest)
-                    .withGraphFetched('symbols');
+            let modelData:
+                | StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePutSingleResponseBodyData
+                | undefined = undefined;
+            await KNEXION.transaction(
+                async trx => {
+                    modelData = await patchSingle(
+                        params.id,
+                        parsedRequest,
+                        trx
+                    );
+                },
+                { isolationLevel: 'serializable' }
+            );
             if (!modelData) {
                 return res.status(404).json({
                     status: 'error',
@@ -486,7 +487,7 @@ router.put(
             return res.json({
                 status: 'success',
                 message: `${modelName} instance updated successfully`,
-                data: modelToResponseBodyDataInstance(modelData),
+                data: modelData,
             });
         } catch (e) {
             if (e instanceof ZodError) {
