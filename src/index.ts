@@ -5,6 +5,7 @@ import knexConfig from './db/knexfile.js';
 import { Model } from 'objection';
 import strategyRouter from './routes/strategy/index.js';
 import strategyTemplateRouter from './routes/strategyTemplate/index.js';
+import orderRouter from './routes/order.js';
 import { ResponseBase } from '@umerx/umerx-blackdog-configurator-types-typescript/build/src/response.js';
 import { Request, Response, NextFunction } from 'express';
 import { z, ZodError } from 'zod';
@@ -37,6 +38,7 @@ app.get('/', (req, res) => {
 
 app.use('/strategy', strategyRouter);
 app.use('/strategyTemplate', strategyTemplateRouter);
+app.use('/order', orderRouter);
 app.use(function (err: Error, req: Request, res: Response, next: NextFunction) {
     if (err instanceof ZodError) {
         return res.status(400).json({
