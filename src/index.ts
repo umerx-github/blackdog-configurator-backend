@@ -6,7 +6,7 @@ import { Model } from 'objection';
 import strategyRouter from './routes/strategy/index.js';
 import strategyTemplateRouter from './routes/strategyTemplate/index.js';
 import orderRouter from './routes/order.js';
-import { ResponseBase } from '@umerx/umerx-blackdog-configurator-types-typescript/build/src/response.js';
+import symbolRouter from './routes/symbol.js';
 import { Request, Response, NextFunction } from 'express';
 import { z, ZodError } from 'zod';
 import * as Errors from './errors/index.js';
@@ -35,7 +35,7 @@ app.use(express.json());
 app.get('/', (req, res) => {
     return res.send('Hello World');
 });
-
+app.use('/symbol', symbolRouter);
 app.use('/strategy', strategyRouter);
 app.use('/strategyTemplate', strategyTemplateRouter);
 app.use('/order', orderRouter);
