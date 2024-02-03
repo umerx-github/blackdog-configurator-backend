@@ -3,10 +3,11 @@ import cors from 'cors';
 import knex from 'knex';
 import knexConfig from './db/knexfile.js';
 import { Model } from 'objection';
-import strategyRouter from './routes/strategy/index.js';
-import strategyTemplateRouter from './routes/strategyTemplate/index.js';
-import orderRouter from './routes/order.js';
 import symbolRouter from './routes/symbol.js';
+import strategyRouter from './routes/strategy/index.js';
+import orderRouter from './routes/order.js';
+import positionRouter from './routes/position.js';
+import strategyTemplateRouter from './routes/strategyTemplate/index.js';
 import { Request, Response, NextFunction } from 'express';
 import { z, ZodError } from 'zod';
 import * as Errors from './errors/index.js';
@@ -37,8 +38,9 @@ app.get('/', (req, res) => {
 });
 app.use('/symbol', symbolRouter);
 app.use('/strategy', strategyRouter);
-app.use('/strategyTemplate', strategyTemplateRouter);
 app.use('/order', orderRouter);
+app.use('/position', positionRouter);
+app.use('/strategyTemplate', strategyTemplateRouter);
 app.use(function (err: Error, req: Request, res: Response, next: NextFunction) {
     if (err instanceof ZodError) {
         return res.status(400).json({

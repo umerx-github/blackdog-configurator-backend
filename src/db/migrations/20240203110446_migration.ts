@@ -7,12 +7,13 @@ import {
 import { Strategy as StrategyModel } from '../models/Strategy.js';
 import { StrategyTemplateSeaDogDiscountScheme as StrategyTemplateSeaDogDiscountSchemeModel } from '../models/StrategyTemplateSeaDogDiscountScheme.js';
 import { Symbol as SymbolModel } from '../models/Symbol.js';
-import { Order } from '../models/Order.js';
+import { Order as OrderModel } from '../models/Order.js';
+import { Position as PositionModel } from '../models/Position.js';
 
 async function ifTableDoesNotExist(
     tableName: string,
     knex: Knex,
-    callback: () => void
+    callback: () => Promise<void>
 ) {
     await knex.schema.hasTable(tableName).then(async exists => {
         if (!exists) {
@@ -43,8 +44,8 @@ export async function up(knex: Knex): Promise<void> {
                 .notNullable();
         });
     });
-    await ifTableDoesNotExist(Order.tableName, knex, async () => {
-        await knex.schema.createTable(Order.tableName, table => {
+    await ifTableDoesNotExist(OrderModel.tableName, knex, async () => {
+        await knex.schema.createTable(OrderModel.tableName, table => {
             table.increments('id').primary();
             table
                 .integer('strategyId')
@@ -61,6 +62,32 @@ export async function up(knex: Knex): Promise<void> {
                 .inTable(SymbolModel.tableName)
                 .withKeyName('order_symbolId_fkey');
             table.string('alpacaOrderId').notNullable();
+        });
+    });
+    await ifTableDoesNotExist(PositionModel.tableName, knex, async () => {
+        await knex.schema.createTable(PositionModel.tableName, table => {
+            table.increments('id').primary();
+            table
+                .integer('strategyId')
+                .unsigned()
+                .notNullable()
+                .references('id')
+                .inTable(StrategyModel.tableName)
+                .withKeyName('position_strategyId_fkey');
+            table
+                .integer('symbolId')
+                .unsigned()
+                .notNullable()
+                .references('id')
+                .inTable(SymbolModel.tableName)
+                .withKeyName('position_symbolId_fkey');
+            table
+                .integer('orderId')
+                .unsigned()
+                .notNullable()
+                .references('id')
+                .inTable(OrderModel.tableName)
+                .withKeyName('position_orderId_fkey');
         });
     });
     await ifTableDoesNotExist(
@@ -123,7 +150,8 @@ export async function down(knex: Knex): Promise<void> {
             StrategyTemplateSeaDogDiscountSchemeModel.tableNameJunctionSymbol
         )
         .dropTableIfExists(StrategyTemplateSeaDogDiscountSchemeModel.tableName)
-        .dropTableIfExists(Order.tableName)
+        .dropTableIfExists(PositionModel.tableName)
+        .dropTableIfExists(OrderModel.tableName)
         .dropTableIfExists(StrategyModel.tableName)
         .dropTableIfExists(SymbolModel.tableName);
 }

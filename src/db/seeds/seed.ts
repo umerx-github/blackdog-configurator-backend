@@ -6,21 +6,15 @@ import {
     StrategyTemplateSeaDogDiscountSchemeSymbol as StrategyTemplateSeaDogDiscountSchemeSymbolTypes,
     Symbol as SymbolTypes,
     Order as OrderTypes,
+    Position as PositionTypes,
 } from '@umerx/umerx-blackdog-configurator-types-typescript';
 import { Strategy as StrategyModel } from '../models/Strategy.js';
 import { StrategyTemplateSeaDogDiscountScheme as StrategyTemplateSeaDogDiscountSchemeModel } from '../models/StrategyTemplateSeaDogDiscountScheme.js';
 import { Symbol as SymbolModel } from '../models/Symbol.js';
-import { Order } from '../models/Order.js';
+import { Order as OrderModel } from '../models/Order.js';
+import { Position as PositionModel } from '../models/Position.js';
 async function truncateTableIfExists(tableName: string, knex: Knex) {
-    // const strategyTemplateSeaDogDiscountSchemeModeTable = await knex(
-    //     StrategyTemplateSeaDogDiscountSchemeModel.tableNameJunctionSymbol
-    // );
-    // if (strategyTemplateSeaDogDiscountSchemeModeTable) {
-    //     await knex(StrategyTemplateSeaDogDiscountSchemeModel.tableNameJunctionSymbol).del();
-    // }
-    console.log('tableName', tableName);
     if (await knex.schema.hasTable(tableName)) {
-        console.log('truncateTableIfExists', tableName);
         await knex(tableName).del();
     }
 }
@@ -33,21 +27,10 @@ export async function seed(knex: Knex): Promise<void> {
         StrategyTemplateSeaDogDiscountSchemeModel.tableName,
         knex
     );
-    await truncateTableIfExists(Order.tableName, knex);
+    await truncateTableIfExists(PositionModel.tableName, knex);
+    await truncateTableIfExists(OrderModel.tableName, knex);
     await truncateTableIfExists(StrategyModel.tableName, knex);
     await truncateTableIfExists(SymbolModel.tableName, knex);
-
-    // Deletes ALL existing entries
-    // const strategyTemplateSeaDogDiscountSchemeModeTable = await knex(
-    //     StrategyTemplateSeaDogDiscountSchemeModel.tableNameJunctionSymbol
-    // );
-    // if (strategyTemplateSeaDogDiscountSchemeModeTable) {
-    //     await knex(StrategyTemplateSeaDogDiscountSchemeModel.tableNameJunctionSymbol).del();
-    // }
-    // await knex(StrategyTemplateSeaDogDiscountSchemeModel.tableName).del();
-    // await knex(Order.tableName).del();
-    // await knex(StrategyModel.tableName).del();
-    // await knex(SymbolModel.tableName).del();
 
     // Inserts seed entries
     await knex<SymbolTypes.SymbolProps & { id: number }>(
@@ -93,7 +76,9 @@ export async function seed(knex: Knex): Promise<void> {
                     .SeaDogDiscountScheme,
         },
     ]);
-    await knex<OrderTypes.OrderProps & { id: number }>(Order.tableName).insert([
+    await knex<OrderTypes.OrderProps & { id: number }>(
+        OrderModel.tableName
+    ).insert([
         {
             id: 1,
             strategyId: 1,
@@ -129,6 +114,46 @@ export async function seed(knex: Knex): Promise<void> {
             strategyId: 3,
             symbolId: 1,
             alpacaOrderId: '6',
+        },
+    ]);
+    await knex<PositionTypes.PositionProps & { id: number }>(
+        PositionModel.tableName
+    ).insert([
+        {
+            id: 1,
+            strategyId: 1,
+            symbolId: 1,
+            orderId: 1,
+        },
+        {
+            id: 2,
+            strategyId: 1,
+            symbolId: 2,
+            orderId: 2,
+        },
+        {
+            id: 3,
+            strategyId: 2,
+            symbolId: 2,
+            orderId: 3,
+        },
+        {
+            id: 4,
+            strategyId: 2,
+            symbolId: 3,
+            orderId: 4,
+        },
+        {
+            id: 5,
+            strategyId: 3,
+            symbolId: 3,
+            orderId: 5,
+        },
+        {
+            id: 6,
+            strategyId: 3,
+            symbolId: 1,
+            orderId: 6,
         },
     ]);
     await knex<
