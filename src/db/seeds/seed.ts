@@ -224,5 +224,4 @@ export async function seed(knex: Knex): Promise<void> {
             },
         ]
     );
-    // process.env?.BLACKDOG_CONFIGURATOR_BACKEND_DEV_ALPACA_API_KEY ?? ''
 }
