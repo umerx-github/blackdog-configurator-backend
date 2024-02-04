@@ -168,8 +168,8 @@ export async function seed(knex: Knex): Promise<void> {
                 .inactive,
             cashInCents: 100,
             sellAtPercentile: 50,
-            alpacaAPIKey: 'key1',
-            alpacaAPISecret: 'secret1',
+            alpacaAPIKey: process.env.ALPACA_CLIENT_CREDENTIALS_KEY ?? '',
+            alpacaAPISecret: process.env.ALPACA_CLIENT_CREDENTIALS_SECRET ?? '',
             alpacaAPIPaper: true,
         },
         {
@@ -179,8 +179,8 @@ export async function seed(knex: Knex): Promise<void> {
                 .active,
             cashInCents: 200,
             sellAtPercentile: 75,
-            alpacaAPIKey: 'key2',
-            alpacaAPISecret: 'secret2',
+            alpacaAPIKey: process.env.ALPACA_CLIENT_CREDENTIALS_KEY ?? '',
+            alpacaAPISecret: process.env.ALPACA_CLIENT_CREDENTIALS_SECRET ?? '',
             alpacaAPIPaper: true,
         },
         {
@@ -190,9 +190,9 @@ export async function seed(knex: Knex): Promise<void> {
                 .active,
             cashInCents: 300,
             sellAtPercentile: 100,
-            alpacaAPIKey: 'key3',
-            alpacaAPISecret: 'secret3',
-            alpacaAPIPaper: false,
+            alpacaAPIKey: process.env.ALPACA_CLIENT_CREDENTIALS_KEY ?? '',
+            alpacaAPISecret: process.env.ALPACA_CLIENT_CREDENTIALS_SECRET ?? '',
+            alpacaAPIPaper: true,
         },
     ]);
     await knex<

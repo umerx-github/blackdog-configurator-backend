@@ -11,6 +11,8 @@ services:
             - ./..:/workspace
         environment:
             - DB_HOSTNAME=db
+            - ALPACA_CLIENT_CREDENTIALS_KEY=${ALPACA_CLIENT_CREDENTIALS_KEY}
+            - ALPACA_CLIENT_CREDENTIALS_SECRET=${ALPACA_CLIENT_CREDENTIALS_SECRET}
         ports:
             - ${BLACKDOG_CONFIGURATOR_BACKEND_HOST_PORT}:80
     db:
