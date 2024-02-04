@@ -13,6 +13,10 @@
 -   Open a terminal in the dev container
 -   Run `npm run dev:start`
 
+## Postman
+
+-   Postman collection at: [https://umerx-postman.postman.co/workspace/Umerx~fe041bb1-59f0-4274-8d72-900367822f6b/collection/26570872-8386c9a7-a5d4-4168-88e3-1273b04f7de8](https://umerx-postman.postman.co/workspace/Umerx~fe041bb1-59f0-4274-8d72-900367822f6b/collection/26570872-8386c9a7-a5d4-4168-88e3-1273b04f7de8)
+
 ## To Do
 
 -   Strategy
