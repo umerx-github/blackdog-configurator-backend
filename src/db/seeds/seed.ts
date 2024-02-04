@@ -168,6 +168,9 @@ export async function seed(knex: Knex): Promise<void> {
                 .inactive,
             cashInCents: 100,
             sellAtPercentile: 50,
+            alpacaAPIKey: 'key1',
+            alpacaAPISecret: 'secret1',
+            alpacaAPIPaper: true,
         },
         {
             id: 2,
@@ -176,6 +179,9 @@ export async function seed(knex: Knex): Promise<void> {
                 .active,
             cashInCents: 200,
             sellAtPercentile: 75,
+            alpacaAPIKey: 'key2',
+            alpacaAPISecret: 'secret2',
+            alpacaAPIPaper: true,
         },
         {
             id: 3,
@@ -184,6 +190,9 @@ export async function seed(knex: Knex): Promise<void> {
                 .active,
             cashInCents: 300,
             sellAtPercentile: 100,
+            alpacaAPIKey: 'key3',
+            alpacaAPISecret: 'secret3',
+            alpacaAPIPaper: false,
         },
     ]);
     await knex<

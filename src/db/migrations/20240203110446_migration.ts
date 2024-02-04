@@ -110,6 +110,9 @@ export async function up(knex: Knex): Promise<void> {
                         .notNullable();
                     table.integer('cashInCents').notNullable();
                     table.integer('sellAtPercentile').notNullable();
+                    table.string('alpacaAPIKey').notNullable();
+                    table.string('alpacaAPISecret').notNullable();
+                    table.boolean('alpacaAPIPaper').notNullable();
                 }
             );
         }

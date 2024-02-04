@@ -10,38 +10,6 @@ import { NextFunction } from 'express';
 const router = Router();
 const modelName = 'StrategyTemplateSeaDogDiscountScheme';
 
-// Typing Express Request: https://stackoverflow.com/questions/48027563/typescript-type-annotation-for-res-body
-function postRequestBodyDataInstanceToRequiredFields(
-    requestBodyData: StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePostRequestBodyDataInstance
-): StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeRequiredFields {
-    const modelData: StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeRequiredFields =
-        {
-            strategyId: requestBodyData.strategyId,
-            status: requestBodyData.status,
-            cashInCents: requestBodyData.cashInCents,
-            sellAtPercentile: requestBodyData.sellAtPercentile,
-        };
-    return modelData;
-}
-function patchRequestBodyDataInstanceToRequiredFields(
-    requestBodyData: StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePatchRequestBodyDataInstance
-): StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeRequiredFieldsOptional {
-    let modelData: StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeRequiredFieldsOptional =
-        {};
-    if (undefined !== requestBodyData.strategyId) {
-        modelData.strategyId = requestBodyData.strategyId;
-    }
-    if (undefined !== requestBodyData.status) {
-        modelData.status = requestBodyData.status;
-    }
-    if (undefined !== requestBodyData.cashInCents) {
-        modelData.cashInCents = requestBodyData.cashInCents;
-    }
-    if (undefined !== requestBodyData.sellAtPercentile) {
-        modelData.sellAtPercentile = requestBodyData.sellAtPercentile;
-    }
-    return modelData;
-}
 function modelToResponseBodyDataInstance(
     model: StrategyTemplateSeaDogDiscountSchemeModel
 ): StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeResponseBodyDataInstance {
@@ -74,10 +42,7 @@ async function patchSingle(
     strategyTemplateSeaDogDiscountScheme: StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePropsOptional,
     trx: Knex.Transaction
 ) {
-    const symbolIds = strategyTemplateSeaDogDiscountScheme.symbolIds;
-    const dataToInsert = patchRequestBodyDataInstanceToRequiredFields(
-        strategyTemplateSeaDogDiscountScheme
-    );
+    const { symbolIds, ...dataToInsert } = strategyTemplateSeaDogDiscountScheme;
     // Check if there are any properties to update
     let model: StrategyTemplateSeaDogDiscountSchemeModel | undefined;
     if (Object.keys(dataToInsert).length > 0) {
@@ -261,13 +226,10 @@ router.post(
             await KNEXION.transaction(
                 async trx => {
                     for (const strategyTemplateSeaDogDiscountScheme of parsedRequest) {
-                        // Insert into junction table first
-                        const symbolIds =
-                            strategyTemplateSeaDogDiscountScheme.symbolIds;
-                        const dataToInsert =
-                            postRequestBodyDataInstanceToRequiredFields(
-                                strategyTemplateSeaDogDiscountScheme
-                            );
+                        // const symbolIds =
+                        //     strategyTemplateSeaDogDiscountScheme.symbolIds;
+                        const { symbolIds, ...dataToInsert } =
+                            strategyTemplateSeaDogDiscountScheme;
                         const model =
                             await StrategyTemplateSeaDogDiscountSchemeModel.query(
                                 trx

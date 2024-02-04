@@ -14,6 +14,9 @@ export class StrategyTemplateSeaDogDiscountScheme
     status!: StrategyTemplateSeaDogDiscountSchemeTypes.Status;
     cashInCents!: number;
     sellAtPercentile!: number;
+    alpacaAPIKey!: string;
+    alpacaAPISecret!: string;
+    alpacaAPIPaper!: boolean;
     symbols?: SymbolModelInterface[];
     // symbolIds!: number[];
     // https://www.reddit.com/r/node/comments/7hxie6/objectionjs_and_timestamps/
