@@ -84,36 +84,42 @@ export async function seed(knex: Knex): Promise<void> {
             strategyId: 1,
             symbolId: 1,
             alpacaOrderId: '1',
+            status: OrderTypes.StatusSchema.Enum.open,
         },
         {
             id: 2,
             strategyId: 1,
             symbolId: 2,
             alpacaOrderId: '2',
+            status: OrderTypes.StatusSchema.Enum.open,
         },
         {
             id: 3,
             strategyId: 2,
             symbolId: 2,
             alpacaOrderId: '3',
+            status: OrderTypes.StatusSchema.Enum.closed,
         },
         {
             id: 4,
             strategyId: 2,
             symbolId: 3,
             alpacaOrderId: '4',
+            status: OrderTypes.StatusSchema.Enum.open,
         },
         {
             id: 5,
             strategyId: 3,
             symbolId: 3,
             alpacaOrderId: '5',
+            status: OrderTypes.StatusSchema.Enum.open,
         },
         {
             id: 6,
             strategyId: 3,
             symbolId: 1,
             alpacaOrderId: '6',
+            status: OrderTypes.StatusSchema.Enum.closed,
         },
     ]);
     await knex<PositionTypes.PositionProps & { id: number }>(
@@ -123,37 +129,31 @@ export async function seed(knex: Knex): Promise<void> {
             id: 1,
             strategyId: 1,
             symbolId: 1,
-            orderId: 1,
         },
         {
             id: 2,
             strategyId: 1,
             symbolId: 2,
-            orderId: 2,
         },
         {
             id: 3,
             strategyId: 2,
             symbolId: 2,
-            orderId: 3,
         },
         {
             id: 4,
             strategyId: 2,
             symbolId: 3,
-            orderId: 4,
         },
         {
             id: 5,
             strategyId: 3,
             symbolId: 3,
-            orderId: 5,
         },
         {
             id: 6,
             strategyId: 3,
             symbolId: 1,
-            orderId: 6,
         },
     ]);
     await knex<

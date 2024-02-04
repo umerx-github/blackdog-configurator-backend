@@ -2,6 +2,7 @@ import { Knex } from 'knex';
 import {
     Strategy as StrategyTypes,
     StrategyTemplate as StrategyTemplateTypes,
+    Order as OrderTypes,
 } from '@umerx/umerx-blackdog-configurator-types-typescript';
 
 import { Strategy as StrategyModel } from '../models/Strategy.js';
@@ -62,6 +63,7 @@ export async function up(knex: Knex): Promise<void> {
                 .inTable(SymbolModel.tableName)
                 .withKeyName('order_symbolId_fkey');
             table.string('alpacaOrderId').notNullable();
+            table.enu('status', OrderTypes.StatusSchema.options).notNullable();
         });
     });
     await ifTableDoesNotExist(PositionModel.tableName, knex, async () => {
@@ -81,13 +83,6 @@ export async function up(knex: Knex): Promise<void> {
                 .references('id')
                 .inTable(SymbolModel.tableName)
                 .withKeyName('position_symbolId_fkey');
-            table
-                .integer('orderId')
-                .unsigned()
-                .notNullable()
-                .references('id')
-                .inTable(OrderModel.tableName)
-                .withKeyName('position_orderId_fkey');
         });
     });
     await ifTableDoesNotExist(

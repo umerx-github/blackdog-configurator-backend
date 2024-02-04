@@ -11,21 +11,6 @@ const router = Router();
 const modelName = 'Position';
 
 // Typing Express Request: https://stackoverflow.com/questions/48027563/typescript-type-annotation-for-res-body
-function postRequestBodyDataInstanceToRequiredFields(
-    requestBodyData: PositionTypes.PositionPostRequestBodyDataInstance
-): PositionTypes.PositionRequiredFields {
-    const modelData: PositionTypes.PositionRequiredFields = {
-        symbolId: requestBodyData.symbolId,
-        strategyId: requestBodyData.strategyId,
-        orderId: requestBodyData.orderId,
-    };
-    return modelData;
-}
-function modelToResponseBodyDataInstance(
-    model: PositionModel
-): PositionTypes.PositionResponseBodyDataInstance {
-    return model;
-}
 
 async function patchSingle(
     id: number,
@@ -49,7 +34,7 @@ async function patchSingle(
             throw new Error(`Unable to update ${modelName} instance`);
         }
     }
-    return modelToResponseBodyDataInstance(model);
+    return model;
 }
 
 async function deleteSingle(
@@ -66,7 +51,7 @@ async function deleteSingle(
     // const data = modelToResponseBodyDataInstance(model);
     // Unrelate all symbols without removing them from the model
     await PositionModel.query(trx).deleteById(id);
-    return modelToResponseBodyDataInstance(model);
+    return model;
 }
 
 router.get(
@@ -97,18 +82,12 @@ router.get(
                     expectedPositionGetManyRequestQuery.strategyId
                 );
             }
-            if (undefined !== expectedPositionGetManyRequestQuery.orderId) {
-                query.where(
-                    'orderId',
-                    expectedPositionGetManyRequestQuery.orderId
-                );
-            }
             if (undefined !== expectedPositionGetManyRequestQuery.ids) {
                 query.whereIn('id', expectedPositionGetManyRequestQuery.ids);
             }
             const queryResults = await query;
             const data = queryResults.map(dataItem => {
-                return modelToResponseBodyDataInstance(dataItem);
+                return dataItem;
             });
             return res.json({
                 status: 'success',
@@ -141,7 +120,7 @@ router.get(
             return res.json({
                 status: 'success',
                 message: `${modelName} instance retrieved successfully`,
-                data: modelToResponseBodyDataInstance(modelData),
+                data: modelData,
             });
         } catch (err) {
             next(err);
@@ -166,10 +145,7 @@ router.post(
                 async trx => {
                     for (const Position of parsedRequest) {
                         // Insert into junction table first
-                        const dataToInsert =
-                            postRequestBodyDataInstanceToRequiredFields(
-                                Position
-                            );
+                        const dataToInsert = Position;
                         const model = await PositionModel.query(trx).insert(
                             dataToInsert
                         );
@@ -178,7 +154,7 @@ router.post(
                                 `Unable to create ${modelName} instance`
                             );
                         }
-                        modelData.push(modelToResponseBodyDataInstance(model));
+                        modelData.push(model);
                     }
                 },
                 { isolationLevel: 'serializable' }

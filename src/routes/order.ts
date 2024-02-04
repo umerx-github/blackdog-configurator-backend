@@ -3,29 +3,11 @@ import { Order as OrderTypes } from '@umerx/umerx-blackdog-configurator-types-ty
 import { Router, Request, Response } from 'express';
 import * as Errors from '../errors/index.js';
 import { KNEXION } from '../index.js';
-import { Symbol as SymbolModel } from '../db/models/Symbol.js';
 import { Knex } from 'knex';
 import { NextFunction } from 'express';
 
 const router = Router();
 const modelName = 'Order';
-
-// Typing Express Request: https://stackoverflow.com/questions/48027563/typescript-type-annotation-for-res-body
-function postRequestBodyDataInstanceToRequiredFields(
-    requestBodyData: OrderTypes.OrderPostRequestBodyDataInstance
-): OrderTypes.OrderRequiredFields {
-    const modelData: OrderTypes.OrderRequiredFields = {
-        symbolId: requestBodyData.symbolId,
-        strategyId: requestBodyData.strategyId,
-        alpacaOrderId: requestBodyData.alpacaOrderId,
-    };
-    return modelData;
-}
-function modelToResponseBodyDataInstance(
-    model: OrderModel
-): OrderTypes.OrderResponseBodyDataInstance {
-    return model;
-}
 
 async function patchSingle(
     id: number,
@@ -46,7 +28,7 @@ async function patchSingle(
             throw new Error(`Unable to update ${modelName} instance`);
         }
     }
-    return modelToResponseBodyDataInstance(model);
+    return model;
 }
 
 async function deleteSingle(
@@ -60,10 +42,10 @@ async function deleteSingle(
             `Unable to find ${modelName} with id ${id}`
         );
     }
-    // const data = modelToResponseBodyDataInstance(model);
+    // const data = model;
     // Unrelate all symbols without removing them from the model
     await OrderModel.query(trx).deleteById(id);
-    return modelToResponseBodyDataInstance(model);
+    return model;
 }
 
 router.get(
@@ -100,7 +82,7 @@ router.get(
             }
             const queryResults = await query;
             const data = queryResults.map(dataItem => {
-                return modelToResponseBodyDataInstance(dataItem);
+                return dataItem;
             });
             return res.json({
                 status: 'success',
@@ -133,7 +115,7 @@ router.get(
             return res.json({
                 status: 'success',
                 message: `${modelName} instance retrieved successfully`,
-                data: modelToResponseBodyDataInstance(modelData),
+                data: modelData,
             });
         } catch (err) {
             next(err);
@@ -157,8 +139,7 @@ router.post(
                 async trx => {
                     for (const Order of parsedRequest) {
                         // Insert into junction table first
-                        const dataToInsert =
-                            postRequestBodyDataInstanceToRequiredFields(Order);
+                        const dataToInsert = Order;
                         const model = await OrderModel.query(trx).insert(
                             dataToInsert
                         );
@@ -167,7 +148,7 @@ router.post(
                                 `Unable to create ${modelName} instance`
                             );
                         }
-                        modelData.push(modelToResponseBodyDataInstance(model));
+                        modelData.push(model);
                     }
                 },
                 { isolationLevel: 'serializable' }
