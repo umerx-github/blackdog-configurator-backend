@@ -165,7 +165,7 @@ export async function seed(knex: Knex): Promise<void> {
             id: 1,
             strategyId: 2,
             status: StrategyTemplateSeaDogDiscountSchemeTypes.StatusSchema.Enum
-                .active,
+                .inactive,
             cashInCents: 100,
             sellAtPercentile: 50,
         },
@@ -173,7 +173,7 @@ export async function seed(knex: Knex): Promise<void> {
             id: 2,
             strategyId: 2,
             status: StrategyTemplateSeaDogDiscountSchemeTypes.StatusSchema.Enum
-                .inactive,
+                .active,
             cashInCents: 200,
             sellAtPercentile: 75,
         },

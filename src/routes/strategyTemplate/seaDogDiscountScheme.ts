@@ -58,6 +58,17 @@ function modelToResponseBodyDataInstance(
     return modelDataWithSymbolId;
 }
 
+async function deactivateAllOtherDiscountSchemes(
+    id: number,
+    strategyId: number,
+    trx: Knex.Transaction
+): Promise<void> {
+    await StrategyTemplateSeaDogDiscountSchemeModel.query(trx)
+        .where('id', '!=', id)
+        .andWhere('strategyId', strategyId)
+        .patch({ status: 'inactive' });
+}
+
 async function patchSingle(
     id: number,
     strategyTemplateSeaDogDiscountScheme: StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePropsOptional,
@@ -72,7 +83,16 @@ async function patchSingle(
     if (Object.keys(dataToInsert).length > 0) {
         model = await StrategyTemplateSeaDogDiscountSchemeModel.query(
             trx
-        ).patchAndFetchById(id, dataToInsert);
+        ).findById(id);
+        if (!model) {
+            throw new Errors.ModelNotFoundError(
+                `Unable to find ${modelName} with id ${id}`
+            );
+        }
+        if (model.status === 'inactive' && dataToInsert.status === 'active') {
+            deactivateAllOtherDiscountSchemes(model.id, model.strategyId, trx);
+        }
+        model = await model.$query(trx).patchAndFetchById(id, dataToInsert);
     } else {
         model = await StrategyTemplateSeaDogDiscountSchemeModel.query(trx)
             .findById(id)
@@ -257,6 +277,13 @@ router.post(
                         if (!model) {
                             throw new Error(
                                 `Unable to create ${modelName} instance`
+                            );
+                        }
+                        if (model.status === 'active') {
+                            deactivateAllOtherDiscountSchemes(
+                                model.id,
+                                model.strategyId,
+                                trx
                             );
                         }
                         // Insert into junction table
