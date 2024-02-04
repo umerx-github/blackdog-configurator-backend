@@ -7,6 +7,7 @@ export class Order extends Model implements OrderTypes.OrderModelInterface {
     symbolId!: number;
     alpacaOrderId!: string;
     status!: OrderTypes.Status;
+    side!: OrderTypes.Side;
     // https://www.reddit.com/r/node/comments/7hxie6/objectionjs_and_timestamps/
     // https://github.com/Vincit/objection.js/issues/647
     static get tableName() {
@@ -21,6 +22,7 @@ export class Order extends Model implements OrderTypes.OrderModelInterface {
                 symbolId: { type: 'number' },
                 alpacaOrderId: { type: 'string' },
                 status: { type: 'string' },
+                side: { type: 'string' },
             },
         };
     }

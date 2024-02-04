@@ -64,6 +64,7 @@ export async function up(knex: Knex): Promise<void> {
                 .withKeyName('order_symbolId_fkey');
             table.string('alpacaOrderId').notNullable();
             table.enu('status', OrderTypes.StatusSchema.options).notNullable();
+            table.enu('side', OrderTypes.SideSchema.options).notNullable();
         });
     });
     await ifTableDoesNotExist(PositionModel.tableName, knex, async () => {

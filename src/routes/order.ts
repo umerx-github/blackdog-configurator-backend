@@ -1,10 +1,15 @@
 import { Order as OrderModel } from '../db/models/Order.js';
-import { Order as OrderTypes } from '@umerx/umerx-blackdog-configurator-types-typescript';
+import { Position as PositionModel } from '../db/models/Position.js';
+import {
+    Order as OrderTypes,
+    Position as PositionTypes,
+} from '@umerx/umerx-blackdog-configurator-types-typescript';
 import { Router, Request, Response } from 'express';
 import * as Errors from '../errors/index.js';
 import { KNEXION } from '../index.js';
 import { Knex } from 'knex';
 import { NextFunction } from 'express';
+import * as OrderTypesFaux from '../types/orderTypes.js';
 
 const router = Router();
 const modelName = 'Order';
@@ -387,6 +392,91 @@ router.delete(
                 status: 'success',
                 message: `${modelName} instance deleted successfully`,
                 data: modelData,
+            });
+        } catch (err) {
+            next(err);
+        }
+    }
+);
+
+router.post(
+    '/:id/fill',
+    async (
+        req: Request<OrderTypesFaux.OrderFillPostSingleRequestParamsRaw>,
+        res: Response<OrderTypesFaux.OrderFillPostSingleResponseBody>,
+        next
+    ) => {
+        try {
+            const params =
+                OrderTypesFaux.OrderFillPostSingleRequestParamsFromRaw(
+                    req.params
+                );
+            let model: OrderModel | undefined;
+            let position: PositionModel | undefined;
+            await KNEXION.transaction(async trx => {
+                model = await OrderModel.query(trx).findById(params.id);
+                if (!model) {
+                    throw new Errors.ModelNotFoundError(
+                        `Unable to find ${modelName} with id ${params.id}`
+                    );
+                }
+                if (model.status !== 'open') {
+                    throw new Error(
+                        `Unable to fill ${modelName} with id ${params.id} because it is no longer open`
+                    );
+                }
+                if (!(model.side in OrderTypes.SideSchema.Enum)) {
+                    throw new Error(
+                        `Unable to fill ${modelName} with id ${params.id} because it has an invalid side`
+                    );
+                }
+                if (model.side === OrderTypes.SideSchema.Enum.buy) {
+                    // Create a new position
+                    position = await PositionModel.query(trx).insert({
+                        symbolId: model.symbolId,
+                        strategyId: model.strategyId,
+                    });
+                }
+                if (model.side === OrderTypes.SideSchema.Enum.sell) {
+                    // Delete 1 position
+                    const positions = await PositionModel.query(trx)
+                        .where({
+                            symbolId: model.symbolId,
+                            strategyId: model.strategyId,
+                        })
+                        .limit(1);
+                    if (positions.length === 0) {
+                        throw new Errors.ModelNotFoundError(
+                            `Unable to find Position with symbolId ${model.symbolId} and strategyId ${model.strategyId}`
+                        );
+                    }
+                    position = positions[0];
+                    await PositionModel.query(trx).deleteById(position.id);
+                }
+                model = await OrderModel.query(trx).patchAndFetchById(
+                    model.id,
+                    {
+                        status: 'closed',
+                    }
+                );
+            });
+            if (!model) {
+                throw new Errors.ModelNotFoundError(
+                    `Unable to find ${modelName} with id ${params.id}`
+                );
+            }
+            if (!position) {
+                throw new Errors.ModelNotFoundError(
+                    `Unable to find Position with symbolId ${model.symbolId} and strategyId ${model.strategyId}`
+                );
+            }
+            return res.json({
+                status: 'success',
+                message: `${modelName} instance filled successfully`,
+                data: {
+                    order: model,
+                    position: position,
+                },
             });
         } catch (err) {
             next(err);

@@ -85,6 +85,7 @@ export async function seed(knex: Knex): Promise<void> {
             symbolId: 1,
             alpacaOrderId: '1',
             status: OrderTypes.StatusSchema.Enum.open,
+            side: OrderTypes.SideSchema.Enum.buy,
         },
         {
             id: 2,
@@ -92,6 +93,7 @@ export async function seed(knex: Knex): Promise<void> {
             symbolId: 2,
             alpacaOrderId: '2',
             status: OrderTypes.StatusSchema.Enum.open,
+            side: OrderTypes.SideSchema.Enum.buy,
         },
         {
             id: 3,
@@ -99,6 +101,7 @@ export async function seed(knex: Knex): Promise<void> {
             symbolId: 2,
             alpacaOrderId: '3',
             status: OrderTypes.StatusSchema.Enum.closed,
+            side: OrderTypes.SideSchema.Enum.buy,
         },
         {
             id: 4,
@@ -106,6 +109,7 @@ export async function seed(knex: Knex): Promise<void> {
             symbolId: 3,
             alpacaOrderId: '4',
             status: OrderTypes.StatusSchema.Enum.open,
+            side: OrderTypes.SideSchema.Enum.sell,
         },
         {
             id: 5,
@@ -113,6 +117,7 @@ export async function seed(knex: Knex): Promise<void> {
             symbolId: 3,
             alpacaOrderId: '5',
             status: OrderTypes.StatusSchema.Enum.open,
+            side: OrderTypes.SideSchema.Enum.sell,
         },
         {
             id: 6,
@@ -120,6 +125,7 @@ export async function seed(knex: Knex): Promise<void> {
             symbolId: 1,
             alpacaOrderId: '6',
             status: OrderTypes.StatusSchema.Enum.closed,
+            side: OrderTypes.SideSchema.Enum.sell,
         },
     ]);
     await knex<PositionTypes.PositionProps & { id: number }>(
