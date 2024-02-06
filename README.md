@@ -19,5 +19,8 @@
 
 ## To Do
 
--   Strategy
-    -   Make it impossible to change a strategy's template
+-   Make it so a position can be created/added to quantity in a single route - even if it doesn't exist in the database yet
+    -   So there are not timing issues
+    -   The route cannot contain the position Id
+    -   It would have to contain the position's symbol and the quantity
+    -   The HTTP method would have to be POST

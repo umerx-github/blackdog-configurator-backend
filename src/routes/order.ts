@@ -1,18 +1,48 @@
 import { Order as OrderModel } from '../db/models/Order.js';
 import { Position as PositionModel } from '../db/models/Position.js';
-import {
-    Order as OrderTypes,
-    Position as PositionTypes,
-} from '@umerx/umerx-blackdog-configurator-types-typescript';
+import { Order as OrderTypes } from '@umerx/umerx-blackdog-configurator-types-typescript';
 import { Router, Request, Response } from 'express';
 import * as Errors from '../errors/index.js';
 import { KNEXION } from '../index.js';
 import { Knex } from 'knex';
 import { NextFunction } from 'express';
 import * as OrderTypesFaux from '../types/orderTypes.js';
+import { unknown } from 'zod';
 
 const router = Router();
 const modelName = 'Order';
+
+async function postSingle(
+    modelProps: OrderTypes.OrderProps,
+    trx: Knex.Transaction
+) {
+    // If sell order, check if position exists and is greater than or equal to quantity
+    if (modelProps.side === OrderTypes.SideSchema.Enum.sell) {
+        const positions = await PositionModel.query(trx).where({
+            symbolId: modelProps.symbolId,
+            strategyId: modelProps.strategyId,
+        });
+        if (positions.length === 0) {
+            throw new Errors.ModelNotFoundError(
+                `Unable to find Position with symbolId ${modelProps.symbolId} and strategyId ${modelProps.strategyId}`
+            );
+        }
+        if (positions[0].quantity < modelProps.quantity) {
+            throw new Error(
+                `Unable to create ${modelName} instance because it would result in a negative position quantity`
+            );
+        }
+    }
+    // insert into order table
+    const model = await OrderModel.query(trx).insert({
+        ...modelProps,
+        status: OrderTypes.StatusSchema.Enum.open,
+    });
+    if (!model) {
+        throw new Error(`Unable to create ${modelName} instance`);
+    }
+    return model;
+}
 
 async function patchSingle(
     id: number,
@@ -145,9 +175,7 @@ router.post(
                     for (const Order of parsedRequest) {
                         // Insert into junction table first
                         const dataToInsert = Order;
-                        const model = await OrderModel.query(trx).insert(
-                            dataToInsert
-                        );
+                        const model = await postSingle(dataToInsert, trx);
                         if (!model) {
                             throw new Error(
                                 `Unable to create ${modelName} instance`
@@ -431,14 +459,37 @@ router.post(
                     );
                 }
                 if (model.side === OrderTypes.SideSchema.Enum.buy) {
-                    // Create a new position
-                    position = await PositionModel.query(trx).insert({
-                        symbolId: model.symbolId,
-                        strategyId: model.strategyId,
-                    });
+                    // Check if position exists
+                    // If it does, increment quantity
+                    // If it does not, create a new position
+                    const positions = await PositionModel.query(trx)
+                        .where({
+                            symbolId: model.symbolId,
+                            strategyId: model.strategyId,
+                        })
+                        .limit(1);
+                    if (positions.length === 0) {
+                        position = await PositionModel.query(trx).insert({
+                            symbolId: model.symbolId,
+                            strategyId: model.strategyId,
+                            quantity: model.quantity,
+                        });
+                    }
+                    if (positions.length > 0) {
+                        position = positions[0];
+                        position = await PositionModel.query(
+                            trx
+                        ).patchAndFetchById(position.id, {
+                            quantity: position.quantity + model.quantity,
+                        });
+                    }
                 }
                 if (model.side === OrderTypes.SideSchema.Enum.sell) {
-                    // Delete 1 position
+                    // Check if position exists
+                    // If it does, decrement quantity
+                    // If quantity is 0, delete the position
+                    // If quantity less than 0, throw an error
+                    // If it does not, throw an error
                     const positions = await PositionModel.query(trx)
                         .where({
                             symbolId: model.symbolId,
@@ -451,12 +502,25 @@ router.post(
                         );
                     }
                     position = positions[0];
-                    await PositionModel.query(trx).deleteById(position.id);
+                    position = await PositionModel.query(trx).patchAndFetchById(
+                        position.id,
+                        {
+                            quantity: position.quantity - model.quantity,
+                        }
+                    );
+                    if (position.quantity < 0) {
+                        throw new Error(
+                            `Unable to fill ${modelName} with id ${params.id} because it would result in a negative position quantity`
+                        );
+                    }
+                    if (position.quantity === 0) {
+                        await PositionModel.query(trx).deleteById(position.id);
+                    }
                 }
                 model = await OrderModel.query(trx).patchAndFetchById(
                     model.id,
                     {
-                        status: 'closed',
+                        status: OrderTypes.StatusSchema.Enum.closed,
                     }
                 );
             });
@@ -473,10 +537,7 @@ router.post(
             return res.json({
                 status: 'success',
                 message: `${modelName} instance filled successfully`,
-                data: {
-                    order: model,
-                    position: position,
-                },
+                data: model,
             });
         } catch (err) {
             next(err);

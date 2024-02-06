@@ -76,7 +76,7 @@ export async function seed(knex: Knex): Promise<void> {
                     .SeaDogDiscountScheme,
         },
     ]);
-    await knex<OrderTypes.OrderProps & { id: number }>(
+    await knex<OrderTypes.OrderRequiredFields & { id: number }>(
         OrderModel.tableName
     ).insert([
         {
@@ -86,6 +86,7 @@ export async function seed(knex: Knex): Promise<void> {
             alpacaOrderId: '1',
             status: OrderTypes.StatusSchema.Enum.open,
             side: OrderTypes.SideSchema.Enum.buy,
+            quantity: 1,
         },
         {
             id: 2,
@@ -94,6 +95,7 @@ export async function seed(knex: Knex): Promise<void> {
             alpacaOrderId: '2',
             status: OrderTypes.StatusSchema.Enum.open,
             side: OrderTypes.SideSchema.Enum.buy,
+            quantity: 2,
         },
         {
             id: 3,
@@ -102,6 +104,7 @@ export async function seed(knex: Knex): Promise<void> {
             alpacaOrderId: '3',
             status: OrderTypes.StatusSchema.Enum.closed,
             side: OrderTypes.SideSchema.Enum.buy,
+            quantity: 3,
         },
         {
             id: 4,
@@ -110,6 +113,7 @@ export async function seed(knex: Knex): Promise<void> {
             alpacaOrderId: '4',
             status: OrderTypes.StatusSchema.Enum.open,
             side: OrderTypes.SideSchema.Enum.sell,
+            quantity: 4,
         },
         {
             id: 5,
@@ -118,6 +122,7 @@ export async function seed(knex: Knex): Promise<void> {
             alpacaOrderId: '5',
             status: OrderTypes.StatusSchema.Enum.open,
             side: OrderTypes.SideSchema.Enum.sell,
+            quantity: 5,
         },
         {
             id: 6,
@@ -126,6 +131,7 @@ export async function seed(knex: Knex): Promise<void> {
             alpacaOrderId: '6',
             status: OrderTypes.StatusSchema.Enum.closed,
             side: OrderTypes.SideSchema.Enum.sell,
+            quantity: 6,
         },
     ]);
     await knex<PositionTypes.PositionProps & { id: number }>(
@@ -135,31 +141,37 @@ export async function seed(knex: Knex): Promise<void> {
             id: 1,
             strategyId: 1,
             symbolId: 1,
+            quantity: 1,
         },
         {
             id: 2,
             strategyId: 1,
             symbolId: 2,
+            quantity: 2,
         },
         {
             id: 3,
             strategyId: 2,
             symbolId: 2,
+            quantity: 3,
         },
         {
             id: 4,
             strategyId: 2,
             symbolId: 3,
+            quantity: 4,
         },
         {
             id: 5,
             strategyId: 3,
             symbolId: 3,
+            quantity: 5,
         },
         {
             id: 6,
             strategyId: 3,
             symbolId: 1,
+            quantity: 6,
         },
     ]);
     await knex<

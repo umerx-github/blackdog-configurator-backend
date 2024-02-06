@@ -8,6 +8,7 @@ export class Position
     id!: number;
     strategyId!: number;
     symbolId!: number;
+    quantity!: number;
     // https://www.reddit.com/r/node/comments/7hxie6/objectionjs_and_timestamps/
     // https://github.com/Vincit/objection.js/issues/647
     static get tableName() {
@@ -20,6 +21,7 @@ export class Position
                 id: { type: 'number' },
                 strategyId: { type: 'number' },
                 symbolId: { type: 'number' },
+                quantity: { type: 'number' },
             },
         };
     }

@@ -16,10 +16,7 @@ export type OrderFillPostSingleRequestBody = never;
 export interface OrderFillPostSingleResponseBody {
     status: string;
     message: string;
-    data: {
-        order: OrderTypes.OrderResponseBodyDataInstance;
-        position: PositionTypes.PositionResponseBodyDataInstance;
-    };
+    data: OrderTypes.OrderResponseBodyDataInstance;
 }
 
 export const OrderFillPostSingleRequestParamsExpected = z.object({

@@ -65,6 +65,7 @@ export async function up(knex: Knex): Promise<void> {
             table.string('alpacaOrderId').notNullable();
             table.enu('status', OrderTypes.StatusSchema.options).notNullable();
             table.enu('side', OrderTypes.SideSchema.options).notNullable();
+            table.integer('quantity').notNullable();
         });
     });
     await ifTableDoesNotExist(PositionModel.tableName, knex, async () => {
@@ -84,6 +85,9 @@ export async function up(knex: Knex): Promise<void> {
                 .references('id')
                 .inTable(SymbolModel.tableName)
                 .withKeyName('position_symbolId_fkey');
+            table.integer('quantity').notNullable();
+            // Ensure that the combination of strategyId and symbolId is unique
+            table.unique(['strategyId', 'symbolId']);
         });
     });
     await ifTableDoesNotExist(
