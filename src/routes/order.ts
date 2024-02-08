@@ -6,7 +6,6 @@ import * as Errors from '../errors/index.js';
 import { KNEXION } from '../index.js';
 import { Knex } from 'knex';
 import { NextFunction } from 'express';
-import * as OrderTypesFaux from '../types/orderTypes.js';
 import { unknown } from 'zod';
 
 const router = Router();
@@ -430,15 +429,14 @@ router.delete(
 router.post(
     '/:id/fill',
     async (
-        req: Request<OrderTypesFaux.OrderFillPostSingleRequestParamsRaw>,
-        res: Response<OrderTypesFaux.OrderFillPostSingleResponseBody>,
+        req: Request<OrderTypes.OrderFillPostSingleRequestParamsRaw>,
+        res: Response<OrderTypes.OrderFillPostSingleResponseBody>,
         next
     ) => {
         try {
-            const params =
-                OrderTypesFaux.OrderFillPostSingleRequestParamsFromRaw(
-                    req.params
-                );
+            const params = OrderTypes.OrderFillPostSingleRequestParamsFromRaw(
+                req.params
+            );
             let model: OrderModel | undefined;
             let position: PositionModel | undefined;
             await KNEXION.transaction(async trx => {
