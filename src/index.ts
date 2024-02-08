@@ -59,6 +59,12 @@ app.use(function (err: Error, req: Request, res: Response, next: NextFunction) {
         message: err.message,
     });
 });
+app.use((req, res, next) => {
+    res.status(404).json({
+        status: 'error',
+        message: 'Not found',
+    });
+});
 
 // app.use('/config', configRouter);
 // app.use('/symbol', symbolRouter);
