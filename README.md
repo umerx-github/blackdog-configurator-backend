@@ -19,8 +19,7 @@
 
 ## To Do
 
--   Make it so a position can be created/added to quantity in a single route - even if it doesn't exist in the database yet
-    -   So there are not timing issues
-    -   The route cannot contain the position Id
-    -   It would have to contain the position's symbol and the quantity
-    -   The HTTP method would have to be POST
+-   Make it so creating a new sell order decrements the quantity of the position in the database
+-   Make it so cancelling a sell order increments the quantity of the position in the database
+    -   Add a "/cancel" route
+-   Remove other routes like patch, put, delete, etc. that are not needed.
