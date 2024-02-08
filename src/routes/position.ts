@@ -12,46 +12,12 @@ const modelName = 'Position';
 
 // Typing Express Request: https://stackoverflow.com/questions/48027563/typescript-type-annotation-for-res-body
 
-async function patchSingle(
-    id: number,
-    modelProps: PositionTypes.PositionPropsOptional,
-    trx: Knex.Transaction
-) {
-    // Check if there are any properties to update
-    let model = await PositionModel.query(trx).findById(id);
-    // get the model's data before deleting it
-    if (!model) {
-        throw new Errors.ModelNotFoundError(
-            `Unable to find ${modelName} with id ${id}`
+function validateQuantity(quantity: number) {
+    if (quantity < 0) {
+        throw new Error(
+            `Unable to create ${modelName} instance with negative quantity: ${quantity}`
         );
     }
-    if (Object.keys(modelProps).length > 0) {
-        model = await PositionModel.query(trx).patchAndFetchById(
-            id,
-            modelProps
-        );
-        if (!model) {
-            throw new Error(`Unable to update ${modelName} instance`);
-        }
-    }
-    return model;
-}
-
-async function deleteSingle(
-    id: number,
-    trx: Knex.Transaction
-): Promise<PositionTypes.PositionResponseBodyDataInstance> {
-    let model = await PositionModel.query(trx).findById(id);
-    // get the model's data before deleting it
-    if (!model) {
-        throw new Errors.ModelNotFoundError(
-            `Unable to find ${modelName} with id ${id}`
-        );
-    }
-    // const data = modelToResponseBodyDataInstance(model);
-    // Unrelate all symbols without removing them from the model
-    await PositionModel.query(trx).deleteById(id);
-    return model;
 }
 
 router.get(
@@ -143,12 +109,31 @@ router.post(
                 [];
             await KNEXION.transaction(
                 async trx => {
-                    for (const Position of parsedRequest) {
+                    for (const dataToInsert of parsedRequest) {
                         // Insert into junction table first
-                        const dataToInsert = Position;
-                        const model = await PositionModel.query(trx).insert(
-                            dataToInsert
-                        );
+                        // Check to see if a position with the same symbolId and strategyId already exists
+                        let model: PositionModel | undefined;
+                        const existingPosition = await PositionModel.query(trx)
+                            .where('symbolId', dataToInsert.symbolId)
+                            .andWhere('strategyId', dataToInsert.strategyId)
+                            .first();
+                        // If it does exist, update the quantity
+                        if (existingPosition) {
+                            const newQuantity =
+                                existingPosition.quantity +
+                                dataToInsert.quantity;
+                            validateQuantity(newQuantity);
+                            model = await PositionModel.query(
+                                trx
+                            ).patchAndFetchById(existingPosition.id, {
+                                quantity: newQuantity,
+                            });
+                        } else {
+                            validateQuantity(dataToInsert.quantity);
+                            model = await PositionModel.query(trx).insert(
+                                dataToInsert
+                            );
+                        }
                         if (!model) {
                             throw new Error(
                                 `Unable to create ${modelName} instance`
@@ -162,245 +147,6 @@ router.post(
             return res.json({
                 status: 'success',
                 message: `${modelName} instances created successfully`,
-                data: modelData,
-            });
-        } catch (err) {
-            next(err);
-        }
-    }
-);
-
-router.patch(
-    '/',
-    async (
-        req: Request<any, any, PositionTypes.PositionPatchManyRequestBody>,
-        res: Response<PositionTypes.PositionPatchManyResponseBody>,
-        next: NextFunction
-    ) => {
-        // https://vincit.github.io/objection.js/guide/query-examples.html#relation-relate-queries);
-        try {
-            const parsedRequest: PositionTypes.PositionPatchManyRequestBody =
-                PositionTypes.PositionPatchManyRequestBodyFromRaw(req.body);
-            const modelData: PositionTypes.PositionPatchManyResponseBodyData =
-                [];
-            await KNEXION.transaction(
-                async trx => {
-                    for (const Position of parsedRequest) {
-                        // Insert into junction table first
-                        modelData.push(
-                            await patchSingle(Position.id, Position, trx)
-                        );
-                    }
-                },
-                { isolationLevel: 'serializable' }
-            );
-            return res.json({
-                status: 'success',
-                message: `${modelName} instances updated successfully`,
-                data: modelData,
-            });
-        } catch (err) {
-            next(err);
-        }
-    }
-);
-
-router.patch(
-    '/:id',
-    async (
-        req: Request<
-            PositionTypes.PositionPatchSingleRequestParamsRaw,
-            any,
-            PositionTypes.PositionPatchSingleRequestBody
-        >,
-        res: Response<PositionTypes.PositionPatchSingleResponseBody>,
-        next: NextFunction
-    ) => {
-        // https://vincit.github.io/objection.js/guide/query-examples.html#relation-relate-queries);
-        try {
-            const params = PositionTypes.PositionGetSingleRequestParamsFromRaw(
-                req.params
-            );
-            const parsedRequest: PositionTypes.PositionPatchSingleRequestBody =
-                PositionTypes.PositionPatchSingleRequestBodyFromRaw(req.body);
-            let modelData:
-                | PositionTypes.PositionPatchSingleResponseBodyData
-                | undefined = undefined;
-            await KNEXION.transaction(
-                async trx => {
-                    modelData = await patchSingle(
-                        params.id,
-                        parsedRequest,
-                        trx
-                    );
-                },
-                { isolationLevel: 'serializable' }
-            );
-            if (!modelData) {
-                throw new Errors.ModelNotFoundError(
-                    `Unable to find ${modelName} with id ${params.id}`
-                );
-            }
-            return res.json({
-                status: 'success',
-                message: `${modelName} instance updated successfully`,
-                data: modelData,
-            });
-        } catch (err) {
-            next(err);
-        }
-    }
-);
-
-router.put(
-    '/',
-    async (
-        req: Request<any, any, PositionTypes.PositionPutManyRequestBody>,
-        res: Response<PositionTypes.PositionPutManyResponseBody>,
-        next: NextFunction
-    ) => {
-        // https://vincit.github.io/objection.js/guide/query-examples.html#relation-relate-queries);
-        try {
-            const parsedRequest: PositionTypes.PositionPutManyRequestBody =
-                PositionTypes.PositionPutManyRequestBodyFromRaw(req.body);
-            const modelData: PositionTypes.PositionPutManyResponseBodyData = [];
-            await KNEXION.transaction(
-                async trx => {
-                    for (const Position of parsedRequest) {
-                        const modelDataInstance = await patchSingle(
-                            Position.id,
-                            Position,
-                            trx
-                        );
-                        modelData.push(modelDataInstance);
-                    }
-                },
-                { isolationLevel: 'serializable' }
-            );
-            return res.json({
-                status: 'success',
-                message: `${modelName} instances updated successfully`,
-                data: modelData,
-            });
-        } catch (err) {
-            next(err);
-        }
-    }
-);
-
-router.put(
-    '/:id',
-    async (
-        req: Request<
-            PositionTypes.PositionPutSingleRequestParamsRaw,
-            any,
-            PositionTypes.PositionPutSingleRequestBody
-        >,
-        res: Response<PositionTypes.PositionPutSingleResponseBody>,
-        next: NextFunction
-    ) => {
-        // https://vincit.github.io/objection.js/guide/query-examples.html#relation-relate-queries);
-        try {
-            const params = PositionTypes.PositionGetSingleRequestParamsFromRaw(
-                req.params
-            );
-            const parsedRequest: PositionTypes.PositionPutSingleRequestBody =
-                PositionTypes.PositionPutSingleRequestBodyFromRaw(req.body);
-            let modelData:
-                | PositionTypes.PositionPutSingleResponseBodyData
-                | undefined = undefined;
-            await KNEXION.transaction(
-                async trx => {
-                    modelData = await patchSingle(
-                        params.id,
-                        parsedRequest,
-                        trx
-                    );
-                },
-                { isolationLevel: 'serializable' }
-            );
-            if (!modelData) {
-                throw new Errors.ModelNotFoundError(
-                    `Unable to find ${modelName} with id ${params.id}`
-                );
-            }
-            return res.json({
-                status: 'success',
-                message: `${modelName} instance updated successfully`,
-                data: modelData,
-            });
-        } catch (err) {
-            next(err);
-        }
-    }
-);
-
-router.delete(
-    '/',
-    async (
-        req: Request<
-            any,
-            any,
-            any,
-            PositionTypes.PositionDeleteManyRequestQueryRaw
-        >,
-        res: Response<PositionTypes.PositionDeleteManyResponseBody>,
-        next: NextFunction
-    ) => {
-        try {
-            const query = PositionModel.query();
-            const expectedPositionDeleteManyRequestQuery: PositionTypes.PositionDeleteManyRequestQuery =
-                PositionTypes.PositionDeleteManyRequestQueryFromRaw(req.query);
-            const modelData: PositionTypes.PositionPutManyResponseBodyData = [];
-            await KNEXION.transaction(
-                async trx => {
-                    for (const id of expectedPositionDeleteManyRequestQuery.ids) {
-                        const modelDataInstance = await deleteSingle(id, trx);
-                        modelData.push(modelDataInstance);
-                    }
-                },
-                { isolationLevel: 'serializable' }
-            );
-            return res.json({
-                status: 'success',
-                message: `${modelName} instances deleted successfully`,
-                data: modelData,
-            });
-        } catch (err) {
-            next(err);
-        }
-    }
-);
-
-router.delete(
-    '/:id',
-    async (
-        req: Request<PositionTypes.PositionDeleteSingleRequestParamsRaw>,
-        res: Response<PositionTypes.PositionDeleteSingleResponseBody>,
-        next: NextFunction
-    ) => {
-        try {
-            const params =
-                PositionTypes.PositionDeleteSingleRequestParamsFromRaw(
-                    req.params
-                );
-            let modelData:
-                | PositionTypes.PositionDeleteSingleResponseBodyData
-                | undefined;
-            await KNEXION.transaction(
-                async trx => {
-                    modelData = await deleteSingle(params.id, trx);
-                },
-                { isolationLevel: 'serializable' }
-            );
-            if (undefined === modelData) {
-                throw new Errors.ModelNotFoundError(
-                    `Unable to find ${modelName} with id ${params.id}`
-                );
-            }
-            return res.json({
-                status: 'success',
-                message: `${modelName} instance deleted successfully`,
                 data: modelData,
             });
         } catch (err) {
