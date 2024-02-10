@@ -10,6 +10,7 @@ export class Symbol extends Model implements SymbolTypes.SymbolModelInterface {
     static get jsonSchema() {
         return {
             type: 'object',
+            required: ['name'],
             properties: {
                 id: { type: 'number' },
                 name: { type: 'string' },

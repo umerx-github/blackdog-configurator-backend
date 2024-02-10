@@ -19,6 +19,7 @@
         "dev:db:migrate:run": "npm run type && knex migrate:latest --debug --knexfile=out-tsc/db/knexfile.js",
         "dev:db:seed:make": "mkdir -p src/db/seeds && npm run type && knex seed:make --debug --knexfile=out-tsc/db/knexfile.js -x ts seed && mv out-tsc/db/seeds/seed.ts src/db/seeds/seed.ts",
         "dev:db:seed:run": "npm run type && knex seed:run --debug --knexfile=out-tsc/db/knexfile.js",
+        "dev:update:umerx:all": "npm run dev:update:umerx:types",
         "dev:update:umerx:types": "npm cache clean --force && npm update @umerx/umerx-blackdog-configurator-types-typescript"
     },
     "eslintConfig": {

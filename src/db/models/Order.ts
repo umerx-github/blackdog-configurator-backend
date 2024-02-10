@@ -9,6 +9,7 @@ export class Order extends Model implements OrderTypes.OrderModelInterface {
     status!: OrderTypes.Status;
     side!: OrderTypes.Side;
     quantity!: number;
+    averagePriceInCents!: number;
     // https://www.reddit.com/r/node/comments/7hxie6/objectionjs_and_timestamps/
     // https://github.com/Vincit/objection.js/issues/647
     static get tableName() {
@@ -25,6 +26,7 @@ export class Order extends Model implements OrderTypes.OrderModelInterface {
                 'status',
                 'side',
                 'quantity',
+                'averagePriceInCents',
             ],
             properties: {
                 id: { type: 'number' },
@@ -34,6 +36,7 @@ export class Order extends Model implements OrderTypes.OrderModelInterface {
                 status: { type: 'string' },
                 side: { type: 'string' },
                 quantity: { type: 'number' },
+                averagePriceInCents: { type: 'number' },
             },
         };
     }

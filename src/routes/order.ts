@@ -6,6 +6,8 @@ import * as Errors from '../errors/index.js';
 import { KNEXION } from '../index.js';
 import { Knex } from 'knex';
 import { NextFunction } from 'express';
+import { Strategy as StrategyModel } from '../db/models/Strategy.js';
+import { bankersRounding } from '../utils/index.js';
 
 const router = Router();
 const modelName = 'Order';
@@ -14,7 +16,31 @@ async function postSingle(
     modelProps: OrderTypes.OrderProps,
     trx: Knex.Transaction
 ) {
-    // If sell order, check if position exists and is greater than or equal to quantity
+    // If buy order update strategy's cashInCents
+    if (modelProps.side === OrderTypes.SideSchema.Enum.buy) {
+        // Check if this amount can be subtracted from related strategy's cashInCents
+        const strategy = await StrategyModel.query(trx).findById(
+            modelProps.strategyId
+        );
+        if (!strategy) {
+            throw new Errors.ModelNotFoundError(
+                `Unable to find Strategy with id ${modelProps.strategyId}`
+            );
+        }
+        const orderCashInCents = bankersRounding(
+            modelProps.quantity * modelProps.averagePriceInCents
+        );
+        if (strategy.cashInCents < orderCashInCents) {
+            throw new Error(
+                `Unable to create ${modelName} instance because it would result in a negative cashInCents`
+            );
+        }
+        // Decrease strategy's cashInCents
+        await StrategyModel.query(trx).patchAndFetchById(strategy.id, {
+            cashInCents: strategy.cashInCents - orderCashInCents,
+        });
+    }
+    // If sell order, update position quantity
     if (modelProps.side === OrderTypes.SideSchema.Enum.sell) {
         const positions = await PositionModel.query(trx).where({
             symbolId: modelProps.symbolId,
@@ -190,6 +216,7 @@ router.post(
                             `Unable to fill ${modelName} with id ${params.id} because it has an invalid side`
                         );
                     }
+                    // If buy order, update position quantity
                     if (model.side === OrderTypes.SideSchema.Enum.buy) {
                         // Check if position exists
                         // If it does, increment quantity
@@ -215,6 +242,29 @@ router.post(
                                 }
                             );
                         }
+                    }
+                    // If sell order, update strategy's cashInCents
+                    if (model.side === OrderTypes.SideSchema.Enum.sell) {
+                        // Check if this amount can be added to related strategy's cashInCents
+                        const strategy = await StrategyModel.query(
+                            trx
+                        ).findById(model.strategyId);
+                        if (!strategy) {
+                            throw new Errors.ModelNotFoundError(
+                                `Unable to find Strategy with id ${model.strategyId}`
+                            );
+                        }
+                        const orderCashInCents = bankersRounding(
+                            model.quantity * model.averagePriceInCents
+                        );
+                        // Increase strategy's cashInCents
+                        await StrategyModel.query(trx).patchAndFetchById(
+                            strategy.id,
+                            {
+                                cashInCents:
+                                    strategy.cashInCents + orderCashInCents,
+                            }
+                        );
                     }
                     model = await OrderModel.query(trx).patchAndFetchById(
                         model.id,
@@ -271,6 +321,30 @@ router.post(
                             `Unable to cancel ${modelName} with id ${params.id} because it has an invalid side`
                         );
                     }
+                    // If buy order, update strategy's cashInCents
+                    if (model.side === OrderTypes.SideSchema.Enum.buy) {
+                        // Check if this amount can be added to related strategy's cashInCents
+                        const strategy = await StrategyModel.query(
+                            trx
+                        ).findById(model.strategyId);
+                        if (!strategy) {
+                            throw new Errors.ModelNotFoundError(
+                                `Unable to find Strategy with id ${model.strategyId}`
+                            );
+                        }
+                        const orderCashInCents = bankersRounding(
+                            model.quantity * model.averagePriceInCents
+                        );
+                        // Increase strategy's cashInCents
+                        await StrategyModel.query(trx).patchAndFetchById(
+                            strategy.id,
+                            {
+                                cashInCents:
+                                    strategy.cashInCents + orderCashInCents,
+                            }
+                        );
+                    }
+                    // If sell order, update position quantity
                     if (model.side === OrderTypes.SideSchema.Enum.sell) {
                         // Check if position exists
                         // If it does, increment quantity

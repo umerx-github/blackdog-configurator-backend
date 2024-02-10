@@ -12,6 +12,7 @@ export class Strategy
     status!: StrategyTypes.Status;
     title!: string;
     strategyTemplateName!: StrategyTemplateTypes.StrategyTemplateName;
+    cashInCents!: number;
     // https://www.reddit.com/r/node/comments/7hxie6/objectionjs_and_timestamps/
     // https://github.com/Vincit/objection.js/issues/647
     static get tableName() {
@@ -20,11 +21,18 @@ export class Strategy
     static get jsonSchema() {
         return {
             type: 'object',
+            required: [
+                'status',
+                'title',
+                'strategyTemplateName',
+                'cashInCents',
+            ],
             properties: {
                 id: { type: 'number' },
                 status: { type: 'string' },
                 title: { type: 'string' },
                 strategyTemplateName: { type: 'string' },
+                cashInCents: { type: 'number' },
             },
         };
     }

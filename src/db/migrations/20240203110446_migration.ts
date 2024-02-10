@@ -43,6 +43,7 @@ export async function up(knex: Knex): Promise<void> {
                     StrategyTemplateTypes.StrategyTemplateNameSchema.options
                 )
                 .notNullable();
+            table.integer('cashInCents').notNullable();
         });
     });
     await ifTableDoesNotExist(OrderModel.tableName, knex, async () => {
@@ -66,6 +67,7 @@ export async function up(knex: Knex): Promise<void> {
             table.enu('status', OrderTypes.StatusSchema.options).notNullable();
             table.enu('side', OrderTypes.SideSchema.options).notNullable();
             table.integer('quantity').notNullable();
+            table.integer('averagePriceInCents').notNullable();
         });
     });
     await ifTableDoesNotExist(PositionModel.tableName, knex, async () => {
@@ -108,7 +110,6 @@ export async function up(knex: Knex): Promise<void> {
                     table
                         .enu('status', StrategyTypes.StatusSchema.options)
                         .notNullable();
-                    table.integer('cashInCents').notNullable();
                     table.integer('sellAtPercentile').notNullable();
                     table.string('alpacaAPIKey').notNullable();
                     table.string('alpacaAPISecret').notNullable();

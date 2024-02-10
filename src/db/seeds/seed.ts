@@ -58,6 +58,7 @@ export async function seed(knex: Knex): Promise<void> {
             status: StrategyTypes.StatusSchema.Enum.active,
             strategyTemplateName:
                 StrategyTemplateTypes.StrategyTemplateNameSchema.Enum.NoOp,
+            cashInCents: 100000,
         },
         {
             id: 2,
@@ -66,6 +67,7 @@ export async function seed(knex: Knex): Promise<void> {
             strategyTemplateName:
                 StrategyTemplateTypes.StrategyTemplateNameSchema.Enum
                     .SeaDogDiscountScheme,
+            cashInCents: 200000,
         },
         {
             id: 3,
@@ -74,6 +76,7 @@ export async function seed(knex: Knex): Promise<void> {
             strategyTemplateName:
                 StrategyTemplateTypes.StrategyTemplateNameSchema.Enum
                     .SeaDogDiscountScheme,
+            cashInCents: 300000,
         },
     ]);
     await knex<OrderTypes.OrderRequiredFields & { id: number }>(
@@ -87,6 +90,7 @@ export async function seed(knex: Knex): Promise<void> {
             status: OrderTypes.StatusSchema.Enum.open,
             side: OrderTypes.SideSchema.Enum.buy,
             quantity: 1,
+            averagePriceInCents: 100,
         },
         {
             id: 2,
@@ -96,6 +100,7 @@ export async function seed(knex: Knex): Promise<void> {
             status: OrderTypes.StatusSchema.Enum.open,
             side: OrderTypes.SideSchema.Enum.buy,
             quantity: 2,
+            averagePriceInCents: 200,
         },
         {
             id: 3,
@@ -105,6 +110,7 @@ export async function seed(knex: Knex): Promise<void> {
             status: OrderTypes.StatusSchema.Enum.closed,
             side: OrderTypes.SideSchema.Enum.buy,
             quantity: 3,
+            averagePriceInCents: 300,
         },
         {
             id: 4,
@@ -114,6 +120,7 @@ export async function seed(knex: Knex): Promise<void> {
             status: OrderTypes.StatusSchema.Enum.open,
             side: OrderTypes.SideSchema.Enum.sell,
             quantity: 4,
+            averagePriceInCents: 400,
         },
         {
             id: 5,
@@ -123,6 +130,7 @@ export async function seed(knex: Knex): Promise<void> {
             status: OrderTypes.StatusSchema.Enum.open,
             side: OrderTypes.SideSchema.Enum.sell,
             quantity: 5,
+            averagePriceInCents: 500,
         },
         {
             id: 6,
@@ -132,6 +140,7 @@ export async function seed(knex: Knex): Promise<void> {
             status: OrderTypes.StatusSchema.Enum.closed,
             side: OrderTypes.SideSchema.Enum.sell,
             quantity: 6,
+            averagePriceInCents: 600,
         },
     ]);
     await knex<PositionTypes.PositionProps & { id: number }>(
@@ -184,7 +193,6 @@ export async function seed(knex: Knex): Promise<void> {
             strategyId: 2,
             status: StrategyTemplateSeaDogDiscountSchemeTypes.StatusSchema.Enum
                 .inactive,
-            cashInCents: 100,
             sellAtPercentile: 50,
             alpacaAPIKey: process.env.ALPACA_CLIENT_CREDENTIALS_KEY ?? '',
             alpacaAPISecret: process.env.ALPACA_CLIENT_CREDENTIALS_SECRET ?? '',
@@ -195,7 +203,6 @@ export async function seed(knex: Knex): Promise<void> {
             strategyId: 2,
             status: StrategyTemplateSeaDogDiscountSchemeTypes.StatusSchema.Enum
                 .active,
-            cashInCents: 200,
             sellAtPercentile: 75,
             alpacaAPIKey: process.env.ALPACA_CLIENT_CREDENTIALS_KEY ?? '',
             alpacaAPISecret: process.env.ALPACA_CLIENT_CREDENTIALS_SECRET ?? '',
@@ -206,7 +213,6 @@ export async function seed(knex: Knex): Promise<void> {
             strategyId: 3,
             status: StrategyTemplateSeaDogDiscountSchemeTypes.StatusSchema.Enum
                 .active,
-            cashInCents: 300,
             sellAtPercentile: 100,
             alpacaAPIKey: process.env.ALPACA_CLIENT_CREDENTIALS_KEY ?? '',
             alpacaAPISecret: process.env.ALPACA_CLIENT_CREDENTIALS_SECRET ?? '',

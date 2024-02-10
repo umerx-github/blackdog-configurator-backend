@@ -12,7 +12,6 @@ export class StrategyTemplateSeaDogDiscountScheme
     id!: number;
     strategyId!: number;
     status!: StrategyTemplateSeaDogDiscountSchemeTypes.Status;
-    cashInCents!: number;
     sellAtPercentile!: number;
     alpacaAPIKey!: string;
     alpacaAPISecret!: string;
@@ -27,21 +26,14 @@ export class StrategyTemplateSeaDogDiscountScheme
     static get tableNameJunctionSymbol() {
         return 'strategyTemplateSeaDogDiscountSchemeSymbol';
     }
-    static get virtualAttributes() {
-        return ['cashInDollars'];
-    }
-    get cashInDollars() {
-        return this.cashInCents / 100;
-    }
     static get jsonSchema() {
         return {
             type: 'object',
-            // required: ['createdAt'],
+            required: ['strategyId', 'status', 'sellAtPercentile'],
             properties: {
                 id: { type: 'number' },
                 strategyId: { type: 'number' },
                 status: { type: 'string' },
-                cashInCents: { type: 'number' },
                 sellAtPercentile: { type: 'number' },
                 symbolIds: { type: 'array' },
             },

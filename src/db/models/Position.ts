@@ -17,6 +17,7 @@ export class Position
     static get jsonSchema() {
         return {
             type: 'object',
+            required: ['strategyId', 'symbolId', 'quantity'],
             properties: {
                 id: { type: 'number' },
                 strategyId: { type: 'number' },
