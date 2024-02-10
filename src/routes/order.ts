@@ -6,7 +6,6 @@ import * as Errors from '../errors/index.js';
 import { KNEXION } from '../index.js';
 import { Knex } from 'knex';
 import { NextFunction } from 'express';
-import { unknown } from 'zod';
 
 const router = Router();
 const modelName = 'Order';
@@ -31,6 +30,10 @@ async function postSingle(
                 `Unable to create ${modelName} instance because it would result in a negative position quantity`
             );
         }
+        // Decrease position quantity
+        await PositionModel.query(trx).patchAndFetchById(positions[0].id, {
+            quantity: positions[0].quantity - modelProps.quantity,
+        });
     }
     // insert into order table
     const model = await OrderModel.query(trx).insert({
@@ -40,45 +43,6 @@ async function postSingle(
     if (!model) {
         throw new Error(`Unable to create ${modelName} instance`);
     }
-    return model;
-}
-
-async function patchSingle(
-    id: number,
-    modelProps: OrderTypes.OrderPropsOptional,
-    trx: Knex.Transaction
-) {
-    // Check if there are any properties to update
-    let model = await OrderModel.query(trx).findById(id);
-    // get the model's data before deleting it
-    if (!model) {
-        throw new Errors.ModelNotFoundError(
-            `Unable to find ${modelName} with id ${id}`
-        );
-    }
-    if (Object.keys(modelProps).length > 0) {
-        model = await OrderModel.query(trx).patchAndFetchById(id, modelProps);
-        if (!model) {
-            throw new Error(`Unable to update ${modelName} instance`);
-        }
-    }
-    return model;
-}
-
-async function deleteSingle(
-    id: number,
-    trx: Knex.Transaction
-): Promise<OrderTypes.OrderResponseBodyDataInstance> {
-    let model = await OrderModel.query(trx).findById(id);
-    // get the model's data before deleting it
-    if (!model) {
-        throw new Errors.ModelNotFoundError(
-            `Unable to find ${modelName} with id ${id}`
-        );
-    }
-    // const data = model;
-    // Unrelate all symbols without removing them from the model
-    await OrderModel.query(trx).deleteById(id);
     return model;
 }
 
@@ -196,236 +160,6 @@ router.post(
     }
 );
 
-router.patch(
-    '/',
-    async (
-        req: Request<any, any, OrderTypes.OrderPatchManyRequestBody>,
-        res: Response<OrderTypes.OrderPatchManyResponseBody>,
-        next: NextFunction
-    ) => {
-        // https://vincit.github.io/objection.js/guide/query-examples.html#relation-relate-queries);
-        try {
-            const parsedRequest: OrderTypes.OrderPatchManyRequestBody =
-                OrderTypes.OrderPatchManyRequestBodyFromRaw(req.body);
-            const modelData: OrderTypes.OrderPatchManyResponseBodyData = [];
-            await KNEXION.transaction(
-                async trx => {
-                    for (const Order of parsedRequest) {
-                        // Insert into junction table first
-                        modelData.push(await patchSingle(Order.id, Order, trx));
-                    }
-                },
-                { isolationLevel: 'serializable' }
-            );
-            return res.json({
-                status: 'success',
-                message: `${modelName} instances updated successfully`,
-                data: modelData,
-            });
-        } catch (err) {
-            next(err);
-        }
-    }
-);
-
-router.patch(
-    '/:id',
-    async (
-        req: Request<
-            OrderTypes.OrderPatchSingleRequestParamsRaw,
-            any,
-            OrderTypes.OrderPatchSingleRequestBody
-        >,
-        res: Response<OrderTypes.OrderPatchSingleResponseBody>,
-        next: NextFunction
-    ) => {
-        // https://vincit.github.io/objection.js/guide/query-examples.html#relation-relate-queries);
-        try {
-            const params = OrderTypes.OrderGetSingleRequestParamsFromRaw(
-                req.params
-            );
-            const parsedRequest: OrderTypes.OrderPatchSingleRequestBody =
-                OrderTypes.OrderPatchSingleRequestBodyFromRaw(req.body);
-            let modelData:
-                | OrderTypes.OrderPatchSingleResponseBodyData
-                | undefined = undefined;
-            await KNEXION.transaction(
-                async trx => {
-                    modelData = await patchSingle(
-                        params.id,
-                        parsedRequest,
-                        trx
-                    );
-                },
-                { isolationLevel: 'serializable' }
-            );
-            if (!modelData) {
-                throw new Errors.ModelNotFoundError(
-                    `Unable to find ${modelName} with id ${params.id}`
-                );
-            }
-            return res.json({
-                status: 'success',
-                message: `${modelName} instance updated successfully`,
-                data: modelData,
-            });
-        } catch (err) {
-            next(err);
-        }
-    }
-);
-
-router.put(
-    '/',
-    async (
-        req: Request<any, any, OrderTypes.OrderPutManyRequestBody>,
-        res: Response<OrderTypes.OrderPutManyResponseBody>,
-        next: NextFunction
-    ) => {
-        // https://vincit.github.io/objection.js/guide/query-examples.html#relation-relate-queries);
-        try {
-            const parsedRequest: OrderTypes.OrderPutManyRequestBody =
-                OrderTypes.OrderPutManyRequestBodyFromRaw(req.body);
-            const modelData: OrderTypes.OrderPutManyResponseBodyData = [];
-            await KNEXION.transaction(
-                async trx => {
-                    for (const Order of parsedRequest) {
-                        const modelDataInstance = await patchSingle(
-                            Order.id,
-                            Order,
-                            trx
-                        );
-                        modelData.push(modelDataInstance);
-                    }
-                },
-                { isolationLevel: 'serializable' }
-            );
-            return res.json({
-                status: 'success',
-                message: `${modelName} instances updated successfully`,
-                data: modelData,
-            });
-        } catch (err) {
-            next(err);
-        }
-    }
-);
-
-router.put(
-    '/:id',
-    async (
-        req: Request<
-            OrderTypes.OrderPutSingleRequestParamsRaw,
-            any,
-            OrderTypes.OrderPutSingleRequestBody
-        >,
-        res: Response<OrderTypes.OrderPutSingleResponseBody>,
-        next: NextFunction
-    ) => {
-        // https://vincit.github.io/objection.js/guide/query-examples.html#relation-relate-queries);
-        try {
-            const params = OrderTypes.OrderGetSingleRequestParamsFromRaw(
-                req.params
-            );
-            const parsedRequest: OrderTypes.OrderPutSingleRequestBody =
-                OrderTypes.OrderPutSingleRequestBodyFromRaw(req.body);
-            let modelData:
-                | OrderTypes.OrderPutSingleResponseBodyData
-                | undefined = undefined;
-            await KNEXION.transaction(
-                async trx => {
-                    modelData = await patchSingle(
-                        params.id,
-                        parsedRequest,
-                        trx
-                    );
-                },
-                { isolationLevel: 'serializable' }
-            );
-            if (!modelData) {
-                throw new Errors.ModelNotFoundError(
-                    `Unable to find ${modelName} with id ${params.id}`
-                );
-            }
-            return res.json({
-                status: 'success',
-                message: `${modelName} instance updated successfully`,
-                data: modelData,
-            });
-        } catch (err) {
-            next(err);
-        }
-    }
-);
-
-router.delete(
-    '/',
-    async (
-        req: Request<any, any, any, OrderTypes.OrderDeleteManyRequestQueryRaw>,
-        res: Response<OrderTypes.OrderDeleteManyResponseBody>,
-        next: NextFunction
-    ) => {
-        try {
-            const query = OrderModel.query();
-            const expectedOrderDeleteManyRequestQuery: OrderTypes.OrderDeleteManyRequestQuery =
-                OrderTypes.OrderDeleteManyRequestQueryFromRaw(req.query);
-            const modelData: OrderTypes.OrderPutManyResponseBodyData = [];
-            await KNEXION.transaction(
-                async trx => {
-                    for (const id of expectedOrderDeleteManyRequestQuery.ids) {
-                        const modelDataInstance = await deleteSingle(id, trx);
-                        modelData.push(modelDataInstance);
-                    }
-                },
-                { isolationLevel: 'serializable' }
-            );
-            return res.json({
-                status: 'success',
-                message: `${modelName} instances deleted successfully`,
-                data: modelData,
-            });
-        } catch (err) {
-            next(err);
-        }
-    }
-);
-
-router.delete(
-    '/:id',
-    async (
-        req: Request<OrderTypes.OrderDeleteSingleRequestParamsRaw>,
-        res: Response<OrderTypes.OrderDeleteSingleResponseBody>,
-        next: NextFunction
-    ) => {
-        try {
-            const params = OrderTypes.OrderDeleteSingleRequestParamsFromRaw(
-                req.params
-            );
-            let modelData:
-                | OrderTypes.OrderDeleteSingleResponseBodyData
-                | undefined;
-            await KNEXION.transaction(
-                async trx => {
-                    modelData = await deleteSingle(params.id, trx);
-                },
-                { isolationLevel: 'serializable' }
-            );
-            if (undefined === modelData) {
-                throw new Errors.ModelNotFoundError(
-                    `Unable to find ${modelName} with id ${params.id}`
-                );
-            }
-            return res.json({
-                status: 'success',
-                message: `${modelName} instance deleted successfully`,
-                data: modelData,
-            });
-        } catch (err) {
-            next(err);
-        }
-    }
-);
-
 router.post(
     '/:id/fill',
     async (
@@ -438,103 +172,148 @@ router.post(
                 req.params
             );
             let model: OrderModel | undefined;
-            let position: PositionModel | undefined;
-            await KNEXION.transaction(async trx => {
-                model = await OrderModel.query(trx).findById(params.id);
-                if (!model) {
-                    throw new Errors.ModelNotFoundError(
-                        `Unable to find ${modelName} with id ${params.id}`
-                    );
-                }
-                if (model.status !== 'open') {
-                    throw new Error(
-                        `Unable to fill ${modelName} with id ${params.id} because it is no longer open`
-                    );
-                }
-                if (!(model.side in OrderTypes.SideSchema.Enum)) {
-                    throw new Error(
-                        `Unable to fill ${modelName} with id ${params.id} because it has an invalid side`
-                    );
-                }
-                if (model.side === OrderTypes.SideSchema.Enum.buy) {
-                    // Check if position exists
-                    // If it does, increment quantity
-                    // If it does not, create a new position
-                    const positions = await PositionModel.query(trx)
-                        .where({
-                            symbolId: model.symbolId,
-                            strategyId: model.strategyId,
-                        })
-                        .limit(1);
-                    if (positions.length === 0) {
-                        position = await PositionModel.query(trx).insert({
-                            symbolId: model.symbolId,
-                            strategyId: model.strategyId,
-                            quantity: model.quantity,
-                        });
-                    }
-                    if (positions.length > 0) {
-                        position = positions[0];
-                        position = await PositionModel.query(
-                            trx
-                        ).patchAndFetchById(position.id, {
-                            quantity: position.quantity + model.quantity,
-                        });
-                    }
-                }
-                if (model.side === OrderTypes.SideSchema.Enum.sell) {
-                    // Check if position exists
-                    // If it does, decrement quantity
-                    // If quantity is 0, delete the position
-                    // If quantity less than 0, throw an error
-                    // If it does not, throw an error
-                    const positions = await PositionModel.query(trx)
-                        .where({
-                            symbolId: model.symbolId,
-                            strategyId: model.strategyId,
-                        })
-                        .limit(1);
-                    if (positions.length === 0) {
+            await KNEXION.transaction(
+                async trx => {
+                    model = await OrderModel.query(trx).findById(params.id);
+                    if (!model) {
                         throw new Errors.ModelNotFoundError(
-                            `Unable to find Position with symbolId ${model.symbolId} and strategyId ${model.strategyId}`
+                            `Unable to find ${modelName} with id ${params.id}`
                         );
                     }
-                    position = positions[0];
-                    position = await PositionModel.query(trx).patchAndFetchById(
-                        position.id,
+                    if (model.status !== 'open') {
+                        throw new Error(
+                            `Unable to fill ${modelName} with id ${params.id} because it is no longer open`
+                        );
+                    }
+                    if (!(model.side in OrderTypes.SideSchema.Enum)) {
+                        throw new Error(
+                            `Unable to fill ${modelName} with id ${params.id} because it has an invalid side`
+                        );
+                    }
+                    if (model.side === OrderTypes.SideSchema.Enum.buy) {
+                        // Check if position exists
+                        // If it does, increment quantity
+                        // If it does not, create a new position
+                        const positions = await PositionModel.query(trx)
+                            .where({
+                                symbolId: model.symbolId,
+                                strategyId: model.strategyId,
+                            })
+                            .limit(1);
+                        if (positions.length < 1) {
+                            await PositionModel.query(trx).insert({
+                                symbolId: model.symbolId,
+                                strategyId: model.strategyId,
+                                quantity: model.quantity,
+                            });
+                        } else {
+                            await PositionModel.query(trx).patchAndFetchById(
+                                positions[0].id,
+                                {
+                                    quantity:
+                                        positions[0].quantity + model.quantity,
+                                }
+                            );
+                        }
+                    }
+                    model = await OrderModel.query(trx).patchAndFetchById(
+                        model.id,
                         {
-                            quantity: position.quantity - model.quantity,
+                            status: OrderTypes.StatusSchema.Enum.closed,
                         }
                     );
-                    if (position.quantity < 0) {
-                        throw new Error(
-                            `Unable to fill ${modelName} with id ${params.id} because it would result in a negative position quantity`
-                        );
-                    }
-                    if (position.quantity === 0) {
-                        await PositionModel.query(trx).deleteById(position.id);
-                    }
-                }
-                model = await OrderModel.query(trx).patchAndFetchById(
-                    model.id,
-                    {
-                        status: OrderTypes.StatusSchema.Enum.closed,
-                    }
-                );
-            });
+                },
+                { isolationLevel: 'serializable' }
+            );
             if (!model) {
                 throw new Errors.ModelNotFoundError(
                     `Unable to find ${modelName} with id ${params.id}`
                 );
             }
-            if (!position) {
+            return res.json({
+                status: 'success',
+                message: `${modelName} instance filled successfully`,
+                data: model,
+            });
+        } catch (err) {
+            next(err);
+        }
+    }
+);
+
+router.post(
+    '/:id/cancel',
+    async (
+        req: Request<OrderTypes.OrderFillPostSingleRequestParamsRaw>,
+        res: Response<OrderTypes.OrderFillPostSingleResponseBody>,
+        next
+    ) => {
+        try {
+            const params = OrderTypes.OrderFillPostSingleRequestParamsFromRaw(
+                req.params
+            );
+            let model: OrderModel | undefined;
+            await KNEXION.transaction(
+                async trx => {
+                    model = await OrderModel.query(trx).findById(params.id);
+                    if (!model) {
+                        throw new Errors.ModelNotFoundError(
+                            `Unable to find ${modelName} with id ${params.id}`
+                        );
+                    }
+                    if (model.status !== 'open') {
+                        throw new Error(
+                            `Unable to cancel ${modelName} with id ${params.id} because it is no longer open`
+                        );
+                    }
+                    if (!(model.side in OrderTypes.SideSchema.Enum)) {
+                        throw new Error(
+                            `Unable to cancel ${modelName} with id ${params.id} because it has an invalid side`
+                        );
+                    }
+                    if (model.side === OrderTypes.SideSchema.Enum.sell) {
+                        // Check if position exists
+                        // If it does, increment quantity
+                        // If it does not, create a new position
+                        const positions = await PositionModel.query(trx)
+                            .where({
+                                symbolId: model.symbolId,
+                                strategyId: model.strategyId,
+                            })
+                            .limit(1);
+                        if (positions.length < 1) {
+                            await PositionModel.query(trx).insert({
+                                symbolId: model.symbolId,
+                                strategyId: model.strategyId,
+                                quantity: model.quantity,
+                            });
+                        } else {
+                            await PositionModel.query(trx).patchAndFetchById(
+                                positions[0].id,
+                                {
+                                    quantity:
+                                        positions[0].quantity + model.quantity,
+                                }
+                            );
+                        }
+                    }
+                    model = await OrderModel.query(trx).patchAndFetchById(
+                        model.id,
+                        {
+                            status: OrderTypes.StatusSchema.Enum.closed,
+                        }
+                    );
+                },
+                { isolationLevel: 'serializable' }
+            );
+            if (!model) {
                 throw new Errors.ModelNotFoundError(
-                    `Unable to find Position with symbolId ${model.symbolId} and strategyId ${model.strategyId}`
+                    `Unable to find ${modelName} with id ${params.id}`
                 );
             }
             return res.json({
                 status: 'success',
-                message: `${modelName} instance filled successfully`,
+                message: `${modelName} instance canceled successfully`,
                 data: model,
             });
         } catch (err) {

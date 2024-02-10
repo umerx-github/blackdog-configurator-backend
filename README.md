@@ -19,7 +19,8 @@
 
 ## To Do
 
--   Make it so creating a new sell order decrements the quantity of the position in the database
--   Make it so cancelling a sell order increments the quantity of the position in the database
-    -   Add a "/cancel" route
--   Remove other routes like patch, put, delete, etc. that are not needed.
+-   [x] Make it so creating a new sell order decrements the quantity of the position in the database
+-   [x] Make it so cancelling a sell order increments the quantity of the position in the database
+    -   [x] Add a "/cancel" route
+-   [x] Remove other routes like patch, put, delete, etc. that are not needed.
+-   [ ] Add Types for /cancel params and route
