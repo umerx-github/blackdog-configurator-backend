@@ -244,12 +244,12 @@ router.post(
 router.post(
     '/:id/cancel',
     async (
-        req: Request<OrderTypes.OrderFillPostSingleRequestParamsRaw>,
-        res: Response<OrderTypes.OrderFillPostSingleResponseBody>,
+        req: Request<OrderTypes.OrderCancelPostSingleRequestParamsRaw>,
+        res: Response<OrderTypes.OrderCancelPostSingleResponseBody>,
         next
     ) => {
         try {
-            const params = OrderTypes.OrderFillPostSingleRequestParamsFromRaw(
+            const params = OrderTypes.OrderCancelPostSingleRequestParamsFromRaw(
                 req.params
             );
             let model: OrderModel | undefined;
