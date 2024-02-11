@@ -110,10 +110,11 @@ export async function up(knex: Knex): Promise<void> {
                     table
                         .enu('status', StrategyTypes.StatusSchema.options)
                         .notNullable();
-                    table.integer('sellAtPercentile').notNullable();
                     table.string('alpacaAPIKey').notNullable();
                     table.string('alpacaAPISecret').notNullable();
                     table.boolean('alpacaAPIPaper').notNullable();
+                    table.integer('sellAtPercentile').notNullable();
+                    table.integer('timeframeInDays').notNullable();
                 }
             );
         }

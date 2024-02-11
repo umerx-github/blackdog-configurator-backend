@@ -12,10 +12,11 @@ export class StrategyTemplateSeaDogDiscountScheme
     id!: number;
     strategyId!: number;
     status!: StrategyTemplateSeaDogDiscountSchemeTypes.Status;
-    sellAtPercentile!: number;
     alpacaAPIKey!: string;
     alpacaAPISecret!: string;
     alpacaAPIPaper!: boolean;
+    sellAtPercentile!: number;
+    timeframeInDays!: number;
     symbols?: SymbolModelInterface[];
     // symbolIds!: number[];
     // https://www.reddit.com/r/node/comments/7hxie6/objectionjs_and_timestamps/
@@ -29,12 +30,24 @@ export class StrategyTemplateSeaDogDiscountScheme
     static get jsonSchema() {
         return {
             type: 'object',
-            required: ['strategyId', 'status', 'sellAtPercentile'],
+            required: [
+                'strategyId',
+                'status',
+                'alpacaAPIKey',
+                'alpacaAPISecret',
+                'alpacaAPIPaper',
+                'sellAtPercentile',
+                'timeframeInDays',
+            ],
             properties: {
                 id: { type: 'number' },
                 strategyId: { type: 'number' },
                 status: { type: 'string' },
+                alpacaAPIKey: { type: 'string' },
+                alpacaAPISecret: { type: 'string' },
+                alpacaAPIPaper: { type: 'boolean' },
                 sellAtPercentile: { type: 'number' },
+                timeframeInDays: { type: 'number' },
                 symbolIds: { type: 'array' },
             },
         };

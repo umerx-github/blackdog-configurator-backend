@@ -197,6 +197,7 @@ export async function seed(knex: Knex): Promise<void> {
             alpacaAPIKey: process.env.ALPACA_CLIENT_CREDENTIALS_KEY ?? '',
             alpacaAPISecret: process.env.ALPACA_CLIENT_CREDENTIALS_SECRET ?? '',
             alpacaAPIPaper: true,
+            timeframeInDays: 90,
         },
         {
             id: 2,
@@ -207,6 +208,7 @@ export async function seed(knex: Knex): Promise<void> {
             alpacaAPIKey: process.env.ALPACA_CLIENT_CREDENTIALS_KEY ?? '',
             alpacaAPISecret: process.env.ALPACA_CLIENT_CREDENTIALS_SECRET ?? '',
             alpacaAPIPaper: true,
+            timeframeInDays: 100,
         },
         {
             id: 3,
@@ -217,6 +219,7 @@ export async function seed(knex: Knex): Promise<void> {
             alpacaAPIKey: process.env.ALPACA_CLIENT_CREDENTIALS_KEY ?? '',
             alpacaAPISecret: process.env.ALPACA_CLIENT_CREDENTIALS_SECRET ?? '',
             alpacaAPIPaper: true,
+            timeframeInDays: 365,
         },
     ]);
     await knex<
