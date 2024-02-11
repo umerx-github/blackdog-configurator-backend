@@ -83,6 +83,9 @@ router.get(
             const query = OrderModel.query().orderBy('id', 'desc');
             const expectedOrderGetManyRequestQuery: OrderTypes.OrderGetManyRequestQuery =
                 OrderTypes.OrderGetManyRequestQueryFromRaw(req.query);
+            if (undefined !== expectedOrderGetManyRequestQuery.status) {
+                query.where('status', expectedOrderGetManyRequestQuery.status);
+            }
             if (undefined !== expectedOrderGetManyRequestQuery.symbolId) {
                 query.where(
                     'symbolId',
