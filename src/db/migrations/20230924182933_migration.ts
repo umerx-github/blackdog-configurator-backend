@@ -88,6 +88,7 @@ export async function up(knex: Knex): Promise<void> {
                 .inTable(SymbolModel.tableName)
                 .withKeyName('position_symbolId_fkey');
             table.integer('quantity').notNullable();
+            table.integer('averagePriceInCents').notNullable();
             // Ensure that the combination of strategyId and symbolId is unique
             table.unique(['strategyId', 'symbolId']);
         });

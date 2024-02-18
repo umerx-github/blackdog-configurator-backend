@@ -6,6 +6,7 @@ import { KNEXION } from '../index.js';
 import { Symbol as SymbolModel } from '../db/models/Symbol.js';
 import { Knex } from 'knex';
 import { NextFunction } from 'express';
+import { bankersRounding } from '../utils/index.js';
 
 const router = Router();
 const modelName = 'Position';
@@ -122,11 +123,24 @@ router.post(
                             const newQuantity =
                                 existingPosition.quantity +
                                 dataToInsert.quantity;
+                            const newAveragePriceInCents = bankersRounding(
+                                bankersRounding(
+                                    bankersRounding(
+                                        existingPosition.quantity *
+                                            existingPosition.averagePriceInCents
+                                    ) +
+                                        bankersRounding(
+                                            dataToInsert.quantity *
+                                                dataToInsert.averagePriceInCents
+                                        )
+                                ) / newQuantity
+                            );
                             validateQuantity(newQuantity);
                             model = await PositionModel.query(
                                 trx
                             ).patchAndFetchById(existingPosition.id, {
                                 quantity: newQuantity,
+                                averagePriceInCents: newAveragePriceInCents,
                             });
                         } else {
                             validateQuantity(dataToInsert.quantity);

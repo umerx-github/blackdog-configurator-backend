@@ -151,36 +151,42 @@ export async function seed(knex: Knex): Promise<void> {
             strategyId: 1,
             symbolId: 1,
             quantity: 1,
+            averagePriceInCents: 100,
         },
         {
             id: 2,
             strategyId: 1,
             symbolId: 2,
             quantity: 2,
+            averagePriceInCents: 200,
         },
         {
             id: 3,
             strategyId: 2,
             symbolId: 2,
             quantity: 3,
+            averagePriceInCents: 300,
         },
         {
             id: 4,
             strategyId: 2,
             symbolId: 3,
             quantity: 4,
+            averagePriceInCents: 400,
         },
         {
             id: 5,
             strategyId: 3,
             symbolId: 3,
             quantity: 5,
+            averagePriceInCents: 500,
         },
         {
             id: 6,
             strategyId: 3,
             symbolId: 1,
             quantity: 6,
+            averagePriceInCents: 600,
         },
     ]);
     await knex<
