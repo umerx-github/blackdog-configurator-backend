@@ -15,7 +15,9 @@ export class StrategyTemplateSeaDogDiscountScheme
     alpacaAPIKey!: string;
     alpacaAPISecret!: string;
     alpacaAPIPaper!: boolean;
+    buyAtPercentile!: number;
     sellAtPercentile!: number;
+    minimumGainPercent!: number;
     timeframeInDays!: number;
     symbols?: SymbolModelInterface[];
     // symbolIds!: number[];
@@ -36,7 +38,9 @@ export class StrategyTemplateSeaDogDiscountScheme
                 'alpacaAPIKey',
                 'alpacaAPISecret',
                 'alpacaAPIPaper',
+                'buyAtPercentile',
                 'sellAtPercentile',
+                'minimumGainPercent',
                 'timeframeInDays',
             ],
             properties: {
@@ -46,7 +50,9 @@ export class StrategyTemplateSeaDogDiscountScheme
                 alpacaAPIKey: { type: 'string' },
                 alpacaAPISecret: { type: 'string' },
                 alpacaAPIPaper: { type: 'boolean' },
+                buyAtPercentile: { type: 'number' },
                 sellAtPercentile: { type: 'number' },
+                minimumGainPercent: { type: 'number' },
                 timeframeInDays: { type: 'number' },
                 symbolIds: { type: 'array' },
             },

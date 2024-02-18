@@ -193,10 +193,12 @@ export async function seed(knex: Knex): Promise<void> {
             strategyId: 2,
             status: StrategyTemplateSeaDogDiscountSchemeTypes.StatusSchema.Enum
                 .inactive,
-            sellAtPercentile: 50,
             alpacaAPIKey: process.env.ALPACA_CLIENT_CREDENTIALS_KEY ?? '',
             alpacaAPISecret: process.env.ALPACA_CLIENT_CREDENTIALS_SECRET ?? '',
             alpacaAPIPaper: true,
+            buyAtPercentile: 25,
+            sellAtPercentile: 70,
+            minimumGainPercent: 10,
             timeframeInDays: 90,
         },
         {
@@ -204,10 +206,12 @@ export async function seed(knex: Knex): Promise<void> {
             strategyId: 2,
             status: StrategyTemplateSeaDogDiscountSchemeTypes.StatusSchema.Enum
                 .active,
-            sellAtPercentile: 75,
             alpacaAPIKey: process.env.ALPACA_CLIENT_CREDENTIALS_KEY ?? '',
             alpacaAPISecret: process.env.ALPACA_CLIENT_CREDENTIALS_SECRET ?? '',
             alpacaAPIPaper: true,
+            buyAtPercentile: 50,
+            sellAtPercentile: 75,
+            minimumGainPercent: 9,
             timeframeInDays: 100,
         },
         {
@@ -215,10 +219,12 @@ export async function seed(knex: Knex): Promise<void> {
             strategyId: 3,
             status: StrategyTemplateSeaDogDiscountSchemeTypes.StatusSchema.Enum
                 .active,
-            sellAtPercentile: 100,
             alpacaAPIKey: process.env.ALPACA_CLIENT_CREDENTIALS_KEY ?? '',
             alpacaAPISecret: process.env.ALPACA_CLIENT_CREDENTIALS_SECRET ?? '',
             alpacaAPIPaper: true,
+            buyAtPercentile: 40,
+            sellAtPercentile: 60,
+            minimumGainPercent: 10,
             timeframeInDays: 365,
         },
     ]);
