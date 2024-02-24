@@ -100,7 +100,7 @@ export async function seed(knex: Knex): Promise<void> {
             status: OrderTypes.StatusSchema.Enum.open,
             side: OrderTypes.SideSchema.Enum.buy,
             quantity: 2,
-            averagePriceInCents: 200,
+            averagePriceInCents: 100,
         },
         {
             id: 3,
@@ -172,7 +172,7 @@ export async function seed(knex: Knex): Promise<void> {
             strategyId: 2,
             symbolId: 3,
             quantity: 4,
-            averagePriceInCents: 400,
+            averagePriceInCents: 200,
         },
         {
             id: 5,

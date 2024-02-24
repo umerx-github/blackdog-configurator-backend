@@ -42,7 +42,7 @@ export function calculateExistingPositionNewAveragePriceInCentsForFilledBuyOrder
             bankersRounding(
                 bankersRounding(currentQuantity * currentAveragePriceInCents) +
                     bankersRounding(
-                        newQuantity * transactionAveragePriceInCents
+                        deltaQuantity * transactionAveragePriceInCents
                     )
             ) / newQuantity
         );
