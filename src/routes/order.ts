@@ -7,7 +7,7 @@ import { KNEXION } from '../index.js';
 import { Knex } from 'knex';
 import { NextFunction } from 'express';
 import { Strategy as StrategyModel } from '../db/models/Strategy.js';
-import { bankersRounding } from '../utils/index.js';
+import { bankersRoundingTruncateToInt } from '../utils/index.js';
 import { calculateExistingPositionNewAveragePriceInCentsForFilledBuyOrder } from './position.js';
 
 const router = Router();
@@ -28,7 +28,7 @@ async function postSingle(
                 `Unable to find Strategy with id ${modelProps.strategyId}`
             );
         }
-        const orderCashInCents = bankersRounding(
+        const orderCashInCents = bankersRoundingTruncateToInt(
             modelProps.quantity * modelProps.averagePriceInCents
         );
         if (strategy.cashInCents < orderCashInCents) {
@@ -269,7 +269,7 @@ router.post(
                                 `Unable to find Strategy with id ${model.strategyId}`
                             );
                         }
-                        const orderCashInCents = bankersRounding(
+                        const orderCashInCents = bankersRoundingTruncateToInt(
                             model.quantity * model.averagePriceInCents
                         );
                         // Increase strategy's cashInCents
@@ -347,7 +347,7 @@ router.post(
                                 `Unable to find Strategy with id ${model.strategyId}`
                             );
                         }
-                        const orderCashInCents = bankersRounding(
+                        const orderCashInCents = bankersRoundingTruncateToInt(
                             model.quantity * model.averagePriceInCents
                         );
                         // Increase strategy's cashInCents

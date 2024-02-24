@@ -6,7 +6,7 @@ import { KNEXION } from '../index.js';
 import { Symbol as SymbolModel } from '../db/models/Symbol.js';
 import { Knex } from 'knex';
 import { NextFunction } from 'express';
-import { bankersRounding } from '../utils/index.js';
+import { bankersRoundingTruncateToInt } from '../utils/index.js';
 
 const router = Router();
 const modelName = 'Position';
@@ -38,10 +38,12 @@ export function calculateExistingPositionNewAveragePriceInCentsForFilledBuyOrder
     const newQuantity = currentQuantity + deltaQuantity;
     let averagePriceInCents = currentAveragePriceInCents;
     if (newQuantity > currentQuantity) {
-        averagePriceInCents = bankersRounding(
-            bankersRounding(
-                bankersRounding(currentQuantity * currentAveragePriceInCents) +
-                    bankersRounding(
+        averagePriceInCents = bankersRoundingTruncateToInt(
+            bankersRoundingTruncateToInt(
+                bankersRoundingTruncateToInt(
+                    currentQuantity * currentAveragePriceInCents
+                ) +
+                    bankersRoundingTruncateToInt(
                         deltaQuantity * transactionAveragePriceInCents
                     )
             ) / newQuantity

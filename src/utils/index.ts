@@ -1,3 +1,6 @@
+export function bankersRoundingTruncateToInt(num: number): number {
+    return bankersRounding(num, 0);
+}
 export function bankersRounding(
     num: number,
     decimalPlaces: number = 2
