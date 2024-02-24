@@ -1,6 +1,6 @@
 {
     "name": "umerx-blackdog-configurator-backend",
-	"dockerComposeFile": "docker-compose.yml",
+	"dockerComposeFile": ["../docker-compose.yml", "docker-compose.yml"],
 	"service": "umerx_blackdog_configurator_backend",
 	"workspaceFolder": "/workspace",
     // "postCreateCommand": "npm ci",
