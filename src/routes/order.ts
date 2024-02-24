@@ -8,6 +8,7 @@ import { Knex } from 'knex';
 import { NextFunction } from 'express';
 import { Strategy as StrategyModel } from '../db/models/Strategy.js';
 import { bankersRounding } from '../utils/index.js';
+import { calculateExistingPositionNewAveragePriceInCentsForFilledBuyOrder } from './position.js';
 
 const router = Router();
 const modelName = 'Order';
@@ -51,14 +52,16 @@ async function postSingle(
                 `Unable to find Position with symbolId ${modelProps.symbolId} and strategyId ${modelProps.strategyId}`
             );
         }
-        if (positions[0].quantity < modelProps.quantity) {
+        const position = positions[0];
+        if (position.quantity < modelProps.quantity) {
             throw new Error(
                 `Unable to create ${modelName} instance because it would result in a negative position quantity`
             );
         }
         // Decrease position quantity
-        await PositionModel.query(trx).patchAndFetchById(positions[0].id, {
-            quantity: positions[0].quantity - modelProps.quantity,
+        await PositionModel.query(trx).patchAndFetchById(position.id, {
+            quantity: position.quantity - modelProps.quantity,
+            // Do not update averagePriceInCents becuase it is a sell order
         });
     }
     // insert into order table
@@ -237,11 +240,20 @@ router.post(
                                 quantity: model.quantity,
                             });
                         } else {
+                            const position = positions[0];
+                            // Update position quantity and averagePriceInCents, because placing a buy order means the averagePriceInCents will change depending on how the order is filled.
                             await PositionModel.query(trx).patchAndFetchById(
-                                positions[0].id,
+                                position.id,
                                 {
                                     quantity:
-                                        positions[0].quantity + model.quantity,
+                                        position.quantity + model.quantity,
+                                    averagePriceInCents:
+                                        calculateExistingPositionNewAveragePriceInCentsForFilledBuyOrder(
+                                            position.quantity,
+                                            position.averagePriceInCents,
+                                            model.quantity,
+                                            model.averagePriceInCents
+                                        ),
                                 }
                             );
                         }
@@ -365,11 +377,13 @@ router.post(
                                 quantity: model.quantity,
                             });
                         } else {
+                            const position = positions[0];
                             await PositionModel.query(trx).patchAndFetchById(
-                                positions[0].id,
+                                position.id,
                                 {
                                     quantity:
-                                        positions[0].quantity + model.quantity,
+                                        position.quantity + model.quantity,
+                                    // Do not update averagePriceInCents because placing a sell order does not change it, so canceling a sell order should not change it either.
                                 }
                             );
                         }

@@ -21,6 +21,35 @@ function validateQuantity(quantity: number) {
     }
 }
 
+/**
+ *
+ * @param currentQuantity
+ * @param currentAveragePriceInCents
+ * @param deltaQuantity Change in quantity. If positive, it means the quantity is increasing. If negative, it means the quantity is decreasing.
+ * @param transactionAveragePriceInCents
+ * @returns
+ */
+export function calculateExistingPositionNewAveragePriceInCentsForFilledBuyOrder(
+    currentQuantity: number,
+    currentAveragePriceInCents: number,
+    deltaQuantity: number,
+    transactionAveragePriceInCents: number
+) {
+    const newQuantity = currentQuantity + deltaQuantity;
+    let averagePriceInCents = currentAveragePriceInCents;
+    if (newQuantity > currentQuantity) {
+        averagePriceInCents = bankersRounding(
+            bankersRounding(
+                bankersRounding(currentQuantity * currentAveragePriceInCents) +
+                    bankersRounding(
+                        newQuantity * transactionAveragePriceInCents
+                    )
+            ) / newQuantity
+        );
+    }
+    return averagePriceInCents;
+}
+
 router.get(
     '/',
     async (
@@ -123,18 +152,13 @@ router.post(
                             const newQuantity =
                                 existingPosition.quantity +
                                 dataToInsert.quantity;
-                            const newAveragePriceInCents = bankersRounding(
-                                bankersRounding(
-                                    bankersRounding(
-                                        existingPosition.quantity *
-                                            existingPosition.averagePriceInCents
-                                    ) +
-                                        bankersRounding(
-                                            dataToInsert.quantity *
-                                                dataToInsert.averagePriceInCents
-                                        )
-                                ) / newQuantity
-                            );
+                            let newAveragePriceInCents =
+                                calculateExistingPositionNewAveragePriceInCentsForFilledBuyOrder(
+                                    existingPosition.quantity,
+                                    existingPosition.averagePriceInCents,
+                                    dataToInsert.quantity,
+                                    dataToInsert.averagePriceInCents
+                                );
                             validateQuantity(newQuantity);
                             model = await PositionModel.query(
                                 trx
