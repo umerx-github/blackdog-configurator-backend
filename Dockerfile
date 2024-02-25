@@ -13,5 +13,5 @@ WORKDIR /workspace
 COPY --from=build /workspace/package.json /workspace/package-lock.json ./
 COPY --from=build /workspace/node_modules ./node_modules
 COPY --from=build /workspace/out-tsc ./out-tsc
-CMD ["npm", "prod:start"]
+CMD ["npm", "run", "prod:start"]
 
