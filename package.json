@@ -1,7 +1,7 @@
 {
     "type": "module",
     "name": "@umerx/blackdog-configurator-backend",
-    "version": "0.0.10",
+    "version": "0.0.11",
     "description": "Blackdog Configurator Backend",
     "author": "First Last <first.last@example.com>",
     "main": "out-tsc/index.js",
