@@ -1,42 +1,19 @@
 version: '3.8'
 services:
     umerx_blackdog_configurator_backend:
-        depends_on:
-            - db
         build:
             context: ./.devcontainer
             dockerfile: Dockerfile
         command: sleep infinity
         volumes:
             - ./:/workspace
-        environment:
-            - DB_HOSTNAME=db
-            - ALPACA_CLIENT_CREDENTIALS_KEY=${ALPACA_CLIENT_CREDENTIALS_KEY}
-            - ALPACA_CLIENT_CREDENTIALS_SECRET=${ALPACA_CLIENT_CREDENTIALS_SECRET}
-        ports:
-            - ${BLACKDOG_CONFIGURATOR_BACKEND_HOST_PORT}:80
-    db:
-        image: mysql:latest
-        restart: always
-        volumes:
-            - db_data:/var/lib/mysql
-        environment:
-            MYSQL_ROOT_PASSWORD: example
-            MYSQL_DATABASE: example
-            MYSQL_USER: example
-            MYSQL_PASSWORD: example
     adminer:
         image: adminer
         depends_on:
             - db
         restart: always
         ports:
-            - 3024:8080
-volumes:
-    db_data:
-        # https://tjtelan.com/blog/how-to-link-multiple-docker-compose-via-network/
-        # https://containers.dev/guide/dockerfile
-        # https://github.com/microsoft/vscode-remote-release/issues/2485
+            - ${BLACKDOG_CONFIGURATOR_BACKEND_ADMINER_HOST_PORT}:8080
 networks:
     default:
         external: true
