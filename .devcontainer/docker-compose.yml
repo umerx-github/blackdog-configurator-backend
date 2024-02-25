@@ -4,7 +4,7 @@ services:
         depends_on:
             - db
         build:
-            context: .
+            context: ./.devcontainer
             dockerfile: Dockerfile
         command: sleep infinity
         volumes:
