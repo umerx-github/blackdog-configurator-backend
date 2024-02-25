@@ -1,6 +1,8 @@
 FROM node:20 AS build
 COPY package.json package-lock.json ./
-RUN npm ci --fetch-timeout=60000
+RUN npm config rm proxy
+RUN npm config rm https-proxy
+RUN npm ci --fetch-timeout=100000
 COPY tsconfig.json ./
 COPY src ./src
 RUN npm run type
