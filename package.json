@@ -9,7 +9,7 @@
         "type": "tsc",
         "prod:start": "npm run prod:db:migrate:run && npm run prod:serve",
         "prod:serve": "node out-tsc/index.js",
-        "prod:db:migrate:run": "knex migrate:latest --debug --knexfile=out-tsc/db/knexfile.js",
+        "prod:db:migrate:run": "knex migrate:latest --knexfile=out-tsc/db/knexfile.js",
         "dev:type": "tsc --watch --preserveWatchOutput",
         "dev:serve": "nodemon",
         "dev:quickstart": "concurrently -k -r \"npm run dev:type\" \"npm run dev:serve\"",
