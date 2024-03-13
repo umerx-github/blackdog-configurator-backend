@@ -6,6 +6,8 @@
     "author": "First Last <first.last@example.com>",
     "main": "out-tsc/index.js",
     "scripts": {
+        "example:migrate:up": "knex migrate:up 20230924182933_migration.js --knexfile=out-tsc/db/knexfile.js",
+        "example:migrate:down": "knex migrate:down 20240312235541_migration.js --knexfile=out-tsc/db/knexfile.js",
         "type": "tsc",
         "prod:start": "npm run prod:db:migrate:run && npm run prod:serve",
         "prod:serve": "node out-tsc/index.js",

@@ -1,3 +1,5 @@
+import { Knex } from 'knex';
+
 export function bankersRoundingTruncateToInt(num: number): number {
     return bankersRounding(num, 0);
 }
@@ -15,4 +17,16 @@ export function bankersRounding(
         f > 0.5 - e && f < 0.5 + e ? (i % 2 == 0 ? i : i + 1) : Math.round(n);
 
     return d ? r / m : r;
+}
+
+export async function ifTableDoesNotExist(
+    tableName: string,
+    knex: Knex.Transaction,
+    callback: () => Promise<void>
+) {
+    await knex.schema.hasTable(tableName).then(async exists => {
+        if (!exists) {
+            await callback();
+        }
+    });
 }
