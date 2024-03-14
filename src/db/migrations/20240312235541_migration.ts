@@ -104,11 +104,28 @@ export async function down(knex: Knex): Promise<void> {
                 );
             }
         );
+        // does not work - Out of range value for column 'cashInCents' at row 3
+        // await trx.raw(`
+        //     INSERT INTO tmp_${StrategyModel.tableName} (id, title, status, strategyTemplateName, cashInCents)
+        //     SELECT id, title, status, strategyTemplateName, CONVERT(cashInCents, SIGNED)
+        //     FROM ${StrategyModel.tableName}
+        // `);
+        // does not work - Out of range value for column 'cashInCents' at row 3
+        // await trx.raw(`
+        //     INSERT INTO tmp_${StrategyModel.tableName} (id, title, status, strategyTemplateName, cashInCents)
+        //     SELECT id, title, status, strategyTemplateName, CAST(cashInCents AS SIGNED)
+        //     FROM ${StrategyModel.tableName}
+        // `);
+        // https://dev.mysql.com/doc/refman/8.0/en/out-of-range-and-overflow.html
+        await trx.raw(`
+        SET SQL_MODE = ''`);
         await trx.raw(`
             INSERT INTO tmp_${StrategyModel.tableName} (id, title, status, strategyTemplateName, cashInCents)
             SELECT id, title, status, strategyTemplateName, cashInCents
             FROM ${StrategyModel.tableName}
         `);
+        await trx.raw(`
+        SET SQL_MODE = 'TRADITIONAL'`);
         // Update foreign key constraint 'order_strategyId_fkey' on table 'order' to use the new table name
         await trx.schema.alterTable(OrderModel.tableName, table => {
             // Check if constraint exists before trying to drop
