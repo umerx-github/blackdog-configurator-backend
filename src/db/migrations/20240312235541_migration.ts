@@ -2,13 +2,13 @@ import { Knex } from 'knex';
 import { ifTableDoesNotExist } from '../../utils/index.js';
 import { Strategy as StrategyModel } from '../models/Strategy.js';
 import { Order as OrderModel } from '../models/Order.js';
+import { Position as PositionModel } from '../models/Position.js';
+import { Symbol as SymbolModel } from '../models/Symbol.js';
 import {
     Strategy as StrategyTypes,
     StrategyTemplate as StrategyTemplateTypes,
     Order as OrderTypes,
 } from '@umerx/umerx-blackdog-configurator-types-typescript';
-import { Position as PositionModel } from '../models/Position.js';
-import { table } from 'console';
 import { StrategyTemplateSeaDogDiscountScheme as StrategyTemplateSeaDogDiscountSchemeModel } from '../models/StrategyTemplateSeaDogDiscountScheme.js';
 
 export async function up(knex: Knex): Promise<void> {
@@ -74,6 +74,101 @@ export async function up(knex: Knex): Promise<void> {
         await trx.schema.renameTable(
             `tmp_${StrategyModel.tableName}`,
             StrategyModel.tableName
+        );
+        await trx.schema.alterTable(`${OrderModel.tableName}`, table => {
+            table.dropForeign('strategyId', 'order_strategyId_fkey');
+        });
+        await trx.schema.alterTable(`${OrderModel.tableName}`, table => {
+            table.dropForeign('symbolId', 'order_symbolId_fkey');
+        });
+        await ifTableDoesNotExist(
+            `tmp_${OrderModel.tableName}`,
+            trx,
+            async () => {
+                await trx.schema.createTable(
+                    `tmp_${OrderModel.tableName}`,
+                    table => {
+                        table.increments('id').primary();
+                        table
+                            .integer('strategyId')
+                            .unsigned()
+                            .notNullable()
+                            .references('id')
+                            .inTable(StrategyModel.tableName)
+                            .withKeyName('order_strategyId_fkey');
+                        table
+                            .integer('symbolId')
+                            .unsigned()
+                            .notNullable()
+                            .references('id')
+                            .inTable(SymbolModel.tableName)
+                            .withKeyName('order_symbolId_fkey');
+                        table.string('alpacaOrderId').notNullable();
+                        table
+                            .enu('status', OrderTypes.StatusSchema.options)
+                            .notNullable();
+                        table
+                            .enu('side', OrderTypes.SideSchema.options)
+                            .notNullable();
+                        table.bigInteger('quantity').notNullable();
+                        table.bigInteger('averagePriceInCents').notNullable();
+                    }
+                );
+            }
+        );
+        await trx.raw(`
+            INSERT INTO tmp_${OrderModel.tableName} (id, strategyId, symbolId, alpacaOrderId, status, side, quantity, averagePriceInCents)
+            SELECT id, strategyId, symbolId, alpacaOrderId, status, side, quantity, averagePriceInCents
+            FROM \`${OrderModel.tableName}\`
+            `);
+        await trx.schema.dropTable(OrderModel.tableName);
+        await trx.schema.renameTable(
+            `tmp_${OrderModel.tableName}`,
+            OrderModel.tableName
+        );
+        await trx.schema.alterTable(PositionModel.tableName, table => {
+            table.dropForeign('strategyId', 'position_strategyId_fkey');
+        });
+        await trx.schema.alterTable(PositionModel.tableName, table => {
+            table.dropForeign('symbolId', 'position_symbolId_fkey');
+        });
+        await ifTableDoesNotExist(
+            `tmp_${PositionModel.tableName}`,
+            trx,
+            async () => {
+                await trx.schema.createTable(
+                    `tmp_${PositionModel.tableName}`,
+                    table => {
+                        table.increments('id').primary();
+                        table
+                            .integer('strategyId')
+                            .unsigned()
+                            .notNullable()
+                            .references('id')
+                            .inTable(StrategyModel.tableName)
+                            .withKeyName('position_strategyId_fkey');
+                        table
+                            .integer('symbolId')
+                            .unsigned()
+                            .notNullable()
+                            .references('id')
+                            .inTable(SymbolModel.tableName)
+                            .withKeyName('position_symbolId_fkey');
+                        table.bigInteger('quantity').notNullable();
+                        table.bigInteger('averagePriceInCents').notNullable();
+                        // Ensure that the combination of strategyId and symbolId is unique
+                        table.unique(['strategyId', 'symbolId']);
+                    }
+                );
+            }
+        );
+        await trx.raw(
+            `INSERT INTO tmp_${PositionModel.tableName} (id, strategyId, symbolId, quantity, averagePriceInCents) SELECT id, strategyId, symbolId, quantity, averagePriceInCents FROM \`${PositionModel.tableName}\``
+        );
+        await trx.schema.dropTable(PositionModel.tableName);
+        await trx.schema.renameTable(
+            `tmp_${PositionModel.tableName}`,
+            PositionModel.tableName
         );
     });
 }
@@ -156,6 +251,110 @@ export async function down(knex: Knex): Promise<void> {
         await trx.schema.renameTable(
             `tmp_${StrategyModel.tableName}`,
             StrategyModel.tableName
+        );
+        await trx.schema.alterTable(OrderModel.tableName, table => {
+            table.dropForeign('strategyId', 'order_strategyId_fkey');
+        });
+        await trx.schema.alterTable(OrderModel.tableName, table => {
+            table.dropForeign('symbolId', 'order_symbolId_fkey');
+        });
+        await ifTableDoesNotExist(
+            `tmp_${OrderModel.tableName}`,
+            trx,
+            async () => {
+                await trx.schema.createTable(
+                    `tmp_${OrderModel.tableName}`,
+                    table => {
+                        table.increments('id').primary();
+                        table
+                            .integer('strategyId')
+                            .unsigned()
+                            .notNullable()
+                            .references('id')
+                            .inTable(StrategyModel.tableName)
+                            .withKeyName('order_strategyId_fkey');
+                        table
+                            .integer('symbolId')
+                            .unsigned()
+                            .notNullable()
+                            .references('id')
+                            .inTable(SymbolModel.tableName)
+                            .withKeyName('order_symbolId_fkey');
+                        table.string('alpacaOrderId').notNullable();
+                        table
+                            .enu('status', OrderTypes.StatusSchema.options)
+                            .notNullable();
+                        table
+                            .enu('side', OrderTypes.SideSchema.options)
+                            .notNullable();
+                        table.integer('quantity').notNullable();
+                        table.integer('averagePriceInCents').notNullable();
+                    }
+                );
+            }
+        );
+        await trx.raw(`
+        SET SQL_MODE = ''`);
+        await trx.raw(`
+            INSERT INTO tmp_${OrderModel.tableName} (id, strategyId, symbolId, alpacaOrderId, status, side, quantity, averagePriceInCents)
+            SELECT id, strategyId, symbolId, alpacaOrderId, status, side, quantity, averagePriceInCents
+            FROM \`${OrderModel.tableName}\`
+        `);
+        await trx.raw(`
+        SET SQL_MODE = 'TRADITIONAL'`);
+        // Drop and rename
+        await trx.schema.dropTable(OrderModel.tableName);
+        await trx.schema.renameTable(
+            `tmp_${OrderModel.tableName}`,
+            OrderModel.tableName
+        );
+        await trx.schema.alterTable(PositionModel.tableName, table => {
+            table.dropForeign('strategyId', 'position_strategyId_fkey');
+        });
+        await trx.schema.alterTable(PositionModel.tableName, table => {
+            table.dropForeign('symbolId', 'position_symbolId_fkey');
+        });
+        await ifTableDoesNotExist(
+            `tmp_${PositionModel.tableName}`,
+            trx,
+            async () => {
+                await trx.schema.createTable(
+                    `tmp_${PositionModel.tableName}`,
+                    table => {
+                        table.increments('id').primary();
+                        table
+                            .integer('strategyId')
+                            .unsigned()
+                            .notNullable()
+                            .references('id')
+                            .inTable(StrategyModel.tableName)
+                            .withKeyName('position_strategyId_fkey');
+                        table
+                            .integer('symbolId')
+                            .unsigned()
+                            .notNullable()
+                            .references('id')
+                            .inTable(SymbolModel.tableName)
+                            .withKeyName('position_symbolId_fkey');
+                        table.integer('quantity').notNullable();
+                        table.integer('averagePriceInCents').notNullable();
+                        // Ensure that the combination of strategyId and symbolId is unique
+                        table.unique(['strategyId', 'symbolId']);
+                    }
+                );
+            }
+        );
+        await trx.raw(`
+        SET SQL_MODE = ''`);
+        await trx.raw(
+            `INSERT INTO tmp_${PositionModel.tableName} (id, strategyId, symbolId, quantity, averagePriceInCents) SELECT id, strategyId, symbolId, quantity, averagePriceInCents FROM \`${PositionModel.tableName}\``
+        );
+        await trx.raw(`
+        SET SQL_MODE = 'TRADITIONAL'`);
+        await trx.schema.dropTable(PositionModel.tableName);
+        await trx.schema.renameTable(
+            `tmp_${PositionModel.tableName}`,
+            PositionModel.tableName
         );
     });
 }
