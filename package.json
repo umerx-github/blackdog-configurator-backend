@@ -13,7 +13,7 @@
         "dev:type": "tsc --watch --preserveWatchOutput",
         "dev:serve": "nodemon",
         "dev:quickstart": "concurrently -k -r \"npm run dev:type\" \"npm run dev:serve\"",
-        "dev:start": "npm run type && npm run dev:db:drop && npm run dev:db:migrate:run && npm run dev:db:seed:run && npm run dev:quickstart",
+        "dev:start": "npm run type && npm run dev:db:migrate:drop && npm run dev:db:migrate:run && npm run dev:db:seed:run && npm run dev:quickstart",
         "dev:install": "npm install",
         "dev:db:init": "knex init -x ts && mv knexfile.ts src/db/knexfile.ts",
         "dev:db:migrate:list": "knex migrate:list --knexfile=out-tsc/db/knexfile.js",
