@@ -16,9 +16,6 @@ export class StrategyLog
     static get tableName() {
         return 'strategyLog';
     }
-    // static get jsonAttributes() {
-    //     return ['data'];
-    // }
     static get jsonSchema() {
         return {
             type: 'object',
@@ -28,7 +25,7 @@ export class StrategyLog
                 strategyId: { type: 'number' },
                 level: { type: 'string' },
                 message: { type: 'string' },
-                // data: { type: 'object' },
+                data: { type: 'object' },
             },
         };
     }
