@@ -1,5 +1,7 @@
 import { Knex } from 'knex';
 import {
+    Log as LogTypes,
+    StrategyLog as StrategyLogTypes,
     Strategy as StrategyTypes,
     StrategyTemplate as StrategyTemplateTypes,
     StrategyTemplateSeaDogDiscountScheme as StrategyTemplateSeaDogDiscountSchemeTypes,
@@ -13,6 +15,7 @@ import { StrategyTemplateSeaDogDiscountScheme as StrategyTemplateSeaDogDiscountS
 import { Symbol as SymbolModel } from '../models/Symbol.js';
 import { Order as OrderModel } from '../models/Order.js';
 import { Position as PositionModel } from '../models/Position.js';
+import { StrategyLog as StrategyLogModel } from '../models/StrategyLog.js';
 async function truncateTableIfExists(tableName: string, knex: Knex) {
     if (await knex.schema.hasTable(tableName)) {
         await knex(tableName).del();
@@ -31,6 +34,7 @@ export async function seed(knex: Knex): Promise<void> {
     await truncateTableIfExists(OrderModel.tableName, knex);
     await truncateTableIfExists(StrategyModel.tableName, knex);
     await truncateTableIfExists(SymbolModel.tableName, knex);
+    await truncateTableIfExists(StrategyLogModel.tableName, knex);
 
     // Inserts seed entries
     await knex<SymbolTypes.SymbolProps & { id: number }>(
@@ -272,4 +276,30 @@ export async function seed(knex: Knex): Promise<void> {
             },
         ]
     );
+    await knex<StrategyLogTypes.StrategyLogProps & { id: number }>(
+        StrategyLogModel.tableName
+    ).insert([
+        {
+            id: 1,
+            strategyId: 1,
+            level: LogTypes.LogLevelSchema.Enum.info,
+            message: JSON.stringify({ message: 'My First NoOp Strategy' }),
+        },
+        {
+            id: 2,
+            strategyId: 2,
+            level: LogTypes.LogLevelSchema.Enum.debug,
+            message: JSON.stringify({
+                message: 'My Second SeaDogDiscountScheme Strategy',
+            }),
+        },
+        {
+            id: 3,
+            strategyId: 3,
+            level: LogTypes.LogLevelSchema.Enum.notice,
+            message: JSON.stringify({
+                message: 'My Third SeaDogDiscountScheme Strategy',
+            }),
+        },
+    ]);
 }
