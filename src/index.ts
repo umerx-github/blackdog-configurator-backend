@@ -8,6 +8,7 @@ import strategyRouter from './routes/strategy/index.js';
 import orderRouter from './routes/order.js';
 import positionRouter from './routes/position.js';
 import strategyTemplateRouter from './routes/strategyTemplate/index.js';
+import strategyLogRouter from './routes/strategyLog.js';
 import { Request, Response, NextFunction } from 'express';
 import { z, ZodError } from 'zod';
 import * as Errors from './errors/index.js';
@@ -28,7 +29,10 @@ const app = express();
 // https://expressjs.com/en/resources/middleware/cors.html#configuration-options
 app.use(
     cors({
-        origin: [/^https?:\/\/(localhost|127\.0\.0\.1)(:[0-9]+)?/, /^https?:\/\/.*.umerx.app(:[0-9]+)?/],
+        origin: [
+            /^https?:\/\/(localhost|127\.0\.0\.1)(:[0-9]+)?/,
+            /^https?:\/\/.*.umerx.app(:[0-9]+)?/,
+        ],
     })
 );
 app.use(express.json());
@@ -41,6 +45,7 @@ app.use('/strategy', strategyRouter);
 app.use('/order', orderRouter);
 app.use('/position', positionRouter);
 app.use('/strategyTemplate', strategyTemplateRouter);
+app.use('/strategyLog', strategyLogRouter);
 app.use(function (err: Error, req: Request, res: Response, next: NextFunction) {
     if (err instanceof ZodError) {
         return res.status(400).json({

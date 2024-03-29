@@ -1,4 +1,4 @@
-import { Model } from 'objection';
+import { Constructor, Model } from 'objection';
 import {
     StrategyLog as StrategyLogTypes,
     Log as LogTypes,
@@ -12,9 +12,13 @@ export class StrategyLog
     strategyId!: number;
     level!: LogTypes.LogLevel;
     message!: string;
+    data: any;
     static get tableName() {
         return 'strategyLog';
     }
+    // static get jsonAttributes() {
+    //     return ['data'];
+    // }
     static get jsonSchema() {
         return {
             type: 'object',
@@ -24,6 +28,7 @@ export class StrategyLog
                 strategyId: { type: 'number' },
                 level: { type: 'string' },
                 message: { type: 'string' },
+                // data: { type: 'object' },
             },
         };
     }

@@ -25,7 +25,8 @@ export async function up(knex: Knex): Promise<void> {
                         table
                             .enu('level', LogTypes.LogLevelSchema.options)
                             .notNullable();
-                        table.json('message').notNullable();
+                        table.string('message').notNullable();
+                        table.json('data').nullable();
                     }
                 );
             }
@@ -35,6 +36,7 @@ export async function up(knex: Knex): Promise<void> {
 
 export async function down(knex: Knex): Promise<void> {
     await knex.transaction(async trx => {
-        trx.schema.dropTableIfExists(`${StrategyLogModel.tableName}`);
+        console.log('Dropping table:', `${StrategyLogModel.tableName}`);
+        await trx.schema.dropTableIfExists(`${StrategyLogModel.tableName}`);
     });
 }

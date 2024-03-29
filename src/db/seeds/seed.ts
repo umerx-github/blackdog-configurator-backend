@@ -283,23 +283,26 @@ export async function seed(knex: Knex): Promise<void> {
             id: 1,
             strategyId: 1,
             level: LogTypes.LogLevelSchema.Enum.info,
-            message: JSON.stringify({ message: 'My First NoOp Strategy' }),
+            message: 'My First NoOp Strategy',
+            data: { message: 'My First NoOp Strategy' },
         },
         {
             id: 2,
             strategyId: 2,
             level: LogTypes.LogLevelSchema.Enum.debug,
-            message: JSON.stringify({
+            message: 'My Second SeaDogDiscountScheme Strategy',
+            data: {
                 message: 'My Second SeaDogDiscountScheme Strategy',
-            }),
+            },
         },
         {
             id: 3,
             strategyId: 3,
             level: LogTypes.LogLevelSchema.Enum.notice,
-            message: JSON.stringify({
+            message: 'My Third SeaDogDiscountScheme Strategy',
+            data: {
                 message: 'My Third SeaDogDiscountScheme Strategy',
-            }),
+            },
         },
     ]);
 }
