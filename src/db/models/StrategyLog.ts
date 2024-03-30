@@ -14,6 +14,9 @@ export class StrategyLog
     message!: string;
     data?: object;
     timestamp!: number;
+    static get prettyName() {
+        return 'StrategyLog';
+    }
     static get tableName() {
         return 'strategyLog';
     }

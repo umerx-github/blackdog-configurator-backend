@@ -6,7 +6,6 @@ import * as Errors from '../../errors/index.js';
 import { KNEXION } from '../../index.js';
 
 const router = Router();
-const modelName = 'Strategy';
 
 // Typing Express Request: https://stackoverflow.com/questions/48027563/typescript-type-annotation-for-res-body
 
@@ -39,7 +38,7 @@ router.get(
             const data = await query;
             return res.json({
                 status: 'success',
-                message: `${modelName} instances retrieved successfully`,
+                message: `${StrategyModel.prettyName} instances retrieved successfully`,
                 data: data,
             });
         } catch (err) {
@@ -63,12 +62,12 @@ router.get(
             if (!modelData) {
                 return res.status(404).json({
                     status: 'error',
-                    message: `${modelName} not found`,
+                    message: `${StrategyModel.prettyName} not found`,
                 });
             }
             return res.json({
                 status: 'success',
-                message: `${modelName} instance retrieved successfully`,
+                message: `${StrategyModel.prettyName} instance retrieved successfully`,
                 data: modelData,
             });
         } catch (err) {
@@ -99,7 +98,7 @@ router.post(
                         await StrategyLogModel.query(trx).insert({
                             strategyId: model.id,
                             level: 'info',
-                            message: `${modelName} created`,
+                            message: `${StrategyModel.prettyName} created`,
                             data: model,
                             timestamp: Date.now(),
                         });
@@ -110,7 +109,7 @@ router.post(
             );
             return res.json({
                 status: 'success',
-                message: `${modelName} instances created successfully`,
+                message: `${StrategyModel.prettyName} instances created successfully`,
                 data: modelData,
             });
         } catch (err) {
@@ -141,7 +140,7 @@ router.patch(
                         await StrategyLogModel.query(trx).insert({
                             strategyId: model.id,
                             level: 'info',
-                            message: `${modelName} updated`,
+                            message: `${StrategyModel.prettyName} updated`,
                             data: model,
                             timestamp: Date.now(),
                         });
@@ -152,7 +151,7 @@ router.patch(
             );
             return res.json({
                 status: 'success',
-                message: `${modelName} instances updated successfully`,
+                message: `${StrategyModel.prettyName} instances updated successfully`,
                 data: modelData,
             });
         } catch (err) {
@@ -188,13 +187,13 @@ router.patch(
                     );
                     if (!model) {
                         throw new Errors.ModelNotFoundError(
-                            `Unable to find ${modelName} with id ${params.id}`
+                            `Unable to find ${StrategyModel.prettyName} with id ${params.id}`
                         );
                     }
                     await StrategyLogModel.query(trx).insert({
                         strategyId: model.id,
                         level: 'info',
-                        message: `${modelName} updated`,
+                        message: `${StrategyModel.prettyName} updated`,
                         data: model,
                         timestamp: Date.now(),
                     });
@@ -205,12 +204,12 @@ router.patch(
             );
             if (!model) {
                 throw new Errors.ModelNotFoundError(
-                    `Unable to find ${modelName} with id ${params.id}`
+                    `Unable to find ${StrategyModel.prettyName} with id ${params.id}`
                 );
             }
             return res.json({
                 status: 'success',
-                message: `${modelName} instance updated successfully`,
+                message: `${StrategyModel.prettyName} instance updated successfully`,
                 data: model,
             });
         } catch (err) {
@@ -240,7 +239,7 @@ router.put(
                         await StrategyLogModel.query(trx).insert({
                             strategyId: model.id,
                             level: 'info',
-                            message: `${modelName} replaced`,
+                            message: `${StrategyModel.prettyName} replaced`,
                             data: model,
                             timestamp: Date.now(),
                         });
@@ -251,7 +250,7 @@ router.put(
             );
             return res.json({
                 status: 'success',
-                message: `${modelName} instances updated successfully`,
+                message: `${StrategyModel.prettyName} instances updated successfully`,
                 data: modelData,
             });
         } catch (err) {
@@ -287,13 +286,13 @@ router.put(
                     );
                     if (!model) {
                         throw new Errors.ModelNotFoundError(
-                            `Unable to find ${modelName} with id ${params.id}`
+                            `Unable to find ${StrategyModel.prettyName} with id ${params.id}`
                         );
                     }
                     await StrategyLogModel.query(trx).insert({
                         strategyId: model.id,
                         level: 'info',
-                        message: `${modelName} replaced`,
+                        message: `${StrategyModel.prettyName} replaced`,
                         data: model,
                         timestamp: Date.now(),
                     });
@@ -303,12 +302,12 @@ router.put(
             if (!model) {
                 return res.status(404).json({
                     status: 'error',
-                    message: `${modelName} not found`,
+                    message: `${StrategyModel.prettyName} not found`,
                 });
             }
             return res.json({
                 status: 'success',
-                message: `${modelName} instance updated successfully`,
+                message: `${StrategyModel.prettyName} instance updated successfully`,
                 data: model,
             });
         } catch (err) {
@@ -342,7 +341,7 @@ router.delete(
                         );
                         if (!model) {
                             throw new Errors.ModelNotFoundError(
-                                `Unable to find ${modelName} with id ${id}`
+                                `Unable to find ${StrategyModel.prettyName} with id ${id}`
                             );
                         }
                         modelData.push(model);
@@ -353,7 +352,7 @@ router.delete(
             );
             return res.json({
                 status: 'success',
-                message: `${modelName} instances deleted successfully`,
+                message: `${StrategyModel.prettyName} instances deleted successfully`,
                 data: modelData,
             });
         } catch (err) {
@@ -378,13 +377,13 @@ router.delete(
             if (!modelData) {
                 return res.status(404).json({
                     status: 'error',
-                    message: `${modelName} not found`,
+                    message: `${StrategyModel.prettyName} not found`,
                 });
             }
             await StrategyModel.query().deleteById(params.id);
             return res.json({
                 status: 'success',
-                message: `${modelName} instance deleted successfully`,
+                message: `${StrategyModel.prettyName} instance deleted successfully`,
                 data: modelData,
             });
         } catch (err) {

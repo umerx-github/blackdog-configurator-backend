@@ -7,33 +7,44 @@ import { KNEXION } from '../index.js';
 import { Knex } from 'knex';
 import { NextFunction } from 'express';
 import { Strategy as StrategyModel } from '../db/models/Strategy.js';
-import { bankersRoundingTruncateToInt } from '../utils/index.js';
+import {
+    bankersRounding,
+    bankersRoundingTruncateToInt,
+} from '../utils/index.js';
 import { calculateExistingPositionNewAveragePriceInCentsForFilledBuyOrder } from './position.js';
+import { StrategyLog as StrategyLogModel } from '../db/models/StrategyLog.js';
+import { Symbol as SymbolModel } from '../db/models/Symbol.js';
 
 const router = Router();
-const modelName = 'Order';
 
 async function postSingle(
     modelProps: OrderTypes.OrderProps,
     trx: Knex.Transaction
 ) {
+    // Validate that a symbol with symbolId exists
+    const symbol = await SymbolModel.query(trx).findById(modelProps.symbolId);
+    if (!symbol) {
+        throw new Errors.ModelNotFoundError(
+            `Unable to find ${SymbolModel.prettyName} with id ${modelProps.symbolId}`
+        );
+    }
+    // Check if this amount can be subtracted from related strategy's cashInCents
+    const strategy = await StrategyModel.query(trx).findById(
+        modelProps.strategyId
+    );
+    if (!strategy) {
+        throw new Errors.ModelNotFoundError(
+            `Unable to find ${StrategyModel.prettyName} with id ${modelProps.strategyId}`
+        );
+    }
     // If buy order update strategy's cashInCents
     if (modelProps.side === OrderTypes.SideSchema.Enum.buy) {
-        // Check if this amount can be subtracted from related strategy's cashInCents
-        const strategy = await StrategyModel.query(trx).findById(
-            modelProps.strategyId
-        );
-        if (!strategy) {
-            throw new Errors.ModelNotFoundError(
-                `Unable to find Strategy with id ${modelProps.strategyId}`
-            );
-        }
         const orderCashInCents = bankersRoundingTruncateToInt(
             modelProps.quantity * modelProps.averagePriceInCents
         );
         if (strategy.cashInCents < orderCashInCents) {
             throw new Error(
-                `Unable to create ${modelName} instance because it would result in a negative cashInCents`
+                `Unable to create ${OrderModel.prettyName} instance because it would result in a negative cashInCents`
             );
         }
         // Decrease strategy's cashInCents
@@ -44,18 +55,18 @@ async function postSingle(
     // If sell order, update position quantity
     if (modelProps.side === OrderTypes.SideSchema.Enum.sell) {
         const positions = await PositionModel.query(trx).where({
-            symbolId: modelProps.symbolId,
-            strategyId: modelProps.strategyId,
+            symbolId: symbol.id,
+            strategyId: strategy.id,
         });
         if (positions.length === 0) {
             throw new Errors.ModelNotFoundError(
-                `Unable to find Position with symbolId ${modelProps.symbolId} and strategyId ${modelProps.strategyId}`
+                `Unable to find ${PositionModel.prettyName} for ${SymbolModel.prettyName} with id ${symbol.id} and name ${symbol.name} and ${StrategyModel.prettyName} with id ${strategy.id}`
             );
         }
         const position = positions[0];
         if (position.quantity < modelProps.quantity) {
             throw new Error(
-                `Unable to create ${modelName} instance because it would result in a negative position quantity`
+                `Unable to create ${OrderModel.prettyName} instance because it would result in a negative position quantity`
             );
         }
         // Decrease position quantity
@@ -70,8 +81,21 @@ async function postSingle(
         status: OrderTypes.StatusSchema.Enum.open,
     });
     if (!model) {
-        throw new Error(`Unable to create ${modelName} instance`);
+        throw new Error(`Unable to create ${OrderModel.prettyName} instance`);
     }
+    await StrategyLogModel.query(trx).insert({
+        strategyId: strategy.id,
+        level: 'info',
+        message: `Placed ${modelProps.side} order for ${
+            modelProps.quantity
+        } shares of ${SymbolModel.prettyName} with id ${symbol.id} and name ${
+            symbol.name
+        } at an average price of $${bankersRounding(
+            modelProps.averagePriceInCents / 100
+        )} each`,
+        data: modelProps,
+        timestamp: Date.now(),
+    });
     return model;
 }
 
@@ -116,7 +140,7 @@ router.get(
             });
             return res.json({
                 status: 'success',
-                message: `${modelName} instances retrieved successfully`,
+                message: `${OrderModel.prettyName} instances retrieved successfully`,
                 data: data,
             });
         } catch (err) {
@@ -139,12 +163,12 @@ router.get(
             const modelData = await OrderModel.query().findById(params.id);
             if (!modelData) {
                 throw new Errors.ModelNotFoundError(
-                    `Unable to find ${modelName} with id ${params.id}`
+                    `Unable to find ${OrderModel.prettyName} with id ${params.id}`
                 );
             }
             return res.json({
                 status: 'success',
-                message: `${modelName} instance retrieved successfully`,
+                message: `${OrderModel.prettyName} instance retrieved successfully`,
                 data: modelData,
             });
         } catch (err) {
@@ -173,7 +197,7 @@ router.post(
                         const model = await postSingle(dataToInsert, trx);
                         if (!model) {
                             throw new Error(
-                                `Unable to create ${modelName} instance`
+                                `Unable to create ${OrderModel.prettyName} instance`
                             );
                         }
                         modelData.push(model);
@@ -183,7 +207,7 @@ router.post(
             );
             return res.json({
                 status: 'success',
-                message: `${modelName} instances created successfully`,
+                message: `${OrderModel.prettyName} instances created successfully`,
                 data: modelData,
             });
         } catch (err) {
@@ -209,17 +233,17 @@ router.post(
                     model = await OrderModel.query(trx).findById(params.id);
                     if (!model) {
                         throw new Errors.ModelNotFoundError(
-                            `Unable to find ${modelName} with id ${params.id}`
+                            `Unable to find ${OrderModel.prettyName} with id ${params.id}`
                         );
                     }
                     if (model.status !== 'open') {
                         throw new Error(
-                            `Unable to fill ${modelName} with id ${params.id} because it is no longer open`
+                            `Unable to fill ${OrderModel.prettyName} with id ${params.id} because it is no longer open`
                         );
                     }
                     if (!(model.side in OrderTypes.SideSchema.Enum)) {
                         throw new Error(
-                            `Unable to fill ${modelName} with id ${params.id} because it has an invalid side`
+                            `Unable to fill ${OrderModel.prettyName} with id ${params.id} because it has an invalid side`
                         );
                     }
                     // If buy order, update position quantity
@@ -266,7 +290,7 @@ router.post(
                         ).findById(model.strategyId);
                         if (!strategy) {
                             throw new Errors.ModelNotFoundError(
-                                `Unable to find Strategy with id ${model.strategyId}`
+                                `Unable to find ${StrategyModel.prettyName} with id ${model.strategyId}`
                             );
                         }
                         const orderCashInCents = bankersRoundingTruncateToInt(
@@ -287,17 +311,30 @@ router.post(
                             status: OrderTypes.StatusSchema.Enum.closed,
                         }
                     );
+                    await StrategyLogModel.query(trx).insert({
+                        strategyId: model.strategyId,
+                        level: 'info',
+                        message: `Filled ${model.side} order for ${
+                            model.quantity
+                        } shares of ${SymbolModel.prettyName} with id ${
+                            model.symbolId
+                        } at an average price of $${bankersRounding(
+                            model.averagePriceInCents / 100
+                        )} each`,
+                        data: model,
+                        timestamp: Date.now(),
+                    });
                 },
                 { isolationLevel: 'serializable' }
             );
             if (!model) {
                 throw new Errors.ModelNotFoundError(
-                    `Unable to find ${modelName} with id ${params.id}`
+                    `Unable to find ${OrderModel.prettyName} with id ${params.id}`
                 );
             }
             return res.json({
                 status: 'success',
-                message: `${modelName} instance filled successfully`,
+                message: `${OrderModel.prettyName} instance filled successfully`,
                 data: model,
             });
         } catch (err) {
@@ -323,17 +360,17 @@ router.post(
                     model = await OrderModel.query(trx).findById(params.id);
                     if (!model) {
                         throw new Errors.ModelNotFoundError(
-                            `Unable to find ${modelName} with id ${params.id}`
+                            `Unable to find ${OrderModel.prettyName} with id ${params.id}`
                         );
                     }
                     if (model.status !== 'open') {
                         throw new Error(
-                            `Unable to cancel ${modelName} with id ${params.id} because it is no longer open`
+                            `Unable to cancel ${OrderModel.prettyName} with id ${params.id} because it is no longer open`
                         );
                     }
                     if (!(model.side in OrderTypes.SideSchema.Enum)) {
                         throw new Error(
-                            `Unable to cancel ${modelName} with id ${params.id} because it has an invalid side`
+                            `Unable to cancel ${OrderModel.prettyName} with id ${params.id} because it has an invalid side`
                         );
                     }
                     // If buy order, update strategy's cashInCents
@@ -394,17 +431,30 @@ router.post(
                             status: OrderTypes.StatusSchema.Enum.closed,
                         }
                     );
+                    await StrategyLogModel.query(trx).insert({
+                        strategyId: model.strategyId,
+                        level: 'info',
+                        message: `Canceled ${model.side} order for ${
+                            model.quantity
+                        } shares of ${SymbolModel.prettyName} with id ${
+                            model.symbolId
+                        } at an average price of $${bankersRounding(
+                            model.averagePriceInCents / 100
+                        )} each`,
+                        data: model,
+                        timestamp: Date.now(),
+                    });
                 },
                 { isolationLevel: 'serializable' }
             );
             if (!model) {
                 throw new Errors.ModelNotFoundError(
-                    `Unable to find ${modelName} with id ${params.id}`
+                    `Unable to find ${OrderModel.prettyName} with id ${params.id}`
                 );
             }
             return res.json({
                 status: 'success',
-                message: `${modelName} instance canceled successfully`,
+                message: `${OrderModel.prettyName} instance canceled successfully`,
                 data: model,
             });
         } catch (err) {

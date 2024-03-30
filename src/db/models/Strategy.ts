@@ -15,6 +15,9 @@ export class Strategy
     cashInCents!: number;
     // https://www.reddit.com/r/node/comments/7hxie6/objectionjs_and_timestamps/
     // https://github.com/Vincit/objection.js/issues/647
+    static get prettyName() {
+        return 'Strategy';
+    }
     static get tableName() {
         return 'strategy';
     }

@@ -7,16 +7,17 @@ import { Symbol as SymbolModel } from '../db/models/Symbol.js';
 import { Knex } from 'knex';
 import { NextFunction } from 'express';
 import { bankersRoundingTruncateToInt } from '../utils/index.js';
+import { StrategyLog as StrategyLogModel } from '../db/models/StrategyLog.js';
+import { Strategy as StrategyModel } from '../db/models/Strategy.js';
 
 const router = Router();
-const modelName = 'Position';
 
 // Typing Express Request: https://stackoverflow.com/questions/48027563/typescript-type-annotation-for-res-body
 
 function validateQuantity(quantity: number) {
     if (quantity < 0) {
         throw new Error(
-            `Unable to create ${modelName} instance with negative quantity: ${quantity}`
+            `Unable to create ${PositionModel.prettyName} instance with negative quantity: ${quantity}`
         );
     }
 }
@@ -89,7 +90,7 @@ router.get(
             });
             return res.json({
                 status: 'success',
-                message: `${modelName} instances retrieved successfully`,
+                message: `${PositionModel.prettyName} instances retrieved successfully`,
                 data: data,
             });
         } catch (err) {
@@ -112,12 +113,12 @@ router.get(
             const modelData = await PositionModel.query().findById(params.id);
             if (!modelData) {
                 throw new Errors.ModelNotFoundError(
-                    `Unable to find ${modelName} with id ${params.id}`
+                    `Unable to find ${PositionModel.prettyName} with id ${params.id}`
                 );
             }
             return res.json({
                 status: 'success',
-                message: `${modelName} instance retrieved successfully`,
+                message: `${PositionModel.prettyName} instance retrieved successfully`,
                 data: modelData,
             });
         } catch (err) {
@@ -142,6 +143,24 @@ router.post(
             await KNEXION.transaction(
                 async trx => {
                     for (const dataToInsert of parsedRequest) {
+                        // Validate the Symbol exists
+                        const symbol = await SymbolModel.query(trx).findById(
+                            dataToInsert.symbolId
+                        );
+                        if (!symbol) {
+                            throw new Errors.ModelNotFoundError(
+                                `Unable to find ${SymbolModel.prettyName} with id ${dataToInsert.symbolId}`
+                            );
+                        }
+                        // Validate the Strategy exists
+                        const strategy = await StrategyModel.query(
+                            trx
+                        ).findById(dataToInsert.strategyId);
+                        if (!strategy) {
+                            throw new Errors.ModelNotFoundError(
+                                `Unable to find ${StrategyModel.prettyName} with id ${dataToInsert.strategyId}`
+                            );
+                        }
                         // Insert into junction table first
                         // Check to see if a position with the same symbolId and strategyId already exists
                         let model: PositionModel | undefined;
@@ -176,9 +195,30 @@ router.post(
                         }
                         if (!model) {
                             throw new Error(
-                                `Unable to create ${modelName} instance`
+                                `Unable to create ${PositionModel.prettyName} instance`
                             );
                         }
+                        await StrategyLogModel.query(trx).insert({
+                            strategyId: dataToInsert.strategyId,
+                            level: 'info',
+                            message: `Updated ${
+                                PositionModel.prettyName
+                            } quantity and average price in cents for ${
+                                SymbolModel.prettyName
+                            } with id ${dataToInsert.symbolId} and name ${
+                                symbol.name
+                            }. Previous quantity: ${
+                                existingPosition?.quantity ?? 0
+                            }, new quantity: ${
+                                model.quantity
+                            }. Previous average price in cents: ${
+                                existingPosition?.averagePriceInCents ?? 0
+                            }, new average price in cents: ${
+                                model.averagePriceInCents
+                            }`,
+                            timestamp: Date.now(),
+                            data: dataToInsert,
+                        });
                         modelData.push(model);
                     }
                 },
@@ -186,7 +226,7 @@ router.post(
             );
             return res.json({
                 status: 'success',
-                message: `${modelName} instances created successfully`,
+                message: `${PositionModel.prettyName} instances created successfully`,
                 data: modelData,
             });
         } catch (err) {

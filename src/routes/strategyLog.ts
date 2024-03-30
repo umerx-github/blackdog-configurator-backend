@@ -7,7 +7,6 @@ import { Knex } from 'knex';
 import { NextFunction } from 'express';
 
 const router = Router();
-const modelName = 'StrategyLog';
 
 router.get(
     '/',
@@ -44,7 +43,7 @@ router.get(
             });
             return res.json({
                 status: 'success',
-                message: `${modelName} instances retrieved successfully`,
+                message: `${StrategyLogModel.prettyName} instances retrieved successfully`,
                 data: data,
             });
         } catch (err) {
@@ -70,12 +69,12 @@ router.get(
             );
             if (!modelData) {
                 throw new Errors.ModelNotFoundError(
-                    `Unable to find ${modelName} with id ${params.id}`
+                    `Unable to find ${StrategyLogModel.prettyName} with id ${params.id}`
                 );
             }
             return res.json({
                 status: 'success',
-                message: `${modelName} instance retrieved successfully`,
+                message: `${StrategyLogModel.prettyName} instance retrieved successfully`,
                 data: {
                     ...modelData,
                     // data: JSON.stringify(modelData.data),
@@ -113,7 +112,7 @@ router.post(
                         });
                         if (undefined === model) {
                             throw new Error(
-                                `Unable to create ${modelName} instance`
+                                `Unable to create ${StrategyLogModel.prettyName} instance`
                             );
                         }
                         modelData.push(model);
@@ -123,7 +122,7 @@ router.post(
             );
             return res.json({
                 status: 'success',
-                message: `${modelName} instances created successfully`,
+                message: `${StrategyLogModel.prettyName} instances created successfully`,
                 data: modelData,
             });
         } catch (err) {

@@ -12,6 +12,9 @@ export class Position
     averagePriceInCents!: number;
     // https://www.reddit.com/r/node/comments/7hxie6/objectionjs_and_timestamps/
     // https://github.com/Vincit/objection.js/issues/647
+    static get prettyName() {
+        return 'Position';
+    }
     static get tableName() {
         return 'position';
     }

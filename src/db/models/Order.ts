@@ -12,8 +12,8 @@ export class Order extends Model implements OrderTypes.OrderModelInterface {
     averagePriceInCents!: number;
     // https://www.reddit.com/r/node/comments/7hxie6/objectionjs_and_timestamps/
     // https://github.com/Vincit/objection.js/issues/647
-    static get tableName() {
-        return 'order';
+    static get prettyName() {
+        return 'Order';
     }
     static get jsonSchema() {
         return {

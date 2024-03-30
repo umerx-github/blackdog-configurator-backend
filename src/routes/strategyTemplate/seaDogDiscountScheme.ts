@@ -8,7 +8,6 @@ import { Knex } from 'knex';
 import { NextFunction } from 'express';
 
 const router = Router();
-const modelName = 'StrategyTemplateSeaDogDiscountScheme';
 
 function modelToResponseBodyDataInstance(
     model: StrategyTemplateSeaDogDiscountSchemeModel
@@ -51,7 +50,7 @@ async function patchSingle(
         ).findById(id);
         if (!model) {
             throw new Errors.ModelNotFoundError(
-                `Unable to find ${modelName} with id ${id}`
+                `Unable to find ${StrategyTemplateSeaDogDiscountSchemeModel.prettyName} with id ${id}`
             );
         }
         if (model.status === 'inactive' && dataToInsert.status === 'active') {
@@ -64,7 +63,9 @@ async function patchSingle(
             .withGraphFetched('symbols');
     }
     if (!model) {
-        throw new Error(`Unable to update ${modelName} instance`);
+        throw new Error(
+            `Unable to update ${StrategyTemplateSeaDogDiscountSchemeModel.prettyName} instance`
+        );
     }
     if (undefined !== symbolIds) {
         // Unrelate all symbols
@@ -82,7 +83,9 @@ async function patchSingle(
             .findById(model.id)
             .withGraphFetched('symbols');
     if (!modelWithSymbols) {
-        throw new Error(`Unable to find ${modelName} instance`);
+        throw new Error(
+            `Unable to find ${StrategyTemplateSeaDogDiscountSchemeModel.prettyName} instance`
+        );
     }
     return modelToResponseBodyDataInstance(modelWithSymbols);
 }
@@ -97,7 +100,7 @@ async function deleteSingle(
     // get the model's data before deleting it
     if (!model) {
         throw new Errors.ModelNotFoundError(
-            `Unable to find ${modelName} with id ${id}`
+            `Unable to find ${StrategyTemplateSeaDogDiscountSchemeModel.prettyName} with id ${id}`
         );
     }
     // const data = modelToResponseBodyDataInstance(model);
@@ -162,7 +165,7 @@ router.get(
             });
             return res.json({
                 status: 'success',
-                message: `${modelName} instances retrieved successfully`,
+                message: `${StrategyTemplateSeaDogDiscountSchemeModel.prettyName} instances retrieved successfully`,
                 data: data,
             });
         } catch (err) {
@@ -190,12 +193,12 @@ router.get(
             if (!modelData) {
                 return res.status(404).json({
                     status: 'error',
-                    message: `${modelName} not found`,
+                    message: `${StrategyTemplateSeaDogDiscountSchemeModel.prettyName} not found`,
                 });
             }
             return res.json({
                 status: 'success',
-                message: `${modelName} instance retrieved successfully`,
+                message: `${StrategyTemplateSeaDogDiscountSchemeModel.prettyName} instance retrieved successfully`,
                 data: modelToResponseBodyDataInstance(modelData),
             });
         } catch (err) {
@@ -238,7 +241,7 @@ router.post(
                                 .withGraphFetched('symbols');
                         if (!model) {
                             throw new Error(
-                                `Unable to create ${modelName} instance`
+                                `Unable to create ${StrategyTemplateSeaDogDiscountSchemeModel.prettyName} instance`
                             );
                         }
                         if (model.status === 'active') {
@@ -263,7 +266,7 @@ router.post(
                                 .withGraphFetched('symbols');
                         if (!modelWithSymbols) {
                             throw new Error(
-                                `Unable to find ${modelName} instance`
+                                `Unable to find ${StrategyTemplateSeaDogDiscountSchemeModel.prettyName} instance`
                             );
                         }
                         modelData.push(
@@ -275,7 +278,7 @@ router.post(
             );
             return res.json({
                 status: 'success',
-                message: `${modelName} instances created successfully`,
+                message: `${StrategyTemplateSeaDogDiscountSchemeModel.prettyName} instances created successfully`,
                 data: modelData,
             });
         } catch (err) {
@@ -320,7 +323,7 @@ router.patch(
             );
             return res.json({
                 status: 'success',
-                message: `${modelName} instances updated successfully`,
+                message: `${StrategyTemplateSeaDogDiscountSchemeModel.prettyName} instances updated successfully`,
                 data: modelData,
             });
         } catch (err) {
@@ -366,12 +369,12 @@ router.patch(
             if (!modelData) {
                 return res.status(404).json({
                     status: 'error',
-                    message: `${modelName} not found`,
+                    message: `${StrategyTemplateSeaDogDiscountSchemeModel.prettyName} not found`,
                 });
             }
             return res.json({
                 status: 'success',
-                message: `${modelName} instance updated successfully`,
+                message: `${StrategyTemplateSeaDogDiscountSchemeModel.prettyName} instance updated successfully`,
                 data: modelData,
             });
         } catch (err) {
@@ -414,7 +417,7 @@ router.put(
             );
             return res.json({
                 status: 'success',
-                message: `${modelName} instances updated successfully`,
+                message: `${StrategyTemplateSeaDogDiscountSchemeModel.prettyName} instances updated successfully`,
                 data: modelData,
             });
         } catch (err) {
@@ -460,12 +463,12 @@ router.put(
             if (!modelData) {
                 return res.status(404).json({
                     status: 'error',
-                    message: `${modelName} not found`,
+                    message: `${StrategyTemplateSeaDogDiscountSchemeModel.prettyName} not found`,
                 });
             }
             return res.json({
                 status: 'success',
-                message: `${modelName} instance updated successfully`,
+                message: `${StrategyTemplateSeaDogDiscountSchemeModel.prettyName} instance updated successfully`,
                 data: modelData,
             });
         } catch (err) {
@@ -505,7 +508,7 @@ router.delete(
             );
             return res.json({
                 status: 'success',
-                message: `${modelName} instances deleted successfully`,
+                message: `${StrategyTemplateSeaDogDiscountSchemeModel.prettyName} instances deleted successfully`,
                 data: modelData,
             });
         } catch (err) {
@@ -538,12 +541,12 @@ router.delete(
             if (undefined === modelData) {
                 return res.status(404).json({
                     status: 'error',
-                    message: `${modelName} not found`,
+                    message: `${StrategyTemplateSeaDogDiscountSchemeModel.prettyName} not found`,
                 });
             }
             return res.json({
                 status: 'success',
-                message: `${modelName} instance deleted successfully`,
+                message: `${StrategyTemplateSeaDogDiscountSchemeModel.prettyName} instance deleted successfully`,
                 data: modelData,
             });
         } catch (err) {

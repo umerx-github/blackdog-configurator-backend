@@ -23,6 +23,9 @@ export class StrategyTemplateSeaDogDiscountScheme
     // symbolIds!: number[];
     // https://www.reddit.com/r/node/comments/7hxie6/objectionjs_and_timestamps/
     // https://github.com/Vincit/objection.js/issues/647
+    static get prettyName() {
+        return 'StrategyTemplateSeaDogDiscountScheme';
+    }
     static get tableName() {
         return 'strategyTemplateSeaDogDiscountScheme';
     }

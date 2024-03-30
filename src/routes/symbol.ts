@@ -7,7 +7,6 @@ import { Knex } from 'knex';
 import { NextFunction } from 'express';
 
 const router = Router();
-const modelName = 'Symbol';
 
 // Typing Express Request: https://stackoverflow.com/questions/48027563/typescript-type-annotation-for-res-body
 
@@ -34,7 +33,7 @@ router.get(
             });
             return res.json({
                 status: 'success',
-                message: `${modelName} instances retrieved successfully`,
+                message: `${SymbolModel.prettyName} instances retrieved successfully`,
                 data: data,
             });
         } catch (err) {
@@ -57,12 +56,12 @@ router.get(
             const modelData = await SymbolModel.query().findById(params.id);
             if (!modelData) {
                 throw new Errors.ModelNotFoundError(
-                    `Unable to find ${modelName} with id ${params.id}`
+                    `Unable to find ${SymbolModel.prettyName} with id ${params.id}`
                 );
             }
             return res.json({
                 status: 'success',
-                message: `${modelName} instance retrieved successfully`,
+                message: `${SymbolModel.prettyName} instance retrieved successfully`,
                 data: modelData,
             });
         } catch (err) {
@@ -98,7 +97,7 @@ router.post(
                         }
                         if (undefined === model) {
                             throw new Error(
-                                `Unable to create ${modelName} instance`
+                                `Unable to create ${SymbolModel.prettyName} instance`
                             );
                         }
                         modelData.push(model);
@@ -108,7 +107,7 @@ router.post(
             );
             return res.json({
                 status: 'success',
-                message: `${modelName} instances created successfully`,
+                message: `${SymbolModel.prettyName} instances created successfully`,
                 data: modelData,
             });
         } catch (err) {

@@ -4,6 +4,9 @@ import { Symbol as SymbolTypes } from '@umerx/umerx-blackdog-configurator-types-
 export class Symbol extends Model implements SymbolTypes.SymbolModelInterface {
     id!: number;
     name!: string;
+    static get prettyName() {
+        return 'Symbol';
+    }
     static get tableName() {
         return 'symbol';
     }
