@@ -36,7 +36,6 @@ export async function up(knex: Knex): Promise<void> {
 
 export async function down(knex: Knex): Promise<void> {
     await knex.transaction(async trx => {
-        console.log('Dropping table:', `${StrategyLogModel.tableName}`);
         await trx.schema.dropTableIfExists(`${StrategyLogModel.tableName}`);
     });
 }

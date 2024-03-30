@@ -12,20 +12,22 @@ export class StrategyLog
     strategyId!: number;
     level!: LogTypes.LogLevel;
     message!: string;
-    data: any;
+    data?: object;
+    timestamp!: number;
     static get tableName() {
         return 'strategyLog';
     }
     static get jsonSchema() {
         return {
             type: 'object',
-            required: ['strategyId', 'level', 'message'],
+            required: ['strategyId', 'level', 'message', 'timestamp'],
             properties: {
                 id: { type: 'number' },
                 strategyId: { type: 'number' },
                 level: { type: 'string' },
                 message: { type: 'string' },
                 data: { type: 'object' },
+                timestamp: { type: 'number' },
             },
         };
     }

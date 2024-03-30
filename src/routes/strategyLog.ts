@@ -73,7 +73,6 @@ router.get(
                     `Unable to find ${modelName} with id ${params.id}`
                 );
             }
-            console.log({ modelData });
             return res.json({
                 status: 'success',
                 message: `${modelName} instance retrieved successfully`,
@@ -101,7 +100,6 @@ router.post(
                 StrategyLogTypes.StrategyLogPostManyRequestBodyFromRaw(
                     req.body
                 );
-            console.log({ parsedRequest });
             const modelData: StrategyLogTypes.StrategyLogPostManyResponseBodyData =
                 [];
             await KNEXION.transaction(
@@ -109,9 +107,10 @@ router.post(
                     for (const dataToInsert of parsedRequest) {
                         // Check if the symbol already exists
                         let model: StrategyLogModel | undefined;
-                        model = await StrategyLogModel.query(trx).insert(
-                            dataToInsert
-                        );
+                        model = await StrategyLogModel.query(trx).insert({
+                            ...dataToInsert,
+                            timestamp: Date.now(),
+                        });
                         if (undefined === model) {
                             throw new Error(
                                 `Unable to create ${modelName} instance`

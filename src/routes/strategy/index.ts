@@ -101,6 +101,7 @@ router.post(
                             level: 'info',
                             message: `${modelName} created`,
                             data: model,
+                            timestamp: Date.now(),
                         });
                         modelData.push(model);
                     }
@@ -142,6 +143,7 @@ router.patch(
                             level: 'info',
                             message: `${modelName} updated`,
                             data: model,
+                            timestamp: Date.now(),
                         });
                         modelData.push(model);
                     }
@@ -194,6 +196,7 @@ router.patch(
                         level: 'info',
                         message: `${modelName} updated`,
                         data: model,
+                        timestamp: Date.now(),
                     });
                 },
                 {
@@ -239,6 +242,7 @@ router.put(
                             level: 'info',
                             message: `${modelName} replaced`,
                             data: model,
+                            timestamp: Date.now(),
                         });
                         modelData.push(model);
                     }
@@ -291,6 +295,7 @@ router.put(
                         level: 'info',
                         message: `${modelName} replaced`,
                         data: model,
+                        timestamp: Date.now(),
                     });
                 },
                 { isolationLevel: 'serializable' }
