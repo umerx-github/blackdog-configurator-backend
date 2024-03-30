@@ -15,6 +15,9 @@ export class Order extends Model implements OrderTypes.OrderModelInterface {
     static get prettyName() {
         return 'Order';
     }
+    static get tableName() {
+        return 'order';
+    }
     static get jsonSchema() {
         return {
             type: 'object',
