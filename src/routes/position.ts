@@ -6,7 +6,10 @@ import { KNEXION } from '../index.js';
 import { Symbol as SymbolModel } from '../db/models/Symbol.js';
 import { Knex } from 'knex';
 import { NextFunction } from 'express';
-import { bankersRoundingTruncateToInt } from '../utils/index.js';
+import {
+    bankersRounding,
+    bankersRoundingTruncateToInt,
+} from '../utils/index.js';
 import { StrategyLog as StrategyLogModel } from '../db/models/StrategyLog.js';
 import { Strategy as StrategyModel } from '../db/models/Strategy.js';
 
@@ -203,19 +206,21 @@ router.post(
                             level: 'info',
                             message: `Updated ${
                                 PositionModel.prettyName
-                            } quantity and average price in cents for ${
+                            } quantity and average price for ${
                                 SymbolModel.prettyName
-                            } with id ${dataToInsert.symbolId} and name ${
-                                symbol.name
+                            } ${symbol.name} with id ${
+                                symbol.id
                             }. Previous quantity: ${
                                 existingPosition?.quantity ?? 0
                             }, new quantity: ${
                                 model.quantity
-                            }. Previous average price in cents: ${
-                                existingPosition?.averagePriceInCents ?? 0
-                            }, new average price in cents: ${
+                            }. Previous average price: $${(
+                                bankersRounding(
+                                    existingPosition?.averagePriceInCents ?? 0
+                                ) / 100
+                            ).toFixed(2)}, new average price: ${bankersRounding(
                                 model.averagePriceInCents
-                            }`,
+                            ).toFixed(2)}`,
                             timestamp: Date.now(),
                             data: dataToInsert,
                         });

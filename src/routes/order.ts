@@ -60,7 +60,7 @@ async function postSingle(
         });
         if (positions.length === 0) {
             throw new Errors.ModelNotFoundError(
-                `Unable to find ${PositionModel.prettyName} for ${SymbolModel.prettyName} with id ${symbol.id} and name ${symbol.name} and ${StrategyModel.prettyName} with id ${strategy.id}`
+                `Unable to find ${PositionModel.prettyName} for ${SymbolModel.prettyName} ${symbol.name} with id ${symbol.id} and ${StrategyModel.prettyName} ${strategy.title} with id ${strategy.id}`
             );
         }
         const position = positions[0];
@@ -88,11 +88,11 @@ async function postSingle(
         level: 'info',
         message: `Placed ${modelProps.side} order for ${
             modelProps.quantity
-        } shares of ${SymbolModel.prettyName} with id ${symbol.id} and name ${
-            symbol.name
+        } shares of ${SymbolModel.prettyName} ${symbol.name} with id ${
+            symbol.id
         } at an average price of $${bankersRounding(
             modelProps.averagePriceInCents / 100
-        )} each`,
+        ).toFixed(2)} each`,
         data: modelProps,
         timestamp: Date.now(),
     });
@@ -246,6 +246,15 @@ router.post(
                             `Unable to fill ${OrderModel.prettyName} with id ${params.id} because it has an invalid side`
                         );
                     }
+                    // Get the related Symbol
+                    const symbol = await SymbolModel.query(trx).findById(
+                        model.symbolId
+                    );
+                    if (!symbol) {
+                        throw new Errors.ModelNotFoundError(
+                            `Unable to find ${SymbolModel.prettyName} with id ${model.symbolId}`
+                        );
+                    }
                     // If buy order, update position quantity
                     if (model.side === OrderTypes.SideSchema.Enum.buy) {
                         // Check if position exists
@@ -253,13 +262,13 @@ router.post(
                         // If it does not, create a new position
                         const positions = await PositionModel.query(trx)
                             .where({
-                                symbolId: model.symbolId,
+                                symbolId: symbol.id,
                                 strategyId: model.strategyId,
                             })
                             .limit(1);
                         if (positions.length < 1) {
                             await PositionModel.query(trx).insert({
-                                symbolId: model.symbolId,
+                                symbolId: symbol.id,
                                 strategyId: model.strategyId,
                                 quantity: model.quantity,
                             });
@@ -314,13 +323,15 @@ router.post(
                     await StrategyLogModel.query(trx).insert({
                         strategyId: model.strategyId,
                         level: 'info',
-                        message: `Filled ${model.side} order for ${
-                            model.quantity
-                        } shares of ${SymbolModel.prettyName} with id ${
-                            model.symbolId
+                        message: `Filled ${model.side} ${
+                            OrderModel.prettyName
+                        } for ${model.quantity} shares of ${
+                            SymbolModel.prettyName
+                        } ${symbol.name} with id ${
+                            symbol.id
                         } at an average price of $${bankersRounding(
                             model.averagePriceInCents / 100
-                        )} each`,
+                        ).toFixed(2)} each`,
                         data: model,
                         timestamp: Date.now(),
                     });
@@ -434,13 +445,13 @@ router.post(
                     await StrategyLogModel.query(trx).insert({
                         strategyId: model.strategyId,
                         level: 'info',
-                        message: `Canceled ${model.side} order for ${
-                            model.quantity
-                        } shares of ${SymbolModel.prettyName} with id ${
-                            model.symbolId
+                        message: `Canceled ${model.side} ${
+                            OrderModel.prettyName
+                        } for ${model.quantity} shares of ${
+                            SymbolModel.prettyName
                         } at an average price of $${bankersRounding(
                             model.averagePriceInCents / 100
-                        )} each`,
+                        ).toFixed(2)} each`,
                         data: model,
                         timestamp: Date.now(),
                     });
