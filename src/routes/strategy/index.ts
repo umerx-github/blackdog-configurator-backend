@@ -1,5 +1,6 @@
 import { Strategy as StrategyModel } from '../../db/models/Strategy.js';
 import { Strategy as StrategyTypes } from '@umerx/umerx-blackdog-configurator-types-typescript';
+import { StrategyLog as StrategyLogModel } from '../../db/models/StrategyLog.js';
 import { Router, Request, Response, NextFunction } from 'express';
 import * as Errors from '../../errors/index.js';
 import { KNEXION } from '../../index.js';
@@ -95,6 +96,12 @@ router.post(
                         const model = await StrategyModel.query(trx).insert(
                             strategy
                         );
+                        await StrategyLogModel.query(trx).insert({
+                            strategyId: model.id,
+                            level: 'info',
+                            message: `${modelName} created`,
+                            data: model,
+                        });
                         modelData.push(model);
                     }
                 },
@@ -130,6 +137,12 @@ router.patch(
                         const model = await StrategyModel.query(
                             trx
                         ).patchAndFetchById(strategy.id, strategy);
+                        await StrategyLogModel.query(trx).insert({
+                            strategyId: model.id,
+                            level: 'info',
+                            message: `${modelName} updated`,
+                            data: model,
+                        });
                         modelData.push(model);
                     }
                 },
@@ -164,20 +177,38 @@ router.patch(
             );
             const parsedRequest: StrategyTypes.StrategyPatchSingleRequestBody =
                 StrategyTypes.StrategyPatchSingleRequestBodyFromRaw(req.body);
-            const modelData = await StrategyModel.query().patchAndFetchById(
-                params.id,
-                parsedRequest
+            let model: StrategyModel | undefined;
+            await KNEXION.transaction(
+                async trx => {
+                    model = await StrategyModel.query(trx).patchAndFetchById(
+                        params.id,
+                        parsedRequest
+                    );
+                    if (!model) {
+                        throw new Errors.ModelNotFoundError(
+                            `Unable to find ${modelName} with id ${params.id}`
+                        );
+                    }
+                    await StrategyLogModel.query(trx).insert({
+                        strategyId: model.id,
+                        level: 'info',
+                        message: `${modelName} updated`,
+                        data: model,
+                    });
+                },
+                {
+                    isolationLevel: 'serializable',
+                }
             );
-            if (!modelData) {
-                return res.status(404).json({
-                    status: 'error',
-                    message: `${modelName} not found`,
-                });
+            if (!model) {
+                throw new Errors.ModelNotFoundError(
+                    `Unable to find ${modelName} with id ${params.id}`
+                );
             }
             return res.json({
                 status: 'success',
                 message: `${modelName} instance updated successfully`,
-                data: modelData,
+                data: model,
             });
         } catch (err) {
             next(err);
@@ -203,6 +234,12 @@ router.put(
                         const model = await StrategyModel.query(
                             trx
                         ).patchAndFetchById(strategy.id, strategy);
+                        await StrategyLogModel.query(trx).insert({
+                            strategyId: model.id,
+                            level: 'info',
+                            message: `${modelName} replaced`,
+                            data: model,
+                        });
                         modelData.push(model);
                     }
                 },
@@ -232,16 +269,33 @@ router.put(
     ) => {
         // https://vincit.github.io/objection.js/guide/query-examples.html#relation-relate-queries);
         try {
-            const params = StrategyTypes.StrategyGetSingleRequestParamsFromRaw(
+            const params = StrategyTypes.StrategyPutSingleRequestParamsFromRaw(
                 req.params
             );
+            let model: StrategyModel | undefined;
             const parsedRequest: StrategyTypes.StrategyPutSingleRequestBody =
                 StrategyTypes.StrategyPutSingleRequestBodyFromRaw(req.body);
-            const modelData = await StrategyModel.query().patchAndFetchById(
-                params.id,
-                parsedRequest
+            await KNEXION.transaction(
+                async trx => {
+                    model = await StrategyModel.query().patchAndFetchById(
+                        params.id,
+                        parsedRequest
+                    );
+                    if (!model) {
+                        throw new Errors.ModelNotFoundError(
+                            `Unable to find ${modelName} with id ${params.id}`
+                        );
+                    }
+                    await StrategyLogModel.query(trx).insert({
+                        strategyId: model.id,
+                        level: 'info',
+                        message: `${modelName} replaced`,
+                        data: model,
+                    });
+                },
+                { isolationLevel: 'serializable' }
             );
-            if (!modelData) {
+            if (!model) {
                 return res.status(404).json({
                     status: 'error',
                     message: `${modelName} not found`,
@@ -250,7 +304,7 @@ router.put(
             return res.json({
                 status: 'success',
                 message: `${modelName} instance updated successfully`,
-                data: modelData,
+                data: model,
             });
         } catch (err) {
             next(err);
