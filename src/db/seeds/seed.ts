@@ -311,6 +311,146 @@ export async function seed(knex: Knex): Promise<void> {
                 },
                 timestamp: Date.now(),
             },
+            {
+                id: 4,
+                strategyId: 1,
+                level: LogTypes.LogLevelSchema.Enum.warning,
+                message: 'My First NoOp Strategy',
+                data: { message: 'My First NoOp Strategy' },
+                timestamp: Date.now(),
+            },
+            {
+                id: 5,
+                strategyId: 2,
+                level: LogTypes.LogLevelSchema.Enum.error,
+                message: 'My Second SeaDogDiscountScheme Strategy',
+                data: {
+                    message: 'My Second SeaDogDiscountScheme Strategy',
+                },
+                timestamp: Date.now(),
+            },
+            {
+                id: 6,
+                strategyId: 3,
+                level: LogTypes.LogLevelSchema.Enum.critical,
+                message: 'My Third SeaDogDiscountScheme Strategy',
+                data: {
+                    message: 'My Third SeaDogDiscountScheme Strategy',
+                },
+                timestamp: Date.now(),
+            },
+            {
+                id: 7,
+                strategyId: 1,
+                level: LogTypes.LogLevelSchema.Enum.alert,
+                message: 'My First NoOp Strategy',
+                data: { message: 'My First NoOp Strategy' },
+                timestamp: Date.now(),
+            },
+            {
+                id: 8,
+                strategyId: 2,
+                level: LogTypes.LogLevelSchema.Enum.emergency,
+                message: 'My Second SeaDogDiscountScheme Strategy',
+                data: {
+                    message: 'My Second SeaDogDiscountScheme Strategy',
+                },
+                timestamp: Date.now(),
+            },
+            {
+                id: 9,
+                strategyId: 3,
+                level: LogTypes.LogLevelSchema.Enum.info,
+                message: 'My Third SeaDogDiscountScheme Strategy',
+                data: {
+                    message: 'My Third SeaDogDiscountScheme Strategy',
+                },
+                timestamp: Date.now(),
+            },
+            {
+                id: 10,
+                strategyId: 1,
+                level: LogTypes.LogLevelSchema.Enum.debug,
+                message: 'My First NoOp Strategy',
+                data: { message: 'My First NoOp Strategy' },
+                timestamp: Date.now(),
+            },
+            {
+                id: 11,
+                strategyId: 2,
+                level: LogTypes.LogLevelSchema.Enum.notice,
+                message: 'My Second SeaDogDiscountScheme Strategy',
+                data: {
+                    message: 'My Second SeaDogDiscountScheme Strategy',
+                },
+                timestamp: Date.now(),
+            },
+            {
+                id: 12,
+                strategyId: 3,
+                level: LogTypes.LogLevelSchema.Enum.warning,
+                message: 'My Third SeaDogDiscountScheme Strategy',
+                data: {
+                    message: 'My Third SeaDogDiscountScheme Strategy',
+                },
+                timestamp: Date.now(),
+            },
+            {
+                id: 13,
+                strategyId: 1,
+                level: LogTypes.LogLevelSchema.Enum.error,
+                message: 'My First NoOp Strategy',
+                data: { message: 'My First NoOp Strategy' },
+                timestamp: Date.now(),
+            },
+            {
+                id: 14,
+                strategyId: 2,
+                level: LogTypes.LogLevelSchema.Enum.critical,
+                message: 'My Second SeaDogDiscountScheme Strategy',
+                data: {
+                    message: 'My Second SeaDogDiscountScheme Strategy',
+                },
+                timestamp: Date.now(),
+            },
+            {
+                id: 15,
+                strategyId: 3,
+                level: LogTypes.LogLevelSchema.Enum.alert,
+                message: 'My Third SeaDogDiscountScheme Strategy',
+                data: {
+                    message: 'My Third SeaDogDiscountScheme Strategy',
+                },
+                timestamp: Date.now(),
+            },
+            {
+                id: 16,
+                strategyId: 1,
+                level: LogTypes.LogLevelSchema.Enum.emergency,
+                message: 'My First NoOp Strategy',
+                data: { message: 'My First NoOp Strategy' },
+                timestamp: Date.now(),
+            },
+            {
+                id: 17,
+                strategyId: 2,
+                level: LogTypes.LogLevelSchema.Enum.info,
+                message: 'My Second SeaDogDiscountScheme Strategy',
+                data: {
+                    message: 'My Second SeaDogDiscountScheme Strategy',
+                },
+                timestamp: Date.now(),
+            },
+            {
+                id: 18,
+                strategyId: 3,
+                level: LogTypes.LogLevelSchema.Enum.debug,
+                message: 'My Third SeaDogDiscountScheme Strategy',
+                data: {
+                    message: 'My Third SeaDogDiscountScheme Strategy',
+                },
+                timestamp: Date.now(),
+            },
         ]);
     });
 }

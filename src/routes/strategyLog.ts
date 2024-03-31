@@ -21,11 +21,16 @@ router.get(
         next: NextFunction
     ) => {
         try {
-            const query = StrategyLogModel.query().orderBy('id', 'desc');
             const expectedStrategyLogGetManyRequestQuery: StrategyLogTypes.StrategyLogGetManyRequestQuery =
                 StrategyLogTypes.StrategyLogGetManyRequestQueryFromRaw(
                     req.query
                 );
+            const query = StrategyLogModel.query().orderBy('id', 'desc');
+            const pageSize =
+                expectedStrategyLogGetManyRequestQuery.pageSize ?? 10;
+            const pageNumber =
+                expectedStrategyLogGetManyRequestQuery.pageNumber ?? 1;
+            // convert 1-indexed pageNumber to 0-indexed pageNumber
             if (
                 undefined !== expectedStrategyLogGetManyRequestQuery.strategyIds
             ) {
@@ -37,14 +42,24 @@ router.get(
             if (undefined !== expectedStrategyLogGetManyRequestQuery.ids) {
                 query.whereIn('id', expectedStrategyLogGetManyRequestQuery.ids);
             }
-            const queryResults = await query;
-            const data = queryResults.map(dataItem => {
+            if (undefined !== expectedStrategyLogGetManyRequestQuery.levels) {
+                query.whereIn(
+                    'level',
+                    expectedStrategyLogGetManyRequestQuery.levels
+                );
+            }
+            const queryResults = await query.page(pageNumber - 1, pageSize);
+            const data = queryResults.results.map(dataItem => {
                 return dataItem;
             });
             return res.json({
                 status: 'success',
                 message: `${StrategyLogModel.prettyName} instances retrieved successfully`,
                 data: data,
+                pageSize: pageSize,
+                pageNumber: pageNumber,
+                totalResults: queryResults.total,
+                totalPages: Math.ceil(queryResults.total / pageSize),
             });
         } catch (err) {
             next(err);
