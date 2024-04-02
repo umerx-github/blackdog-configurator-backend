@@ -1,6 +1,9 @@
 import { Order as OrderModel } from '../db/models/Order.js';
 import { Position as PositionModel } from '../db/models/Position.js';
-import { Order as OrderTypes } from '@umerx/umerx-blackdog-configurator-types-typescript';
+import {
+    Order as OrderTypes,
+    StrategyLog as StrategyLogTypes,
+} from '@umerx/umerx-blackdog-configurator-types-typescript';
 import { Router, Request, Response } from 'express';
 import * as Errors from '../errors/index.js';
 import { KNEXION } from '../index.js';
@@ -83,7 +86,7 @@ async function postSingle(
     if (!model) {
         throw new Error(`Unable to create ${OrderModel.prettyName} instance`);
     }
-    await StrategyLogModel.query(trx).insert({
+    const strategyLogModelProps: StrategyLogTypes.StrategyLogModelProps = {
         strategyId: strategy.id,
         level: 'info',
         message: `Placed ${modelProps.side} order for ${
@@ -93,9 +96,11 @@ async function postSingle(
         } at an average price of $${bankersRounding(
             modelProps.averagePriceInCents / 100
         ).toFixed(2)} each`,
-        data: modelProps,
+        data: { rawData: modelProps },
         timestamp: Date.now(),
-    });
+    };
+
+    await StrategyLogModel.query(trx).insert(strategyLogModelProps);
     return model;
 }
 
@@ -320,21 +325,25 @@ router.post(
                             status: OrderTypes.StatusSchema.Enum.closed,
                         }
                     );
-                    await StrategyLogModel.query(trx).insert({
-                        strategyId: model.strategyId,
-                        level: 'info',
-                        message: `Filled ${model.side} ${
-                            OrderModel.prettyName
-                        } for ${model.quantity} shares of ${
-                            SymbolModel.prettyName
-                        } ${symbol.name} with id ${
-                            symbol.id
-                        } at an average price of $${bankersRounding(
-                            model.averagePriceInCents / 100
-                        ).toFixed(2)} each`,
-                        data: model,
-                        timestamp: Date.now(),
-                    });
+                    const strategyLogModelProps: StrategyLogTypes.StrategyLogModelProps =
+                        {
+                            strategyId: model.strategyId,
+                            level: 'info',
+                            message: `Filled ${model.side} ${
+                                OrderModel.prettyName
+                            } for ${model.quantity} shares of ${
+                                SymbolModel.prettyName
+                            } ${symbol.name} with id ${
+                                symbol.id
+                            } at an average price of $${bankersRounding(
+                                model.averagePriceInCents / 100
+                            ).toFixed(2)} each`,
+                            data: { rawData: model },
+                            timestamp: Date.now(),
+                        };
+                    await StrategyLogModel.query(trx).insert(
+                        strategyLogModelProps
+                    );
                 },
                 { isolationLevel: 'serializable' }
             );
@@ -442,19 +451,23 @@ router.post(
                             status: OrderTypes.StatusSchema.Enum.closed,
                         }
                     );
-                    await StrategyLogModel.query(trx).insert({
-                        strategyId: model.strategyId,
-                        level: 'info',
-                        message: `Canceled ${model.side} ${
-                            OrderModel.prettyName
-                        } for ${model.quantity} shares of ${
-                            SymbolModel.prettyName
-                        } at an average price of $${bankersRounding(
-                            model.averagePriceInCents / 100
-                        ).toFixed(2)} each`,
-                        data: model,
-                        timestamp: Date.now(),
-                    });
+                    const strategyLogModelProps: StrategyLogTypes.StrategyLogModelProps =
+                        {
+                            strategyId: model.strategyId,
+                            level: 'info',
+                            message: `Canceled ${model.side} ${
+                                OrderModel.prettyName
+                            } for ${model.quantity} shares of ${
+                                SymbolModel.prettyName
+                            } at an average price of $${bankersRounding(
+                                model.averagePriceInCents / 100
+                            ).toFixed(2)} each`,
+                            data: { rawData: model },
+                            timestamp: Date.now(),
+                        };
+                    await StrategyLogModel.query(trx).insert(
+                        strategyLogModelProps
+                    );
                 },
                 { isolationLevel: 'serializable' }
             );

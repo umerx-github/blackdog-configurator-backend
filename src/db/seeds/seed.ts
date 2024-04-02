@@ -288,7 +288,9 @@ export async function seed(knex: Knex): Promise<void> {
                 strategyId: 1,
                 level: LogTypes.LogLevelSchema.Enum.info,
                 message: 'My First NoOp Strategy',
-                data: { message: 'My First NoOp Strategy' },
+                data: {
+                    rawData: { message: 'My First NoOp Strategy' },
+                },
                 timestamp: Date.now(),
             },
             {
@@ -297,7 +299,9 @@ export async function seed(knex: Knex): Promise<void> {
                 level: LogTypes.LogLevelSchema.Enum.debug,
                 message: 'My Second SeaDogDiscountScheme Strategy',
                 data: {
-                    message: 'My Second SeaDogDiscountScheme Strategy',
+                    rawData: {
+                        message: 'My Second SeaDogDiscountScheme Strategy',
+                    },
                 },
                 timestamp: Date.now(),
             },
@@ -307,7 +311,9 @@ export async function seed(knex: Knex): Promise<void> {
                 level: LogTypes.LogLevelSchema.Enum.notice,
                 message: 'My Third SeaDogDiscountScheme Strategy',
                 data: {
-                    message: 'My Third SeaDogDiscountScheme Strategy',
+                    rawData: {
+                        message: 'My Third SeaDogDiscountScheme Strategy',
+                    },
                 },
                 timestamp: Date.now(),
             },
@@ -316,7 +322,9 @@ export async function seed(knex: Knex): Promise<void> {
                 strategyId: 1,
                 level: LogTypes.LogLevelSchema.Enum.warning,
                 message: 'My First NoOp Strategy',
-                data: { message: 'My First NoOp Strategy' },
+                data: {
+                    rawData: { message: 'My First NoOp Strategy' },
+                },
                 timestamp: Date.now(),
             },
             {
@@ -325,7 +333,9 @@ export async function seed(knex: Knex): Promise<void> {
                 level: LogTypes.LogLevelSchema.Enum.error,
                 message: 'My Second SeaDogDiscountScheme Strategy',
                 data: {
-                    message: 'My Second SeaDogDiscountScheme Strategy',
+                    rawData: {
+                        message: 'My Second SeaDogDiscountScheme Strategy',
+                    },
                 },
                 timestamp: Date.now(),
             },
@@ -335,7 +345,9 @@ export async function seed(knex: Knex): Promise<void> {
                 level: LogTypes.LogLevelSchema.Enum.critical,
                 message: 'My Third SeaDogDiscountScheme Strategy',
                 data: {
-                    message: 'My Third SeaDogDiscountScheme Strategy',
+                    rawData: {
+                        message: 'My Third SeaDogDiscountScheme Strategy',
+                    },
                 },
                 timestamp: Date.now(),
             },
@@ -344,7 +356,9 @@ export async function seed(knex: Knex): Promise<void> {
                 strategyId: 1,
                 level: LogTypes.LogLevelSchema.Enum.alert,
                 message: 'My First NoOp Strategy',
-                data: { message: 'My First NoOp Strategy' },
+                data: {
+                    rawData: { message: 'My First NoOp Strategy' },
+                },
                 timestamp: Date.now(),
             },
             {
@@ -353,7 +367,9 @@ export async function seed(knex: Knex): Promise<void> {
                 level: LogTypes.LogLevelSchema.Enum.emergency,
                 message: 'My Second SeaDogDiscountScheme Strategy',
                 data: {
-                    message: 'My Second SeaDogDiscountScheme Strategy',
+                    rawData: {
+                        message: 'My Second SeaDogDiscountScheme Strategy',
+                    },
                 },
                 timestamp: Date.now(),
             },
@@ -363,7 +379,9 @@ export async function seed(knex: Knex): Promise<void> {
                 level: LogTypes.LogLevelSchema.Enum.info,
                 message: 'My Third SeaDogDiscountScheme Strategy',
                 data: {
-                    message: 'My Third SeaDogDiscountScheme Strategy',
+                    rawData: {
+                        message: 'My Third SeaDogDiscountScheme Strategy',
+                    },
                 },
                 timestamp: Date.now(),
             },
@@ -372,7 +390,9 @@ export async function seed(knex: Knex): Promise<void> {
                 strategyId: 1,
                 level: LogTypes.LogLevelSchema.Enum.debug,
                 message: 'My First NoOp Strategy',
-                data: { message: 'My First NoOp Strategy' },
+                data: {
+                    rawData: { message: 'My First NoOp Strategy' },
+                },
                 timestamp: Date.now(),
             },
             {
@@ -381,7 +401,9 @@ export async function seed(knex: Knex): Promise<void> {
                 level: LogTypes.LogLevelSchema.Enum.notice,
                 message: 'My Second SeaDogDiscountScheme Strategy',
                 data: {
-                    message: 'My Second SeaDogDiscountScheme Strategy',
+                    rawData: {
+                        message: 'My Second SeaDogDiscountScheme Strategy',
+                    },
                 },
                 timestamp: Date.now(),
             },
@@ -391,7 +413,9 @@ export async function seed(knex: Knex): Promise<void> {
                 level: LogTypes.LogLevelSchema.Enum.warning,
                 message: 'My Third SeaDogDiscountScheme Strategy',
                 data: {
-                    message: 'My Third SeaDogDiscountScheme Strategy',
+                    rawData: {
+                        message: 'My Third SeaDogDiscountScheme Strategy',
+                    },
                 },
                 timestamp: Date.now(),
             },
@@ -400,7 +424,9 @@ export async function seed(knex: Knex): Promise<void> {
                 strategyId: 1,
                 level: LogTypes.LogLevelSchema.Enum.error,
                 message: 'My First NoOp Strategy',
-                data: { message: 'My First NoOp Strategy' },
+                data: {
+                    rawData: { message: 'My First NoOp Strategy' },
+                },
                 timestamp: Date.now(),
             },
             {
@@ -409,7 +435,9 @@ export async function seed(knex: Knex): Promise<void> {
                 level: LogTypes.LogLevelSchema.Enum.critical,
                 message: 'My Second SeaDogDiscountScheme Strategy',
                 data: {
-                    message: 'My Second SeaDogDiscountScheme Strategy',
+                    rawData: {
+                        message: 'My Second SeaDogDiscountScheme Strategy',
+                    },
                 },
                 timestamp: Date.now(),
             },
@@ -419,7 +447,9 @@ export async function seed(knex: Knex): Promise<void> {
                 level: LogTypes.LogLevelSchema.Enum.alert,
                 message: 'My Third SeaDogDiscountScheme Strategy',
                 data: {
-                    message: 'My Third SeaDogDiscountScheme Strategy',
+                    rawData: {
+                        message: 'My Third SeaDogDiscountScheme Strategy',
+                    },
                 },
                 timestamp: Date.now(),
             },
@@ -428,7 +458,9 @@ export async function seed(knex: Knex): Promise<void> {
                 strategyId: 1,
                 level: LogTypes.LogLevelSchema.Enum.emergency,
                 message: 'My First NoOp Strategy',
-                data: { message: 'My First NoOp Strategy' },
+                data: {
+                    rawData: { message: 'My First NoOp Strategy' },
+                },
                 timestamp: Date.now(),
             },
             {
@@ -437,7 +469,9 @@ export async function seed(knex: Knex): Promise<void> {
                 level: LogTypes.LogLevelSchema.Enum.info,
                 message: 'My Second SeaDogDiscountScheme Strategy',
                 data: {
-                    message: 'My Second SeaDogDiscountScheme Strategy',
+                    rawData: {
+                        message: 'My Second SeaDogDiscountScheme Strategy',
+                    },
                 },
                 timestamp: Date.now(),
             },
@@ -447,7 +481,9 @@ export async function seed(knex: Knex): Promise<void> {
                 level: LogTypes.LogLevelSchema.Enum.debug,
                 message: 'My Third SeaDogDiscountScheme Strategy',
                 data: {
-                    message: 'My Third SeaDogDiscountScheme Strategy',
+                    rawData: {
+                        message: 'My Third SeaDogDiscountScheme Strategy',
+                    },
                 },
                 timestamp: Date.now(),
             },

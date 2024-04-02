@@ -1,5 +1,8 @@
 import { Strategy as StrategyModel } from '../../db/models/Strategy.js';
-import { Strategy as StrategyTypes } from '@umerx/umerx-blackdog-configurator-types-typescript';
+import {
+    Strategy as StrategyTypes,
+    StrategyLog as StrategyLogTypes,
+} from '@umerx/umerx-blackdog-configurator-types-typescript';
 import { StrategyLog as StrategyLogModel } from '../../db/models/StrategyLog.js';
 import { Router, Request, Response, NextFunction } from 'express';
 import * as Errors from '../../errors/index.js';
@@ -95,13 +98,17 @@ router.post(
                         const model = await StrategyModel.query(trx).insert(
                             strategy
                         );
-                        await StrategyLogModel.query(trx).insert({
-                            strategyId: model.id,
-                            level: 'info',
-                            message: `${StrategyModel.prettyName} created`,
-                            data: model,
-                            timestamp: Date.now(),
-                        });
+                        const strategyLogModelProps: StrategyLogTypes.StrategyLogModelProps =
+                            {
+                                strategyId: model.id,
+                                level: 'info',
+                                message: `${StrategyModel.prettyName} created`,
+                                data: { rawData: model },
+                                timestamp: Date.now(),
+                            };
+                        await StrategyLogModel.query(trx).insert(
+                            strategyLogModelProps
+                        );
                         modelData.push(model);
                     }
                 },
@@ -137,13 +144,17 @@ router.patch(
                         const model = await StrategyModel.query(
                             trx
                         ).patchAndFetchById(strategy.id, strategy);
-                        await StrategyLogModel.query(trx).insert({
-                            strategyId: model.id,
-                            level: 'info',
-                            message: `${StrategyModel.prettyName} updated`,
-                            data: model,
-                            timestamp: Date.now(),
-                        });
+                        const strategyLogModelProps: StrategyLogTypes.StrategyLogModelProps =
+                            {
+                                strategyId: model.id,
+                                level: 'info',
+                                message: `${StrategyModel.prettyName} updated`,
+                                data: { rawData: model },
+                                timestamp: Date.now(),
+                            };
+                        await StrategyLogModel.query(trx).insert(
+                            strategyLogModelProps
+                        );
                         modelData.push(model);
                     }
                 },
@@ -190,13 +201,17 @@ router.patch(
                             `Unable to find ${StrategyModel.prettyName} with id ${params.id}`
                         );
                     }
-                    await StrategyLogModel.query(trx).insert({
-                        strategyId: model.id,
-                        level: 'info',
-                        message: `${StrategyModel.prettyName} updated`,
-                        data: model,
-                        timestamp: Date.now(),
-                    });
+                    const strategyLogModelProps: StrategyLogTypes.StrategyLogModelProps =
+                        {
+                            strategyId: model.id,
+                            level: 'info',
+                            message: `${StrategyModel.prettyName} updated`,
+                            data: { rawData: model },
+                            timestamp: Date.now(),
+                        };
+                    await StrategyLogModel.query(trx).insert(
+                        strategyLogModelProps
+                    );
                 },
                 {
                     isolationLevel: 'serializable',
@@ -236,13 +251,17 @@ router.put(
                         const model = await StrategyModel.query(
                             trx
                         ).patchAndFetchById(strategy.id, strategy);
-                        await StrategyLogModel.query(trx).insert({
-                            strategyId: model.id,
-                            level: 'info',
-                            message: `${StrategyModel.prettyName} replaced`,
-                            data: model,
-                            timestamp: Date.now(),
-                        });
+                        const strategyLogModelProps: StrategyLogTypes.StrategyLogModelProps =
+                            {
+                                strategyId: model.id,
+                                level: 'info',
+                                message: `${StrategyModel.prettyName} replaced`,
+                                data: { rawData: model },
+                                timestamp: Date.now(),
+                            };
+                        await StrategyLogModel.query(trx).insert(
+                            strategyLogModelProps
+                        );
                         modelData.push(model);
                     }
                 },
@@ -289,13 +308,17 @@ router.put(
                             `Unable to find ${StrategyModel.prettyName} with id ${params.id}`
                         );
                     }
-                    await StrategyLogModel.query(trx).insert({
-                        strategyId: model.id,
-                        level: 'info',
-                        message: `${StrategyModel.prettyName} replaced`,
-                        data: model,
-                        timestamp: Date.now(),
-                    });
+                    const strategyLogModelProps: StrategyLogTypes.StrategyLogModelProps =
+                        {
+                            strategyId: model.id,
+                            level: 'info',
+                            message: `${StrategyModel.prettyName} replaced`,
+                            data: { rawData: model },
+                            timestamp: Date.now(),
+                        };
+                    await StrategyLogModel.query(trx).insert(
+                        strategyLogModelProps
+                    );
                 },
                 { isolationLevel: 'serializable' }
             );

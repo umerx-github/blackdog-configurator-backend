@@ -1,5 +1,8 @@
 import { Position as PositionModel } from '../db/models/Position.js';
-import { Position as PositionTypes } from '@umerx/umerx-blackdog-configurator-types-typescript';
+import {
+    Position as PositionTypes,
+    StrategyLog as StrategyLogTypes,
+} from '@umerx/umerx-blackdog-configurator-types-typescript';
 import { Router, Request, Response } from 'express';
 import * as Errors from '../errors/index.js';
 import { KNEXION } from '../index.js';
@@ -201,29 +204,36 @@ router.post(
                                 `Unable to create ${PositionModel.prettyName} instance`
                             );
                         }
-                        await StrategyLogModel.query(trx).insert({
-                            strategyId: dataToInsert.strategyId,
-                            level: 'info',
-                            message: `Updated ${
-                                PositionModel.prettyName
-                            } quantity and average price for ${
-                                SymbolModel.prettyName
-                            } ${symbol.name} with id ${
-                                symbol.id
-                            }. Previous quantity: ${
-                                existingPosition?.quantity ?? 0
-                            }, new quantity: ${
-                                model.quantity
-                            }. Previous average price: $${(
-                                bankersRounding(
-                                    existingPosition?.averagePriceInCents ?? 0
-                                ) / 100
-                            ).toFixed(2)}, new average price: ${bankersRounding(
-                                model.averagePriceInCents
-                            ).toFixed(2)}`,
-                            timestamp: Date.now(),
-                            data: dataToInsert,
-                        });
+                        const strategyLogModelProps: StrategyLogTypes.StrategyLogModelProps =
+                            {
+                                strategyId: dataToInsert.strategyId,
+                                level: 'info',
+                                message: `Updated ${
+                                    PositionModel.prettyName
+                                } quantity and average price for ${
+                                    SymbolModel.prettyName
+                                } ${symbol.name} with id ${
+                                    symbol.id
+                                }. Previous quantity: ${
+                                    existingPosition?.quantity ?? 0
+                                }, new quantity: ${
+                                    model.quantity
+                                }. Previous average price: $${(
+                                    bankersRounding(
+                                        existingPosition?.averagePriceInCents ??
+                                            0
+                                    ) / 100
+                                ).toFixed(
+                                    2
+                                )}, new average price: ${bankersRounding(
+                                    model.averagePriceInCents
+                                ).toFixed(2)}`,
+                                timestamp: Date.now(),
+                                data: { rawData: dataToInsert },
+                            };
+                        await StrategyLogModel.query(trx).insert(
+                            strategyLogModelProps
+                        );
                         modelData.push(model);
                     }
                 },
