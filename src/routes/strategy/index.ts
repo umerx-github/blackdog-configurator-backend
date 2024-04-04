@@ -2,11 +2,15 @@ import { Strategy as StrategyModel } from '../../db/models/Strategy.js';
 import {
     Strategy as StrategyTypes,
     StrategyLog as StrategyLogTypes,
+    Order as OrderTypes,
 } from '@umerx/umerx-blackdog-configurator-types-typescript';
 import { StrategyLog as StrategyLogModel } from '../../db/models/StrategyLog.js';
 import { Router, Request, Response, NextFunction } from 'express';
 import * as Errors from '../../errors/index.js';
 import { KNEXION } from '../../index.js';
+import { Position as PositionModel } from '../../db/models/Position.js';
+import { bankersRoundingTruncateToInt } from '../../utils/index.js';
+import { Order as OrderModel } from '../../db/models/Order.js';
 
 const router = Router();
 
@@ -63,10 +67,9 @@ router.get(
             );
             const modelData = await StrategyModel.query().findById(params.id);
             if (!modelData) {
-                return res.status(404).json({
-                    status: 'error',
-                    message: `${StrategyModel.prettyName} not found`,
-                });
+                throw new Errors.ModelNotFoundError(
+                    `Unable to find ${StrategyModel.prettyName} with id ${params.id}`
+                );
             }
             return res.json({
                 status: 'success',
@@ -322,11 +325,11 @@ router.put(
                 },
                 { isolationLevel: 'serializable' }
             );
+
             if (!model) {
-                return res.status(404).json({
-                    status: 'error',
-                    message: `${StrategyModel.prettyName} not found`,
-                });
+                throw new Errors.ModelNotFoundError(
+                    `Unable to find ${StrategyModel.prettyName} with id ${params.id}`
+                );
             }
             return res.json({
                 status: 'success',
@@ -398,16 +401,75 @@ router.delete(
                 );
             const modelData = await StrategyModel.query().findById(params.id);
             if (!modelData) {
-                return res.status(404).json({
-                    status: 'error',
-                    message: `${StrategyModel.prettyName} not found`,
-                });
+                throw new Errors.ModelNotFoundError(
+                    `Unable to find ${StrategyModel.prettyName} with id ${params.id}`
+                );
             }
             await StrategyModel.query().deleteById(params.id);
             return res.json({
                 status: 'success',
                 message: `${StrategyModel.prettyName} instance deleted successfully`,
                 data: modelData,
+            });
+        } catch (err) {
+            next(err);
+        }
+    }
+);
+
+router.get(
+    '/:id/assets',
+    async (
+        req: Request<StrategyTypes.StrategyAssetsGetSingleRequestParamsRaw>,
+        res: Response<StrategyTypes.StrategyAssetsGetSingleResponseBody>,
+        next: NextFunction
+    ) => {
+        try {
+            const params =
+                StrategyTypes.StrategyAssetsGetSingleRequestParamsFromRaw(
+                    req.params
+                );
+            const modelData = await StrategyModel.query().findById(params.id);
+            if (!modelData) {
+                throw new Errors.ModelNotFoundError(
+                    `Unable to find ${StrategyModel.prettyName} with id ${params.id}`
+                );
+            }
+            // - Cash in Cents on Strategy
+            // - Open Orders value
+            // 	- Get all BUY orders
+            // 	- Sum up each order's quantity * average price in cents
+            // 		- This works because that amount would have been deducated from cash in cents on strategy when order was placed
+            // - Holdings/Positions
+            // 	- Just return them
+            const positions = await PositionModel.query().where({
+                strategyId: params.id,
+            });
+            const openBuyOrders = await OrderModel.query().where({
+                strategyId: params.id,
+                status: 'open',
+                side: OrderTypes.SideSchema.Enum.buy,
+            });
+            // Reduce open orders, summing up the total value of the orders. Each order's value is its quantity * its average price in cents
+            const openBuyOrdersValueInCents = openBuyOrders.reduce(
+                (acc, order) => {
+                    return bankersRoundingTruncateToInt(
+                        acc +
+                            bankersRoundingTruncateToInt(
+                                order.quantity * order.averagePriceInCents
+                            )
+                    );
+                },
+                0
+            );
+            return res.json({
+                status: 'success',
+                message: `${StrategyModel.prettyName} instance assets retrieved successfully`,
+                data: {
+                    cashInCents: modelData.cashInCents,
+                    openOrdersValueInCents: openBuyOrdersValueInCents,
+                    positions: positions,
+                },
             });
         } catch (err) {
             next(err);
