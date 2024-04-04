@@ -25,17 +25,19 @@ async function postSingle(
     trx: Knex.Transaction
 ) {
     // Validate that a symbol with symbolId exists
-    const symbol = await SymbolModel.query(trx).findById(modelProps.symbolId);
-    if (!symbol) {
+    const symbolModel = await SymbolModel.query(trx).findById(
+        modelProps.symbolId
+    );
+    if (!symbolModel) {
         throw new Errors.ModelNotFoundError(
             `Unable to find ${SymbolModel.prettyName} with id ${modelProps.symbolId}`
         );
     }
     // Check if this amount can be subtracted from related strategy's cashInCents
-    const strategy = await StrategyModel.query(trx).findById(
+    const strategyModel = await StrategyModel.query(trx).findById(
         modelProps.strategyId
     );
-    if (!strategy) {
+    if (!strategyModel) {
         throw new Errors.ModelNotFoundError(
             `Unable to find ${StrategyModel.prettyName} with id ${modelProps.strategyId}`
         );
@@ -45,38 +47,50 @@ async function postSingle(
         const orderCashInCents = bankersRoundingTruncateToInt(
             modelProps.quantity * modelProps.averagePriceInCents
         );
-        if (strategy.cashInCents < orderCashInCents) {
+        if (strategyModel.cashInCents < orderCashInCents) {
             throw new Error(
                 `Unable to create ${OrderModel.prettyName} instance because it would result in a negative cashInCents`
             );
         }
         // Decrease strategy's cashInCents
-        await StrategyModel.query(trx).patchAndFetchById(strategy.id, {
-            cashInCents: strategy.cashInCents - orderCashInCents,
+        await StrategyModel.query(trx).patchAndFetchById(strategyModel.id, {
+            cashInCents: strategyModel.cashInCents - orderCashInCents,
         });
     }
-    // If sell order, update position quantity
+    // If sell order, check whether there are any other open sell orders for this symbol and whether another sell order would drop position quantity to negative quantity
     if (modelProps.side === OrderTypes.SideSchema.Enum.sell) {
-        const positions = await PositionModel.query(trx).where({
-            symbolId: symbol.id,
-            strategyId: strategy.id,
+        const openSellOrders = await OrderModel.query(trx).where({
+            symbolId: modelProps.symbolId,
+            strategyId: modelProps.strategyId,
+            side: OrderTypes.SideSchema.Enum.sell,
+            status: OrderTypes.StatusSchema.Enum.open,
         });
-        if (positions.length === 0) {
-            throw new Errors.ModelNotFoundError(
-                `Unable to find ${PositionModel.prettyName} for ${SymbolModel.prettyName} ${symbol.name} with id ${symbol.id} and ${StrategyModel.prettyName} ${strategy.title} with id ${strategy.id}`
+        const openSellOrdersQuantity = openSellOrders.reduce(
+            (acc, order) => acc + order.quantity,
+            0
+        );
+        // Get the position for this symbol if it exists
+        const positions = await PositionModel.query(trx).where({
+            symbolId: modelProps.symbolId,
+            strategyId: modelProps.strategyId,
+        });
+        console.log({ positions });
+        if (positions.length < 1) {
+            throw new Error(
+                `Cannot create ${modelProps.side} ${OrderModel.prettyName} for ${symbolModel.name} because there is no position for this symbol`
             );
         }
         const position = positions[0];
-        if (position.quantity < modelProps.quantity) {
+        console.log({ position });
+        const positionQuantity = position.quantity;
+        if (
+            positionQuantity - (openSellOrdersQuantity + modelProps.quantity) <
+            0
+        ) {
             throw new Error(
-                `Unable to create ${OrderModel.prettyName} instance because it would result in a negative position quantity`
+                `Cannot create ${modelProps.side} ${OrderModel.prettyName} for ${symbolModel.name} because it would result in a negative position quantity`
             );
         }
-        // Decrease position quantity
-        await PositionModel.query(trx).patchAndFetchById(position.id, {
-            quantity: position.quantity - modelProps.quantity,
-            // Do not update averagePriceInCents becuase it is a sell order
-        });
     }
     // insert into order table
     const model = await OrderModel.query(trx).insert({
@@ -87,12 +101,12 @@ async function postSingle(
         throw new Error(`Unable to create ${OrderModel.prettyName} instance`);
     }
     const strategyLogModelProps: StrategyLogTypes.StrategyLogModelProps = {
-        strategyId: strategy.id,
+        strategyId: strategyModel.id,
         level: 'info',
         message: `Placed ${modelProps.side} order for ${
             modelProps.quantity
-        } shares of ${SymbolModel.prettyName} ${symbol.name} with id ${
-            symbol.id
+        } shares of ${SymbolModel.prettyName} ${symbolModel.name} with id ${
+            symbolModel.id
         } at an average price of $${bankersRounding(
             modelProps.averagePriceInCents / 100
         ).toFixed(2)} each`,
@@ -252,10 +266,10 @@ router.post(
                         );
                     }
                     // Get the related Symbol
-                    const symbol = await SymbolModel.query(trx).findById(
+                    const symbolModel = await SymbolModel.query(trx).findById(
                         model.symbolId
                     );
-                    if (!symbol) {
+                    if (!symbolModel) {
                         throw new Errors.ModelNotFoundError(
                             `Unable to find ${SymbolModel.prettyName} with id ${model.symbolId}`
                         );
@@ -267,13 +281,13 @@ router.post(
                         // If it does not, create a new position
                         const positions = await PositionModel.query(trx)
                             .where({
-                                symbolId: symbol.id,
+                                symbolId: symbolModel.id,
                                 strategyId: model.strategyId,
                             })
                             .limit(1);
                         if (positions.length < 1) {
                             await PositionModel.query(trx).insert({
-                                symbolId: symbol.id,
+                                symbolId: symbolModel.id,
                                 strategyId: model.strategyId,
                                 quantity: model.quantity,
                             });
@@ -296,9 +310,38 @@ router.post(
                             );
                         }
                     }
-                    // If sell order, update strategy's cashInCents
+                    // If sell order
                     if (model.side === OrderTypes.SideSchema.Enum.sell) {
-                        // Check if this amount can be added to related strategy's cashInCents
+                        // Check if position exists
+                        const positions = await PositionModel.query(trx)
+                            .where({
+                                symbolId: model.symbolId,
+                                strategyId: model.strategyId,
+                            })
+                            .limit(1);
+                        // If it does not, throw an error
+                        if (positions.length < 1) {
+                            throw new Error(
+                                `Cannot fill ${model.side} ${OrderModel.prettyName} for ${symbolModel.name} because there is no position for this symbol`
+                            );
+                        }
+                        // If it does, make sure the position quantity is greater than or equal to the order quantity
+                        const position = positions[0];
+                        if (position.quantity < model.quantity) {
+                            throw new Error(
+                                `Cannot fill ${model.side} ${OrderModel.prettyName} for ${symbolModel.name} because the position quantity is less than the order quantity`
+                            );
+                        }
+                        // Update position quantity
+                        await PositionModel.query(trx).patchAndFetchById(
+                            position.id,
+                            {
+                                quantity: position.quantity - model.quantity,
+                                // Do not update averagePriceInCents because placing a sell order does not change it, filling a sell order does not change it, and neither does cancelling a sell order.
+                            }
+                        );
+                        // Update strategy's cashInCents
+                        // Check if related strategy exists
                         const strategy = await StrategyModel.query(
                             trx
                         ).findById(model.strategyId);
@@ -319,6 +362,7 @@ router.post(
                             }
                         );
                     }
+                    // Close the order
                     model = await OrderModel.query(trx).patchAndFetchById(
                         model.id,
                         {
@@ -333,8 +377,8 @@ router.post(
                                 OrderModel.prettyName
                             } for ${model.quantity} shares of ${
                                 SymbolModel.prettyName
-                            } ${symbol.name} with id ${
-                                symbol.id
+                            } ${symbolModel.name} with id ${
+                                symbolModel.id
                             } at an average price of $${bankersRounding(
                                 model.averagePriceInCents / 100
                             ).toFixed(2)} each`,
@@ -416,35 +460,7 @@ router.post(
                             }
                         );
                     }
-                    // If sell order, update position quantity
-                    if (model.side === OrderTypes.SideSchema.Enum.sell) {
-                        // Check if position exists
-                        // If it does, increment quantity
-                        // If it does not, create a new position
-                        const positions = await PositionModel.query(trx)
-                            .where({
-                                symbolId: model.symbolId,
-                                strategyId: model.strategyId,
-                            })
-                            .limit(1);
-                        if (positions.length < 1) {
-                            await PositionModel.query(trx).insert({
-                                symbolId: model.symbolId,
-                                strategyId: model.strategyId,
-                                quantity: model.quantity,
-                            });
-                        } else {
-                            const position = positions[0];
-                            await PositionModel.query(trx).patchAndFetchById(
-                                position.id,
-                                {
-                                    quantity:
-                                        position.quantity + model.quantity,
-                                    // Do not update averagePriceInCents because placing a sell order does not change it, so canceling a sell order should not change it either.
-                                }
-                            );
-                        }
-                    }
+                    // If sell order, do nothing. Cancelling a sell order means our positions and holdings will not change. This is because placing a sell order doesn't alter anything about the strategy or positions themselves.
                     model = await OrderModel.query(trx).patchAndFetchById(
                         model.id,
                         {
