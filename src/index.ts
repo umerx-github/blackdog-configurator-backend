@@ -9,6 +9,7 @@ import orderRouter from './routes/order.js';
 import positionRouter from './routes/position.js';
 import strategyTemplateRouter from './routes/strategyTemplate/index.js';
 import strategyLogRouter from './routes/strategyLog.js';
+import strategyValueRouter from './routes/strategyValue.js';
 import { Request, Response, NextFunction } from 'express';
 import { z, ZodError } from 'zod';
 import * as Errors from './errors/index.js';
@@ -46,6 +47,8 @@ app.use('/order', orderRouter);
 app.use('/position', positionRouter);
 app.use('/strategyTemplate', strategyTemplateRouter);
 app.use('/strategyLog', strategyLogRouter);
+app.use('/strategyValue', strategyValueRouter);
+
 app.use(function (err: Error, req: Request, res: Response, next: NextFunction) {
     if (err instanceof ZodError) {
         return res.status(400).json({

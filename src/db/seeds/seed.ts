@@ -1,8 +1,9 @@
 import { Knex } from 'knex';
 import {
     Log as LogTypes,
-    StrategyLog as StrategyLogTypes,
     Strategy as StrategyTypes,
+    StrategyLog as StrategyLogTypes,
+    StrategyValue as StrategyValueTypes,
     StrategyTemplate as StrategyTemplateTypes,
     StrategyTemplateSeaDogDiscountScheme as StrategyTemplateSeaDogDiscountSchemeTypes,
     StrategyTemplateSeaDogDiscountSchemeSymbol as StrategyTemplateSeaDogDiscountSchemeSymbolTypes,
@@ -16,6 +17,7 @@ import { Symbol as SymbolModel } from '../models/Symbol.js';
 import { Order as OrderModel } from '../models/Order.js';
 import { Position as PositionModel } from '../models/Position.js';
 import { StrategyLog as StrategyLogModel } from '../models/StrategyLog.js';
+import { StrategyValue as StrategyValueModel } from '../models/StrategyValue.js';
 async function truncateTableIfExists(tableName: string, knex: Knex) {
     if (await knex.schema.hasTable(tableName)) {
         await knex(tableName).del();
@@ -36,6 +38,7 @@ export async function seed(knex: Knex): Promise<void> {
         await truncateTableIfExists(StrategyModel.tableName, trx);
         await truncateTableIfExists(SymbolModel.tableName, trx);
         await truncateTableIfExists(StrategyLogModel.tableName, trx);
+        await truncateTableIfExists(StrategyValueModel.tableName, trx);
 
         // Inserts seed entries
         await trx<SymbolTypes.SymbolProps & { id: number }>(
@@ -493,6 +496,100 @@ export async function seed(knex: Knex): Promise<void> {
                     },
                 },
                 timestamp: Date.now(),
+            },
+        ]);
+        await trx<StrategyValueTypes.StrategyValueModelInterface>(
+            StrategyValueModel.tableName
+        ).insert([
+            {
+                id: 1,
+                strategyId: 1,
+                timestamp: Date.now(),
+                valueInCents: 100,
+            },
+            {
+                id: 2,
+                strategyId: 2,
+                timestamp: Date.now(),
+                valueInCents: 200,
+            },
+            {
+                id: 3,
+                strategyId: 3,
+                timestamp: Date.now(),
+                valueInCents: 300,
+            },
+            {
+                id: 4,
+                strategyId: 1,
+                timestamp: Date.now(),
+                valueInCents: 400,
+            },
+            {
+                id: 5,
+                strategyId: 2,
+                timestamp: Date.now(),
+                valueInCents: 500,
+            },
+            {
+                id: 6,
+                strategyId: 3,
+                timestamp: Date.now(),
+                valueInCents: 600,
+            },
+            {
+                id: 7,
+                strategyId: 1,
+                timestamp: Date.now(),
+                valueInCents: 700,
+            },
+            {
+                id: 8,
+                strategyId: 2,
+                timestamp: Date.now(),
+                valueInCents: 800,
+            },
+            {
+                id: 9,
+                strategyId: 3,
+                timestamp: Date.now(),
+                valueInCents: 900,
+            },
+            {
+                id: 10,
+                strategyId: 1,
+                timestamp: Date.now(),
+                valueInCents: 1000,
+            },
+            {
+                id: 11,
+                strategyId: 2,
+                timestamp: Date.now(),
+                valueInCents: 1100,
+            },
+            {
+                id: 12,
+                strategyId: 3,
+                timestamp: Date.now(),
+                valueInCents: 1200,
+            },
+            {
+                id: 13,
+                strategyId: 1,
+                timestamp: Date.now(),
+                valueInCents: 1300,
+            },
+            {
+                id: 14,
+                strategyId: 2,
+                timestamp: Date.now(),
+                valueInCents: 1400,
+            },
+            {
+                id: 15,
+                strategyId: 3,
+                timestamp: Date.now(),
+                valueInCents: 1500,
             },
         ]);
     });
