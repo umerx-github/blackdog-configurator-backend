@@ -11,6 +11,9 @@ import { KNEXION } from '../../index.js';
 import { Position as PositionModel } from '../../db/models/Position.js';
 import { bankersRoundingTruncateToInt } from '../../utils/index.js';
 import { Order as OrderModel } from '../../db/models/Order.js';
+import { StrategyValue as StrategyValueModel } from '../../db/models/StrategyValue.js';
+import { rmSync } from 'fs';
+import { time } from 'console';
 
 const router = Router();
 
@@ -470,6 +473,189 @@ router.get(
                     openOrdersValueInCents: openBuyOrdersValueInCents,
                     positions: positions,
                 },
+            });
+        } catch (err) {
+            next(err);
+        }
+    }
+);
+
+router.get(
+    '/:id/aggregateValues',
+    async (
+        req: Request<
+            StrategyTypes.StrategyAggregateValuesGetManyRequestParamsRaw,
+            any,
+            any,
+            StrategyTypes.StrategyAggregateValuesGetManyRequestQueryRaw
+        >,
+        res: Response<StrategyTypes.StrategyAggregateValuesGetManyResponseBody>,
+        next: NextFunction
+    ) => {
+        try {
+            const params =
+                StrategyTypes.StrategyAggregateValuesGetManyRequestParamsFromRaw(
+                    req.params
+                );
+            const expectedStrategyAggregateValuesGetManyRequestQuery =
+                StrategyTypes.StrategyAggregateValuesGetManyRequestQueryFromRaw(
+                    req.query
+                );
+            const query = StrategyValueModel.query()
+                .where('strategyId', params.id)
+                .orderBy('timestamp', 'asc');
+            // Apply query filters (Start, End)
+            if (
+                undefined !==
+                expectedStrategyAggregateValuesGetManyRequestQuery.startTimestamp
+            ) {
+                query.where(
+                    'timestamp',
+                    '>=',
+                    expectedStrategyAggregateValuesGetManyRequestQuery.startTimestamp
+                );
+            }
+            if (
+                undefined !==
+                expectedStrategyAggregateValuesGetManyRequestQuery.endTimestamp
+            ) {
+                query.where(
+                    'timestamp',
+                    '<=',
+                    expectedStrategyAggregateValuesGetManyRequestQuery.endTimestamp
+                );
+            }
+            // Get all strategy values
+            const strategyValues = await query;
+            const timeframeValue: number =
+                expectedStrategyAggregateValuesGetManyRequestQuery.timeframeValue ??
+                1;
+            // Build array of objects using timeframe
+            let timeframeInMilliseconds: number | null = null;
+            const timeframeUnit =
+                expectedStrategyAggregateValuesGetManyRequestQuery.timeframeUnit ??
+                'days';
+            switch (
+                expectedStrategyAggregateValuesGetManyRequestQuery.timeframeUnit
+            ) {
+                case 'minutes':
+                    timeframeInMilliseconds = timeframeValue * 60000;
+                    break;
+                case 'hours':
+                    timeframeInMilliseconds = timeframeValue * 3600000;
+                    break;
+                case 'days':
+                    timeframeInMilliseconds = timeframeValue * 86400000;
+                    break;
+                case 'months':
+                    timeframeInMilliseconds = timeframeValue * 2592000000;
+                    break;
+                case 'years':
+                    timeframeInMilliseconds = timeframeValue * 31536000000;
+                    break;
+                default:
+                    // Default to days
+                    timeframeInMilliseconds = timeframeValue * 86400000;
+                    break;
+            }
+            // If Start is not provided, use the first recorded timestamp from results as Start
+            let startTimestamp: number;
+            const now = new Date().getTime();
+            if (
+                expectedStrategyAggregateValuesGetManyRequestQuery.startTimestamp
+            ) {
+                startTimestamp =
+                    expectedStrategyAggregateValuesGetManyRequestQuery.startTimestamp;
+            } else if (strategyValues.length > 0) {
+                startTimestamp = strategyValues[0].timestamp;
+            } else {
+                startTimestamp = now - timeframeInMilliseconds;
+            }
+            // If End is not provided, use current UNIX timestamp as End
+            const endTimestamp: number =
+                expectedStrategyAggregateValuesGetManyRequestQuery.endTimestamp ??
+                now;
+            if (!(startTimestamp < endTimestamp)) {
+                throw new Error(
+                    `Start timestamp must be before end timestamp: startTimestamp: ${startTimestamp}, endTimestamp ${endTimestamp}`
+                );
+            }
+            // Create an array of “buckets” for each interval span (from start to end) with a “start” and “end” timestamp property for each
+            const data: StrategyTypes.StrategyAggregateValuesGetManyResponseBodyDataInstance[] =
+                [];
+            let currentStartTimestamp = startTimestamp;
+            let latestKnownStrategyIndex = 0;
+            while (currentStartTimestamp < endTimestamp) {
+                const currentEndTimestamp =
+                    currentStartTimestamp + timeframeInMilliseconds;
+                // Create a new empty array of strategyValuesForPeriod
+                const strategyValuesForPeriod: StrategyValueModel[] = [];
+                while (
+                    undefined !== strategyValues[latestKnownStrategyIndex] &&
+                    strategyValues[latestKnownStrategyIndex].timestamp <=
+                        currentEndTimestamp
+                ) {
+                    strategyValuesForPeriod.push(
+                        strategyValues[latestKnownStrategyIndex]
+                    );
+                    latestKnownStrategyIndex++;
+                }
+                let averageValueInCents = 0;
+                let openValueInCents = 0;
+                let highestValueInCents = 0;
+                let lowestValueInCents = 0;
+                let closeValueInCents = 0;
+                if (strategyValuesForPeriod.length > 0) {
+                    const strategyValuesForPeriodValuesInCents =
+                        strategyValuesForPeriod.map(
+                            strategyValue => strategyValue.valueInCents
+                        );
+                    averageValueInCents = bankersRoundingTruncateToInt(
+                        strategyValuesForPeriodValuesInCents.reduce(
+                            (acc, val) => {
+                                return bankersRoundingTruncateToInt(acc + val);
+                            },
+                            0
+                        ) / strategyValuesForPeriodValuesInCents.length
+                    );
+                    openValueInCents = strategyValuesForPeriodValuesInCents[0];
+                    highestValueInCents = Math.max(
+                        ...strategyValuesForPeriodValuesInCents
+                    );
+                    lowestValueInCents = Math.min(
+                        ...strategyValuesForPeriodValuesInCents
+                    );
+                    closeValueInCents =
+                        strategyValuesForPeriodValuesInCents[
+                            strategyValuesForPeriodValuesInCents.length - 1
+                        ];
+                } else {
+                    // Flatline
+                    if (data.length > 0) {
+                        averageValueInCents =
+                            data[data.length - 1].averageValueInCents;
+                        openValueInCents = averageValueInCents;
+                        highestValueInCents = averageValueInCents;
+                        lowestValueInCents = averageValueInCents;
+                        closeValueInCents = averageValueInCents;
+                    }
+                    // Default to all 0s if we don't have a previous record
+                }
+                // Push a new dataInstance to data
+                data.push({
+                    timestamp: currentStartTimestamp,
+                    averageValueInCents,
+                    openValueInCents,
+                    highestValueInCents,
+                    lowestValueInCents,
+                    closeValueInCents,
+                });
+                currentStartTimestamp = currentEndTimestamp;
+            }
+            return res.json({
+                status: 'success',
+                message: `${StrategyModel.prettyName} instance aggregateValues retrieved successfully`,
+                data,
             });
         } catch (err) {
             next(err);
