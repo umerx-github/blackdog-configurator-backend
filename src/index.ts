@@ -11,8 +11,13 @@ import strategyTemplateRouter from './routes/strategyTemplate/index.js';
 import strategyLogRouter from './routes/strategyLog.js';
 import strategyValueRouter from './routes/strategyValue.js';
 import { Request, Response, NextFunction } from 'express';
-import { z, ZodError } from 'zod';
+import { z, ZodError, ZodIssueCode } from 'zod';
 import * as Errors from './errors/index.js';
+import {
+    ResponseBaseError,
+    ResponseBaseErrorExpected,
+} from '@umerx/umerx-blackdog-configurator-types-typescript/build/src/response.js';
+import { getResponseError } from './utils/response.js';
 const ENVIRONMENT = process.env.ENVIRONMENT || 'development';
 const SCHEME = process.env.SCHEME || 'http';
 const PORT = Number(process.env.PORT) || 80;
@@ -51,28 +56,23 @@ app.use('/strategyValue', strategyValueRouter);
 
 app.use(function (err: Error, req: Request, res: Response, next: NextFunction) {
     if (err instanceof ZodError) {
-        return res.status(400).json({
-            status: 'error',
-            message: `Invalid request params: ${err.message}`,
-        });
+        return res
+            .status(400)
+            .json(
+                getResponseError(
+                    `Please correct the following issues`,
+                    err.issues
+                )
+            );
     }
     if (err instanceof Errors.ModelNotFoundError) {
-        return res.status(404).json({
-            status: 'error',
-            message: err.message,
-        });
+        return res.status(404).json(getResponseError(err.message));
     }
     console.error(err);
-    return res.status(500).json({
-        status: 'error',
-        message: err.message,
-    });
+    return res.status(500).json(getResponseError(err.message));
 });
 app.use((req, res, next) => {
-    res.status(404).json({
-        status: 'error',
-        message: 'Not found',
-    });
+    res.status(404).json(getResponseError(`Not found`));
 });
 
 // app.use('/config', configRouter);

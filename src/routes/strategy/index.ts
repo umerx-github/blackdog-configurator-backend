@@ -14,6 +14,7 @@ import { Order as OrderModel } from '../../db/models/Order.js';
 import { StrategyValue as StrategyValueModel } from '../../db/models/StrategyValue.js';
 import { rmSync } from 'fs';
 import { time } from 'console';
+import { ZodError, ZodIssueCode } from 'zod';
 
 const router = Router();
 
@@ -576,9 +577,47 @@ router.get(
                 expectedStrategyAggregateValuesGetManyRequestQuery.endTimestamp ??
                 now;
             if (!(startTimestamp < endTimestamp)) {
-                throw new Error(
-                    `Start timestamp must be before end timestamp: startTimestamp: ${startTimestamp}, endTimestamp ${endTimestamp}`
-                );
+                throw new ZodError([
+                    {
+                        code: ZodIssueCode.custom,
+                        message: `Start timestamp must be before end timestamp: startTimestamp: ${startTimestamp}, endTimestamp ${endTimestamp}`,
+                        path: ['startTimestamp'],
+                    },
+                    {
+                        code: ZodIssueCode.custom,
+                        message: `Start timestamp must be before end timestamp: startTimestamp: ${startTimestamp}, endTimestamp ${endTimestamp}`,
+                        path: ['endTimestamp'],
+                    },
+                ]);
+            }
+            const maxRecords = 1000000;
+            const startEndTimestampDiff = endTimestamp - startTimestamp;
+            const estimatedNumberOfRecords = Math.ceil(
+                startEndTimestampDiff / timeframeInMilliseconds
+            );
+            if (estimatedNumberOfRecords > maxRecords) {
+                throw new ZodError([
+                    {
+                        code: ZodIssueCode.custom,
+                        message: `Estimated number of records ${estimatedNumberOfRecords} exceeds max number of records ${maxRecords}`,
+                        path: ['timeframeUnit'],
+                    },
+                    {
+                        code: ZodIssueCode.custom,
+                        message: `Estimated number of records ${estimatedNumberOfRecords} exceeds max number of records ${maxRecords}`,
+                        path: ['timeframeValue'],
+                    },
+                    {
+                        code: ZodIssueCode.custom,
+                        message: `Estimated number of records ${estimatedNumberOfRecords} exceeds max number of records ${maxRecords}`,
+                        path: ['startTimestamp'],
+                    },
+                    {
+                        code: ZodIssueCode.custom,
+                        message: `Estimated number of records ${estimatedNumberOfRecords} exceeds max number of records ${maxRecords}`,
+                        path: ['endTimestamp'],
+                    },
+                ]);
             }
             // Create an array of “buckets” for each interval span (from start to end) with a “start” and “end” timestamp property for each
             const data: StrategyTypes.StrategyAggregateValuesGetManyResponseBodyDataInstance[] =
@@ -586,6 +625,7 @@ router.get(
             let currentStartTimestamp = startTimestamp;
             let latestKnownStrategyIndex = 0;
             while (currentStartTimestamp < endTimestamp) {
+                const memory = process.memoryUsage();
                 const currentEndTimestamp =
                     currentStartTimestamp + timeframeInMilliseconds;
                 // Create a new empty array of strategyValuesForPeriod
