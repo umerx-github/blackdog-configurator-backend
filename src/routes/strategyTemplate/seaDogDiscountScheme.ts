@@ -1,12 +1,11 @@
 import { StrategyTemplateSeaDogDiscountScheme as StrategyTemplateSeaDogDiscountSchemeModel } from '../../db/models/StrategyTemplateSeaDogDiscountScheme.js';
 import { StrategyTemplateSeaDogDiscountScheme as StrategyTemplateSeaDogDiscountSchemeTypes } from '@umerx/umerx-blackdog-configurator-types-typescript';
 import { Router, Request, Response, ErrorRequestHandler } from 'express';
-import * as Errors from '../../errors/index.js';
 import { KNEXION } from '../../index.js';
 import { Symbol as SymbolModel } from '../../db/models/Symbol.js';
 import { Knex } from 'knex';
 import { NextFunction } from 'express';
-import { ModelNotFoundError } from '../../errors/index.js';
+import { MissingRelationError, ModelNotFoundError, UnableToCreateInstanceError, UnableToUpdateInstanceError } from '../../errors/index.js';
 
 const router = Router();
 
@@ -14,7 +13,7 @@ function modelToResponseBodyDataInstance(
     model: StrategyTemplateSeaDogDiscountSchemeModel
 ): StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeResponseBodyDataInstance {
     if (!model.symbols) {
-        throw new Error('Expected symbols to be defined');
+        throw new MissingRelationError('Expected symbols to be defined');
     }
     const symbols = model.symbols;
     delete model.symbols;
@@ -50,7 +49,7 @@ async function patchSingle(
             trx
         ).findById(id);
         if (!model) {
-            throw new Errors.ModelNotFoundError(
+            throw new ModelNotFoundError(
                 `Unable to find ${StrategyTemplateSeaDogDiscountSchemeModel.prettyName} with id ${id}`
             );
         }
@@ -64,7 +63,7 @@ async function patchSingle(
             .withGraphFetched('symbols');
     }
     if (!model) {
-        throw new Error(
+        throw new UnableToUpdateInstanceError(
             `Unable to update ${StrategyTemplateSeaDogDiscountSchemeModel.prettyName} instance`
         );
     }
@@ -84,7 +83,7 @@ async function patchSingle(
             .findById(model.id)
             .withGraphFetched('symbols');
     if (!modelWithSymbols) {
-        throw new Error(
+        throw new ModelNotFoundError(
             `Unable to find ${StrategyTemplateSeaDogDiscountSchemeModel.prettyName} instance`
         );
     }
@@ -100,7 +99,7 @@ async function deleteSingle(
         .withGraphFetched('symbols');
     // get the model's data before deleting it
     if (!model) {
-        throw new Errors.ModelNotFoundError(
+        throw new ModelNotFoundError(
             `Unable to find ${StrategyTemplateSeaDogDiscountSchemeModel.prettyName} with id ${id}`
         );
     }
@@ -192,7 +191,7 @@ router.get(
                     .findById(params.id)
                     .withGraphFetched('symbols');
             if (!modelData) {
-                throw new Errors.ModelNotFoundError(
+                throw new ModelNotFoundError(
                     `${StrategyTemplateSeaDogDiscountSchemeModel.prettyName} not found`
                 );
             }
@@ -240,7 +239,7 @@ router.post(
                                 .insert(dataToInsert)
                                 .withGraphFetched('symbols');
                         if (!model) {
-                            throw new Error(
+                            throw new UnableToCreateInstanceError(
                                 `Unable to create ${StrategyTemplateSeaDogDiscountSchemeModel.prettyName} instance`
                             );
                         }
@@ -265,7 +264,7 @@ router.post(
                                 .findById(model.id)
                                 .withGraphFetched('symbols');
                         if (!modelWithSymbols) {
-                            throw new Error(
+                            throw new ModelNotFoundError(
                                 `Unable to find ${StrategyTemplateSeaDogDiscountSchemeModel.prettyName} instance`
                             );
                         }

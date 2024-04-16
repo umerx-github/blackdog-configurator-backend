@@ -1,10 +1,9 @@
 import { StrategyLog as StrategyLogModel } from '../db/models/StrategyLog.js';
 import { StrategyLog as StrategyLogTypes } from '@umerx/umerx-blackdog-configurator-types-typescript';
 import { Router, Request, Response } from 'express';
-import * as Errors from '../errors/index.js';
 import { KNEXION } from '../index.js';
-import { Knex } from 'knex';
 import { NextFunction } from 'express';
+import { ModelNotFoundError, UnableToCreateInstanceError } from '../errors/index.js';
 
 const router = Router();
 
@@ -83,7 +82,7 @@ router.get(
                 params.id
             );
             if (!modelData) {
-                throw new Errors.ModelNotFoundError(
+                throw new ModelNotFoundError(
                     `Unable to find ${StrategyLogModel.prettyName} with id ${params.id}`
                 );
             }
@@ -126,7 +125,7 @@ router.post(
                             timestamp: Date.now(),
                         });
                         if (undefined === model) {
-                            throw new Error(
+                            throw new UnableToCreateInstanceError(
                                 `Unable to create ${StrategyLogModel.prettyName} instance`
                             );
                         }

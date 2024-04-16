@@ -4,10 +4,8 @@ import {
     StrategyLog as StrategyLogTypes,
 } from '@umerx/umerx-blackdog-configurator-types-typescript';
 import { Router, Request, Response } from 'express';
-import * as Errors from '../errors/index.js';
 import { KNEXION } from '../index.js';
 import { Symbol as SymbolModel } from '../db/models/Symbol.js';
-import { Knex } from 'knex';
 import { NextFunction } from 'express';
 import {
     bankersRounding,
@@ -15,6 +13,7 @@ import {
 } from '../utils/index.js';
 import { StrategyLog as StrategyLogModel } from '../db/models/StrategyLog.js';
 import { Strategy as StrategyModel } from '../db/models/Strategy.js';
+import { ModelNotFoundError, UnableToCreateInstanceError } from '../errors/index.js';
 
 const router = Router();
 
@@ -22,7 +21,7 @@ const router = Router();
 
 function validateQuantity(quantity: number) {
     if (quantity < 0) {
-        throw new Error(
+        throw new UnableToCreateInstanceError(
             `Unable to create ${PositionModel.prettyName} instance with negative quantity: ${quantity}`
         );
     }
@@ -118,7 +117,7 @@ router.get(
             );
             const modelData = await PositionModel.query().findById(params.id);
             if (!modelData) {
-                throw new Errors.ModelNotFoundError(
+                throw new ModelNotFoundError(
                     `Unable to find ${PositionModel.prettyName} with id ${params.id}`
                 );
             }
@@ -154,7 +153,7 @@ router.post(
                             dataToInsert.symbolId
                         );
                         if (!symbol) {
-                            throw new Errors.ModelNotFoundError(
+                            throw new ModelNotFoundError(
                                 `Unable to find ${SymbolModel.prettyName} with id ${dataToInsert.symbolId}`
                             );
                         }
@@ -163,7 +162,7 @@ router.post(
                             trx
                         ).findById(dataToInsert.strategyId);
                         if (!strategy) {
-                            throw new Errors.ModelNotFoundError(
+                            throw new ModelNotFoundError(
                                 `Unable to find ${StrategyModel.prettyName} with id ${dataToInsert.strategyId}`
                             );
                         }
@@ -200,7 +199,7 @@ router.post(
                             );
                         }
                         if (!model) {
-                            throw new Error(
+                            throw new UnableToCreateInstanceError(
                                 `Unable to create ${PositionModel.prettyName} instance`
                             );
                         }

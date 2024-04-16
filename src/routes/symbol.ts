@@ -1,10 +1,9 @@
 import { Symbol as SymbolModel } from '../db/models/Symbol.js';
 import { Symbol as SymbolTypes } from '@umerx/umerx-blackdog-configurator-types-typescript';
 import { Router, Request, Response } from 'express';
-import * as Errors from '../errors/index.js';
 import { KNEXION } from '../index.js';
-import { Knex } from 'knex';
 import { NextFunction } from 'express';
+import { ModelNotFoundError, UnableToCreateInstanceError } from '../errors/index.js';
 
 const router = Router();
 
@@ -55,7 +54,7 @@ router.get(
             );
             const modelData = await SymbolModel.query().findById(params.id);
             if (!modelData) {
-                throw new Errors.ModelNotFoundError(
+                throw new ModelNotFoundError(
                     `Unable to find ${SymbolModel.prettyName} with id ${params.id}`
                 );
             }
@@ -96,7 +95,7 @@ router.post(
                             );
                         }
                         if (undefined === model) {
-                            throw new Error(
+                            throw new UnableToCreateInstanceError(
                                 `Unable to create ${SymbolModel.prettyName} instance`
                             );
                         }

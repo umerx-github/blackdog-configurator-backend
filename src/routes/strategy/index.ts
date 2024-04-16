@@ -6,7 +6,7 @@ import {
 } from '@umerx/umerx-blackdog-configurator-types-typescript';
 import { StrategyLog as StrategyLogModel } from '../../db/models/StrategyLog.js';
 import { Router, Request, Response, NextFunction } from 'express';
-import * as Errors from '../../errors/index.js';
+import {ModelNotFoundError} from '../../errors/index.js';
 import { KNEXION } from '../../index.js';
 import { Position as PositionModel } from '../../db/models/Position.js';
 import { bankersRoundingTruncateToInt } from '../../utils/index.js';
@@ -14,7 +14,8 @@ import { Order as OrderModel } from '../../db/models/Order.js';
 import { StrategyValue as StrategyValueModel } from '../../db/models/StrategyValue.js';
 import { rmSync } from 'fs';
 import { time } from 'console';
-import { ZodError, ZodIssueCode } from 'zod';
+import { ZodIssue, ZodIssueCode } from 'zod';
+import { ZodErrorWithMessage } from '../../errors/index.js';
 
 const router = Router();
 
@@ -71,7 +72,7 @@ router.get(
             );
             const modelData = await StrategyModel.query().findById(params.id);
             if (!modelData) {
-                throw new Errors.ModelNotFoundError(
+                throw new ModelNotFoundError(
                     `Unable to find ${StrategyModel.prettyName} with id ${params.id}`
                 );
             }
@@ -204,7 +205,7 @@ router.patch(
                         parsedRequest
                     );
                     if (!model) {
-                        throw new Errors.ModelNotFoundError(
+                        throw new ModelNotFoundError(
                             `Unable to find ${StrategyModel.prettyName} with id ${params.id}`
                         );
                     }
@@ -225,7 +226,7 @@ router.patch(
                 }
             );
             if (!model) {
-                throw new Errors.ModelNotFoundError(
+                throw new ModelNotFoundError(
                     `Unable to find ${StrategyModel.prettyName} with id ${params.id}`
                 );
             }
@@ -311,7 +312,7 @@ router.put(
                         parsedRequest
                     );
                     if (!model) {
-                        throw new Errors.ModelNotFoundError(
+                        throw new ModelNotFoundError(
                             `Unable to find ${StrategyModel.prettyName} with id ${params.id}`
                         );
                     }
@@ -331,7 +332,7 @@ router.put(
             );
 
             if (!model) {
-                throw new Errors.ModelNotFoundError(
+                throw new ModelNotFoundError(
                     `Unable to find ${StrategyModel.prettyName} with id ${params.id}`
                 );
             }
@@ -370,7 +371,7 @@ router.delete(
                             id
                         );
                         if (!model) {
-                            throw new Errors.ModelNotFoundError(
+                            throw new ModelNotFoundError(
                                 `Unable to find ${StrategyModel.prettyName} with id ${id}`
                             );
                         }
@@ -405,7 +406,7 @@ router.delete(
                 );
             const modelData = await StrategyModel.query().findById(params.id);
             if (!modelData) {
-                throw new Errors.ModelNotFoundError(
+                throw new ModelNotFoundError(
                     `Unable to find ${StrategyModel.prettyName} with id ${params.id}`
                 );
             }
@@ -435,7 +436,7 @@ router.get(
                 );
             const modelData = await StrategyModel.query().findById(params.id);
             if (!modelData) {
-                throw new Errors.ModelNotFoundError(
+                throw new ModelNotFoundError(
                     `Unable to find ${StrategyModel.prettyName} with id ${params.id}`
                 );
             }
@@ -563,7 +564,7 @@ router.get(
             let startTimestamp: number;
             const now = new Date().getTime();
             if (
-                expectedStrategyAggregateValuesGetManyRequestQuery.startTimestamp
+                undefined !== expectedStrategyAggregateValuesGetManyRequestQuery.startTimestamp
             ) {
                 startTimestamp =
                     expectedStrategyAggregateValuesGetManyRequestQuery.startTimestamp;
@@ -577,18 +578,24 @@ router.get(
                 expectedStrategyAggregateValuesGetManyRequestQuery.endTimestamp ??
                 now;
             if (!(startTimestamp < endTimestamp)) {
-                throw new ZodError([
-                    {
+                const issues: ZodIssue[] = [];
+                if (undefined !== expectedStrategyAggregateValuesGetManyRequestQuery.startTimestamp) {
+                    issues.push({
                         code: ZodIssueCode.custom,
                         message: `Start timestamp must be before end timestamp: startTimestamp: ${startTimestamp}, endTimestamp ${endTimestamp}`,
                         path: ['startTimestamp'],
-                    },
-                    {
+                    });
+                }
+                if (undefined !== expectedStrategyAggregateValuesGetManyRequestQuery.endTimestamp) {
+                    issues.push({
                         code: ZodIssueCode.custom,
                         message: `Start timestamp must be before end timestamp: startTimestamp: ${startTimestamp}, endTimestamp ${endTimestamp}`,
                         path: ['endTimestamp'],
-                    },
-                ]);
+                    });
+                }
+                throw new ZodErrorWithMessage(
+                    `Start timestamp must be before end timestamp: startTimestamp: ${startTimestamp}, endTimestamp ${endTimestamp}`,
+                    issues);
             }
             const maxRecords = 1000000;
             const startEndTimestampDiff = endTimestamp - startTimestamp;
@@ -596,28 +603,38 @@ router.get(
                 startEndTimestampDiff / timeframeInMilliseconds
             );
             if (estimatedNumberOfRecords > maxRecords) {
-                throw new ZodError([
-                    {
+                const issues: ZodIssue[] = [];
+                if (undefined !== expectedStrategyAggregateValuesGetManyRequestQuery.timeframeUnit) {
+                    issues.push({
                         code: ZodIssueCode.custom,
                         message: `Estimated number of records ${estimatedNumberOfRecords} exceeds max number of records ${maxRecords}`,
                         path: ['timeframeUnit'],
-                    },
-                    {
+                    });
+                }
+                if (undefined !== expectedStrategyAggregateValuesGetManyRequestQuery.timeframeValue) {
+                    issues.push({
                         code: ZodIssueCode.custom,
                         message: `Estimated number of records ${estimatedNumberOfRecords} exceeds max number of records ${maxRecords}`,
                         path: ['timeframeValue'],
-                    },
-                    {
+                    });
+                }
+                if (undefined !== expectedStrategyAggregateValuesGetManyRequestQuery.startTimestamp) {
+                    issues.push({
                         code: ZodIssueCode.custom,
                         message: `Estimated number of records ${estimatedNumberOfRecords} exceeds max number of records ${maxRecords}`,
                         path: ['startTimestamp'],
-                    },
-                    {
+                    });
+                }
+                if (undefined !== expectedStrategyAggregateValuesGetManyRequestQuery.endTimestamp) {
+                    issues.push({
                         code: ZodIssueCode.custom,
                         message: `Estimated number of records ${estimatedNumberOfRecords} exceeds max number of records ${maxRecords}`,
                         path: ['endTimestamp'],
-                    },
-                ]);
+                    });
+                }
+                throw new ZodErrorWithMessage(
+                    `Estimated number of records ${estimatedNumberOfRecords} exceeds max number of records ${maxRecords}`,
+                    issues);
             }
             // Create an array of “buckets” for each interval span (from start to end) with a “start” and “end” timestamp property for each
             const data: StrategyTypes.StrategyAggregateValuesGetManyResponseBodyDataInstance[] =
