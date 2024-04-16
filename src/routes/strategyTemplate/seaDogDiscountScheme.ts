@@ -6,6 +6,7 @@ import { KNEXION } from '../../index.js';
 import { Symbol as SymbolModel } from '../../db/models/Symbol.js';
 import { Knex } from 'knex';
 import { NextFunction } from 'express';
+import { ModelNotFoundError } from '../../errors/index.js';
 
 const router = Router();
 
@@ -191,10 +192,9 @@ router.get(
                     .findById(params.id)
                     .withGraphFetched('symbols');
             if (!modelData) {
-                return res.status(404).json({
-                    status: 'error',
-                    message: `${StrategyTemplateSeaDogDiscountSchemeModel.prettyName} not found`,
-                });
+                throw new Errors.ModelNotFoundError(
+                    `${StrategyTemplateSeaDogDiscountSchemeModel.prettyName} not found`
+                );
             }
             return res.json({
                 status: 'success',
@@ -367,10 +367,9 @@ router.patch(
                 { isolationLevel: 'serializable' }
             );
             if (!modelData) {
-                return res.status(404).json({
-                    status: 'error',
-                    message: `${StrategyTemplateSeaDogDiscountSchemeModel.prettyName} not found`,
-                });
+                throw new ModelNotFoundError(
+                    `${StrategyTemplateSeaDogDiscountSchemeModel.prettyName} not found`
+                );
             }
             return res.json({
                 status: 'success',
@@ -461,10 +460,9 @@ router.put(
                 { isolationLevel: 'serializable' }
             );
             if (!modelData) {
-                return res.status(404).json({
-                    status: 'error',
-                    message: `${StrategyTemplateSeaDogDiscountSchemeModel.prettyName} not found`,
-                });
+                throw new ModelNotFoundError(
+                    `${StrategyTemplateSeaDogDiscountSchemeModel.prettyName} not found`
+                );
             }
             return res.json({
                 status: 'success',
@@ -539,10 +537,9 @@ router.delete(
                 { isolationLevel: 'serializable' }
             );
             if (undefined === modelData) {
-                return res.status(404).json({
-                    status: 'error',
-                    message: `${StrategyTemplateSeaDogDiscountSchemeModel.prettyName} not found`,
-                });
+                throw new ModelNotFoundError(
+                   `${StrategyTemplateSeaDogDiscountSchemeModel.prettyName} not found`,
+                );
             }
             return res.json({
                 status: 'success',
