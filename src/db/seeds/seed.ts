@@ -498,99 +498,100 @@ export async function seed(knex: Knex): Promise<void> {
                 timestamp: Date.now(),
             },
         ]);
+        const now = Date.now()
         await trx<StrategyValueTypes.StrategyValueModelInterface>(
             StrategyValueModel.tableName
         ).insert([
             {
                 id: 1,
                 strategyId: 1,
-                timestamp: Date.now(),
+                timestamp: now - 1000 * 60 * 60 * 24 * 10,
                 valueInCents: 100,
             },
             {
                 id: 2,
-                strategyId: 2,
-                timestamp: Date.now(),
+                strategyId: 1,
+                timestamp: now - 1000 * 60 * 60 * 24 * 9,
                 valueInCents: 200,
             },
             {
                 id: 3,
-                strategyId: 3,
-                timestamp: Date.now(),
+                strategyId: 1,
+                timestamp: now - 1000 * 60 * 60 * 24 * 8,
                 valueInCents: 300,
             },
             {
                 id: 4,
                 strategyId: 1,
-                timestamp: Date.now(),
+                timestamp: now - 1000 * 60 * 60 * 24 * 7,
                 valueInCents: 400,
             },
             {
                 id: 5,
-                strategyId: 2,
-                timestamp: Date.now(),
+                strategyId: 1,
+                timestamp: now - 1000 * 60 * 60 * 24 * 6,
                 valueInCents: 500,
             },
             {
                 id: 6,
-                strategyId: 3,
-                timestamp: Date.now(),
+                strategyId: 2,
+                timestamp: now - 1000 * 60 * 60 * 24 * 10,
                 valueInCents: 600,
             },
             {
                 id: 7,
-                strategyId: 1,
-                timestamp: Date.now(),
+                strategyId: 2,
+                timestamp: now - 1000 * 60 * 60 * 24 * 9,
                 valueInCents: 700,
             },
             {
                 id: 8,
                 strategyId: 2,
-                timestamp: Date.now(),
+                timestamp: now - 1000 * 60 * 60 * 24 * 8,
                 valueInCents: 800,
             },
             {
                 id: 9,
-                strategyId: 3,
-                timestamp: Date.now(),
+                strategyId: 2,
+                timestamp: now - 1000 * 60 * 60 * 24 * 7,
                 valueInCents: 900,
             },
             {
                 id: 10,
-                strategyId: 1,
-                timestamp: Date.now(),
+                strategyId: 2,
+                timestamp: now - 1000 * 60 * 60 * 24 * 6,
                 valueInCents: 1000,
             },
             {
                 id: 11,
-                strategyId: 2,
-                timestamp: Date.now(),
+                strategyId: 3,
+                timestamp: now - 1000 * 60 * 60 * 24 * 10,
                 valueInCents: 1100,
             },
             {
                 id: 12,
                 strategyId: 3,
-                timestamp: Date.now(),
+                timestamp: now - 1000 * 60 * 60 * 24 * 9,
                 valueInCents: 1200,
             },
             {
                 id: 13,
-                strategyId: 1,
-                timestamp: Date.now(),
+                strategyId: 3,
+                timestamp: now - 1000 * 60 * 60 * 24 * 8,
                 valueInCents: 1300,
             },
             {
                 id: 14,
-                strategyId: 2,
-                timestamp: Date.now(),
+                strategyId: 3,
+                timestamp: now - 1000 * 60 * 60 * 24 * 7,
                 valueInCents: 1400,
             },
             {
                 id: 15,
                 strategyId: 3,
-                timestamp: Date.now(),
+                timestamp: now - 1000 * 60 * 60 * 24 * 6,
                 valueInCents: 1500,
-            },
+            }
         ]);
     });
 }
