@@ -591,6 +591,42 @@ export async function seed(knex: Knex): Promise<void> {
                 strategyId: 3,
                 timestamp: now - 1000 * 60 * 60 * 24 * 6,
                 valueInCents: 1500,
+            },
+            {
+                id: 16,
+                strategyId: 3,
+                timestamp: now - 1000 * 60 * 60 * 24 * 5,
+                valueInCents: 1600,
+            },
+            {
+                id: 17,
+                strategyId: 3,
+                timestamp: now - 1000 * 60 * 60 * 24 * 4,
+                valueInCents: 1700,
+            },
+            {
+                id: 18,
+                strategyId: 3,
+                timestamp: now - 1000 * 60 * 60 * 24 * 3,
+                valueInCents: 1800,
+            },
+            {
+                id: 19,
+                strategyId: 3,
+                timestamp: now - 1000 * 60 * 60 * 24 * 2,
+                valueInCents: 1900,
+            },
+            {
+                id: 20,
+                strategyId: 3,
+                timestamp: now - 1000 * 60 * 60 * 24 * 1,
+                valueInCents: 2000,
+            },
+            {
+                id: 21,
+                strategyId: 3,
+                timestamp: now,
+                valueInCents: 2100,
             }
         ]);
     });
