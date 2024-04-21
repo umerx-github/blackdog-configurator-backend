@@ -55,7 +55,13 @@ app.use('/strategyLog', strategyLogRouter);
 app.use('/strategyValue', strategyValueRouter);
 
 app.use(function (err: Error, req: Request, res: Response, next: NextFunction) {
-    if (err instanceof Errors.ZodErrorWithMessage) {
+    if (err instanceof Errors.PersistedDataSchemaValidationError) {
+        console.error(err);
+        return res
+            .status(500)
+            .json(getResponseError(err.customMessage, err.issues));
+    }
+    if (err instanceof Errors.ClientInputDataValidationError) {
         return res
             .status(400)
             .json(getResponseError(err.customMessage, err.issues));

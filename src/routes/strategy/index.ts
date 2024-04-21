@@ -6,7 +6,7 @@ import {
 } from '@umerx/umerx-blackdog-configurator-types-typescript';
 import { StrategyLog as StrategyLogModel } from '../../db/models/StrategyLog.js';
 import { Router, Request, Response, NextFunction } from 'express';
-import {ModelNotFoundError} from '../../errors/index.js';
+import {ModelNotFoundError, PersistedDataSchemaValidationError, ClientInputDataValidationError} from '../../errors/index.js';
 import { KNEXION } from '../../index.js';
 import { Position as PositionModel } from '../../db/models/Position.js';
 import { bankersRoundingTruncateToInt } from '../../utils/index.js';
@@ -14,8 +14,7 @@ import { Order as OrderModel } from '../../db/models/Order.js';
 import { StrategyValue as StrategyValueModel } from '../../db/models/StrategyValue.js';
 import { rmSync } from 'fs';
 import { time } from 'console';
-import { ZodIssue, ZodIssueCode } from 'zod';
-import { ZodErrorWithMessage } from '../../errors/index.js';
+import { ZodError, ZodIssue, ZodIssueCode } from 'zod';
 
 const router = Router();
 
@@ -48,12 +47,22 @@ router.get(
                 query.whereIn('id', expectedStrategyGetManyRequestQuery.ids);
             }
             const data = await query;
-            return res.json({
-                status: 'success',
-                message: `${StrategyModel.prettyName} instances retrieved successfully`,
-                data: data,
-            });
+            try {
+                return res.json(StrategyTypes.StrategyGetManyResponseBodyFromRaw(
+                    {
+                        status: 'success',
+                        message: `${StrategyModel.prettyName} instances retrieved successfully`,
+                        data: data,
+                    }
+                ));
+            } catch (err) {
+                if (err instanceof ZodError) {
+                    throw new PersistedDataSchemaValidationError("Persisted data schema validation error", err.issues);
+                }
+                throw err;
+            }
         } catch (err) {
+            console.log({err})
             next(err);
         }
     }
@@ -128,6 +137,7 @@ router.post(
                 data: modelData,
             });
         } catch (err) {
+            console.log({err})
             next(err);
         }
     }
@@ -593,7 +603,7 @@ router.get(
                         path: ['endTimestamp'],
                     });
                 }
-                throw new ZodErrorWithMessage(
+                throw new ClientInputDataValidationError(
                     `Start timestamp must be before end timestamp: startTimestamp: ${startTimestamp}, endTimestamp ${endTimestamp}`,
                     issues);
             }
@@ -632,7 +642,7 @@ router.get(
                         path: ['endTimestamp'],
                     });
                 }
-                throw new ZodErrorWithMessage(
+                throw new ClientInputDataValidationError(
                     `Estimated number of records ${estimatedNumberOfRecords} exceeds max number of records ${maxRecords}`,
                     issues);
             }

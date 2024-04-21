@@ -40,3 +40,17 @@ export class ZodErrorWithMessage extends ZodError {
         return this.customMessage;
     }
 }
+
+export class ClientInputDataValidationError extends ZodErrorWithMessage {
+    constructor(customMessage: string, issues: ZodIssue[]) {
+        super(customMessage, issues);
+        this.name = 'ClientInputDataValidationError';
+    }
+}
+
+export class PersistedDataSchemaValidationError extends ZodErrorWithMessage {
+    constructor(customMessage: string, issues: ZodIssue[]) {
+        super(customMessage, issues);
+        this.name = 'PersistedDataSchemaValidationError';
+    }
+}
