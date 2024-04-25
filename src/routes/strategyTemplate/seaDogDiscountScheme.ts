@@ -6,6 +6,7 @@ import { Symbol as SymbolModel } from '../../db/models/Symbol.js';
 import { Knex } from 'knex';
 import { NextFunction } from 'express';
 import { MissingRelationError, ModelNotFoundError, UnableToCreateInstanceError, UnableToUpdateInstanceError } from '../../errors/index.js';
+import { validateResponse } from '../../utils/response.js';
 
 const router = Router();
 
@@ -163,11 +164,11 @@ router.get(
             const data = queryResults.map(dataItem => {
                 return modelToResponseBodyDataInstance(dataItem);
             });
-            return res.json({
+            return res.json(validateResponse(() => StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeGetManyResponseBodyFromRaw({
                 status: 'success',
                 message: `${StrategyTemplateSeaDogDiscountSchemeModel.prettyName} instances retrieved successfully`,
                 data: data,
-            });
+            })));
         } catch (err) {
             next(err);
         }
@@ -195,11 +196,11 @@ router.get(
                     `${StrategyTemplateSeaDogDiscountSchemeModel.prettyName} not found`
                 );
             }
-            return res.json({
+            return res.json(validateResponse(() => StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeGetSingleResponseBodyFromRaw({
                 status: 'success',
                 message: `${StrategyTemplateSeaDogDiscountSchemeModel.prettyName} instance retrieved successfully`,
                 data: modelToResponseBodyDataInstance(modelData),
-            });
+            })));
         } catch (err) {
             next(err);
         }
@@ -275,11 +276,11 @@ router.post(
                 },
                 { isolationLevel: 'serializable' }
             );
-            return res.json({
+            return res.json(validateResponse(() => StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePostManyResponseBodyFromRaw({
                 status: 'success',
                 message: `${StrategyTemplateSeaDogDiscountSchemeModel.prettyName} instances created successfully`,
                 data: modelData,
-            });
+            })));
         } catch (err) {
             next(err);
         }
@@ -320,11 +321,11 @@ router.patch(
                 },
                 { isolationLevel: 'serializable' }
             );
-            return res.json({
+            return res.json(validateResponse(() => StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePatchManyResponseBodyFromRaw({
                 status: 'success',
                 message: `${StrategyTemplateSeaDogDiscountSchemeModel.prettyName} instances updated successfully`,
                 data: modelData,
-            });
+            })));
         } catch (err) {
             next(err);
         }
@@ -370,11 +371,11 @@ router.patch(
                     `${StrategyTemplateSeaDogDiscountSchemeModel.prettyName} not found`
                 );
             }
-            return res.json({
+            return res.json(validateResponse(() => StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePatchSingleResponseBodyFromRaw({
                 status: 'success',
                 message: `${StrategyTemplateSeaDogDiscountSchemeModel.prettyName} instance updated successfully`,
                 data: modelData,
-            });
+            })));
         } catch (err) {
             next(err);
         }
@@ -413,11 +414,11 @@ router.put(
                 },
                 { isolationLevel: 'serializable' }
             );
-            return res.json({
+            return res.json(validateResponse(() => StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePutManyResponseBodyFromRaw({
                 status: 'success',
                 message: `${StrategyTemplateSeaDogDiscountSchemeModel.prettyName} instances updated successfully`,
                 data: modelData,
-            });
+            })));
         } catch (err) {
             next(err);
         }
@@ -463,11 +464,11 @@ router.put(
                     `${StrategyTemplateSeaDogDiscountSchemeModel.prettyName} not found`
                 );
             }
-            return res.json({
+            return res.json(validateResponse(() => StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemePutSingleResponseBodyFromRaw({
                 status: 'success',
                 message: `${StrategyTemplateSeaDogDiscountSchemeModel.prettyName} instance updated successfully`,
                 data: modelData,
-            });
+            })));
         } catch (err) {
             next(err);
         }
@@ -503,11 +504,11 @@ router.delete(
                 },
                 { isolationLevel: 'serializable' }
             );
-            return res.json({
+            return res.json(validateResponse(() => StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeDeleteManyResponseBodyFromRaw({
                 status: 'success',
                 message: `${StrategyTemplateSeaDogDiscountSchemeModel.prettyName} instances deleted successfully`,
                 data: modelData,
-            });
+            })));
         } catch (err) {
             next(err);
         }
@@ -540,11 +541,11 @@ router.delete(
                    `${StrategyTemplateSeaDogDiscountSchemeModel.prettyName} not found`,
                 );
             }
-            return res.json({
+            return res.json(validateResponse(() => StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeDeleteSingleResponseBodyFromRaw({
                 status: 'success',
                 message: `${StrategyTemplateSeaDogDiscountSchemeModel.prettyName} instance deleted successfully`,
                 data: modelData,
-            });
+            })));
         } catch (err) {
             next(err);
         }

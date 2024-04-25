@@ -17,6 +17,7 @@ import {
 import { calculateExistingPositionNewAveragePriceInCentsForFilledBuyOrder } from './position.js';
 import { StrategyLog as StrategyLogModel } from '../db/models/StrategyLog.js';
 import { Symbol as SymbolModel } from '../db/models/Symbol.js';
+import { validateResponse } from '..//utils/response.js';
 
 const router = Router();
 
@@ -157,11 +158,11 @@ router.get(
             const data = queryResults.map(dataItem => {
                 return dataItem;
             });
-            return res.json({
+            return res.json(validateResponse(() => OrderTypes.OrderGetManyResponseBodyFromRaw({
                 status: 'success',
                 message: `${OrderModel.prettyName} instances retrieved successfully`,
                 data: data,
-            });
+            })));
         } catch (err) {
             next(err);
         }
@@ -185,11 +186,11 @@ router.get(
                     `Unable to find ${OrderModel.prettyName} with id ${params.id}`
                 );
             }
-            return res.json({
+            return res.json(validateResponse(() => OrderTypes.OrderGetSingleResponseBodyFromRaw({
                 status: 'success',
                 message: `${OrderModel.prettyName} instance retrieved successfully`,
                 data: modelData,
-            });
+            })));
         } catch (err) {
             next(err);
         }
@@ -224,11 +225,11 @@ router.post(
                 },
                 { isolationLevel: 'serializable' }
             );
-            return res.json({
+            return res.json(validateResponse(() => OrderTypes.OrderPostManyResponseBodyFromRaw({
                 status: 'success',
                 message: `${OrderModel.prettyName} instances created successfully`,
                 data: modelData,
-            });
+            })));
         } catch (err) {
             next(err);
         }
@@ -396,11 +397,11 @@ router.post(
                     `Unable to find ${OrderModel.prettyName} with id ${params.id}`
                 );
             }
-            return res.json({
+            return res.json(validateResponse(() => OrderTypes.OrderFillPostSingleResponseBodyFromRaw({
                 status: 'success',
                 message: `${OrderModel.prettyName} instance filled successfully`,
                 data: model,
-            });
+            })));
         } catch (err) {
             next(err);
         }
@@ -492,11 +493,11 @@ router.post(
                     `Unable to find ${OrderModel.prettyName} with id ${params.id}`
                 );
             }
-            return res.json({
+            return res.json(validateResponse(() => OrderTypes.OrderCancelPostSingleResponseBodyFromRaw({
                 status: 'success',
                 message: `${OrderModel.prettyName} instance canceled successfully`,
                 data: model,
-            });
+            })));
         } catch (err) {
             next(err);
         }

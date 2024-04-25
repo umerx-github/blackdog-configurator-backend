@@ -15,6 +15,7 @@ import { StrategyValue as StrategyValueModel } from '../../db/models/StrategyVal
 import { rmSync } from 'fs';
 import { time } from 'console';
 import { ZodError, ZodIssue, ZodIssueCode } from 'zod';
+import { validateResponse } from '../../utils/response.js';
 
 const router = Router();
 
@@ -47,20 +48,13 @@ router.get(
                 query.whereIn('id', expectedStrategyGetManyRequestQuery.ids);
             }
             const data = await query;
-            try {
-                return res.json(StrategyTypes.StrategyGetManyResponseBodyFromRaw(
-                    {
-                        status: 'success',
-                        message: `${StrategyModel.prettyName} instances retrieved successfully`,
-                        data: data,
-                    }
-                ));
-            } catch (err) {
-                if (err instanceof ZodError) {
-                    throw new PersistedDataSchemaValidationError("Persisted data schema validation error", err.issues);
+            return  res.json(validateResponse(() => StrategyTypes.StrategyGetManyResponseBodyFromRaw(
+                {
+                    status: 'success',
+                    message: `${StrategyModel.prettyName} instances retrieved successfully`,
+                    data: data,
                 }
-                throw err;
-            }
+            )));
         } catch (err) {
             console.log({err})
             next(err);
@@ -85,11 +79,12 @@ router.get(
                     `Unable to find ${StrategyModel.prettyName} with id ${params.id}`
                 );
             }
-            return res.json({
-                status: 'success',
-                message: `${StrategyModel.prettyName} instance retrieved successfully`,
-                data: modelData,
-            });
+            return res.json(validateResponse(() => StrategyTypes.StrategyGetSingleResponseBodyFromRaw(
+                {
+                    status: 'success',
+                    message: `${StrategyModel.prettyName} instance retrieved successfully`,
+                    data: modelData,
+                })));
         } catch (err) {
             next(err);
         }
@@ -178,11 +173,11 @@ router.patch(
                 },
                 { isolationLevel: 'serializable' }
             );
-            return res.json({
+            return res.json(validateResponse(() => StrategyTypes.StrategyPatchManyResponseBodyFromRaw({
                 status: 'success',
                 message: `${StrategyModel.prettyName} instances updated successfully`,
                 data: modelData,
-            });
+            })));
         } catch (err) {
             next(err);
         }
@@ -240,11 +235,11 @@ router.patch(
                     `Unable to find ${StrategyModel.prettyName} with id ${params.id}`
                 );
             }
-            return res.json({
+            return res.json(validateResponse(() => StrategyTypes.StrategyPatchSingleResponseBodyFromRaw({
                 status: 'success',
                 message: `${StrategyModel.prettyName} instance updated successfully`,
                 data: model,
-            });
+            })));
         } catch (err) {
             next(err);
         }
@@ -285,11 +280,11 @@ router.put(
                 },
                 { isolationLevel: 'serializable' }
             );
-            return res.json({
+            return res.json(validateResponse(() => StrategyTypes.StrategyPutManyResponseBodyFromRaw({
                 status: 'success',
                 message: `${StrategyModel.prettyName} instances updated successfully`,
                 data: modelData,
-            });
+            })));
         } catch (err) {
             next(err);
         }
@@ -346,11 +341,11 @@ router.put(
                     `Unable to find ${StrategyModel.prettyName} with id ${params.id}`
                 );
             }
-            return res.json({
+            return res.json(validateResponse(() => StrategyTypes.StrategyPutSingleResponseBodyFromRaw({
                 status: 'success',
                 message: `${StrategyModel.prettyName} instance updated successfully`,
                 data: model,
-            });
+            })));
         } catch (err) {
             next(err);
         }
@@ -391,11 +386,11 @@ router.delete(
                 },
                 { isolationLevel: 'serializable' }
             );
-            return res.json({
+            return res.json(validateResponse(() => StrategyTypes.StrategyDeleteManyResponseBodyFromRaw({
                 status: 'success',
                 message: `${StrategyModel.prettyName} instances deleted successfully`,
                 data: modelData,
-            });
+            })));
         } catch (err) {
             next(err);
         }
@@ -421,11 +416,11 @@ router.delete(
                 );
             }
             await StrategyModel.query().deleteById(params.id);
-            return res.json({
+            return res.json(validateResponse(() => StrategyTypes.StrategyDeleteSingleResponseBodyFromRaw({
                 status: 'success',
                 message: `${StrategyModel.prettyName} instance deleted successfully`,
                 data: modelData,
-            });
+            })));
         } catch (err) {
             next(err);
         }
@@ -477,7 +472,7 @@ router.get(
                 },
                 0
             );
-            return res.json({
+            return res.json(validateResponse(() => StrategyTypes.StrategyAssetsGetSingleResponseBodyFromRaw({
                 status: 'success',
                 message: `${StrategyModel.prettyName} instance assets retrieved successfully`,
                 data: {
@@ -485,7 +480,7 @@ router.get(
                     openOrdersValueInCents: openBuyOrdersValueInCents,
                     positions: positions,
                 },
-            });
+            })));
         } catch (err) {
             next(err);
         }
@@ -719,11 +714,11 @@ router.get(
                 });
                 currentStartTimestamp = currentEndTimestamp;
             }
-            return res.json({
+            return res.json(validateResponse(() => StrategyTypes.StrategyAggregateValuesGetManyResponseBodyFromRaw({
                 status: 'success',
                 message: `${StrategyModel.prettyName} instance aggregateValues retrieved successfully`,
                 data,
-            });
+            })));
         } catch (err) {
             next(err);
         }

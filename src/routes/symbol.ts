@@ -4,6 +4,7 @@ import { Router, Request, Response } from 'express';
 import { KNEXION } from '../index.js';
 import { NextFunction } from 'express';
 import { ModelNotFoundError, UnableToCreateInstanceError } from '../errors/index.js';
+import { validateResponse } from '../utils/response.js';
 
 const router = Router();
 
@@ -30,11 +31,11 @@ router.get(
             const data = queryResults.map(dataItem => {
                 return dataItem;
             });
-            return res.json({
+            return res.json(validateResponse(() => SymbolTypes.SymbolGetManyResponseBodyFromRaw({
                 status: 'success',
                 message: `${SymbolModel.prettyName} instances retrieved successfully`,
                 data: data,
-            });
+            })));
         } catch (err) {
             next(err);
         }
@@ -58,11 +59,11 @@ router.get(
                     `Unable to find ${SymbolModel.prettyName} with id ${params.id}`
                 );
             }
-            return res.json({
+            return res.json(validateResponse(() => SymbolTypes.SymbolGetSingleResponseBodyFromRaw({
                 status: 'success',
                 message: `${SymbolModel.prettyName} instance retrieved successfully`,
                 data: modelData,
-            });
+            })));
         } catch (err) {
             next(err);
         }
@@ -104,11 +105,11 @@ router.post(
                 },
                 { isolationLevel: 'serializable' }
             );
-            return res.json({
+            return res.json(validateResponse(() => SymbolTypes.SymbolPostManyResponseBodyFromRaw({
                 status: 'success',
                 message: `${SymbolModel.prettyName} instances created successfully`,
                 data: modelData,
-            });
+            })));
         } catch (err) {
             next(err);
         }

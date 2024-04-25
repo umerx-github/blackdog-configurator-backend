@@ -14,6 +14,7 @@ import {
 import { StrategyLog as StrategyLogModel } from '../db/models/StrategyLog.js';
 import { Strategy as StrategyModel } from '../db/models/Strategy.js';
 import { ModelNotFoundError, UnableToCreateInstanceError } from '../errors/index.js';
+import { validateResponse } from '../utils/response.js';
 
 const router = Router();
 
@@ -93,11 +94,11 @@ router.get(
             const data = queryResults.map(dataItem => {
                 return dataItem;
             });
-            return res.json({
+            return res.json(validateResponse(() => PositionTypes.PositionGetManyResponseBodyFromRaw({
                 status: 'success',
                 message: `${PositionModel.prettyName} instances retrieved successfully`,
                 data: data,
-            });
+            })));
         } catch (err) {
             next(err);
         }
@@ -121,11 +122,11 @@ router.get(
                     `Unable to find ${PositionModel.prettyName} with id ${params.id}`
                 );
             }
-            return res.json({
+            return res.json(validateResponse(() => PositionTypes.PositionGetSingleResponseBodyFromRaw({
                 status: 'success',
                 message: `${PositionModel.prettyName} instance retrieved successfully`,
                 data: modelData,
-            });
+            })));
         } catch (err) {
             next(err);
         }
@@ -238,11 +239,11 @@ router.post(
                 },
                 { isolationLevel: 'serializable' }
             );
-            return res.json({
+            return res.json(validateResponse(() => PositionTypes.PositionPostManyResponseBodyFromRaw({
                 status: 'success',
                 message: `${PositionModel.prettyName} instances created successfully`,
                 data: modelData,
-            });
+            })));
         } catch (err) {
             next(err);
         }

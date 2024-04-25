@@ -4,6 +4,7 @@ import { Router, Request, Response } from 'express';
 import { KNEXION } from '../index.js';
 import { NextFunction } from 'express';
 import { ModelNotFoundError, UnableToCreateInstanceError } from '../errors/index.js';
+import { validateResponse } from '../utils/response.js';
 
 const router = Router();
 
@@ -69,7 +70,7 @@ router.get(
             const data = queryResults.results.map(dataItem => {
                 return dataItem;
             });
-            return res.json({
+            return res.json(validateResponse(() => StrategyValueTypes.StrategyValueGetManyResponseBodyFromRaw({
                 status: 'success',
                 message: `${StrategyValueModel.prettyName} instances retrieved successfully`,
                 data: data,
@@ -77,7 +78,7 @@ router.get(
                 pageNumber: pageNumber,
                 totalResults: queryResults.total,
                 totalPages: Math.ceil(queryResults.total / pageSize),
-            });
+            })));
         } catch (err) {
             next(err);
         }
@@ -104,14 +105,14 @@ router.get(
                     `Unable to find ${StrategyValueModel.prettyName} with id ${params.id}`
                 );
             }
-            return res.json({
+            return res.json(validateResponse(() => StrategyValueTypes.StrategyValueGetSingleResponseBodyFromRaw({
                 status: 'success',
                 message: `${StrategyValueModel.prettyName} instance retrieved successfully`,
                 data: {
                     ...modelData,
                     // data: JSON.stringify(modelData.data),
                 },
-            });
+            })));
         } catch (err) {
             next(err);
         }
@@ -156,11 +157,11 @@ router.post(
                 },
                 { isolationLevel: 'serializable' }
             );
-            return res.json({
+            return res.json(validateResponse(() => StrategyValueTypes.StrategyValuePostManyResponseBodyFromRaw({
                 status: 'success',
                 message: `${StrategyValueModel.prettyName} instances created successfully`,
                 data: modelData,
-            });
+            })));
         } catch (err) {
             next(err);
         }
