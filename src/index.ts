@@ -39,6 +39,7 @@ app.use(
             /^https?:\/\/(localhost|127\.0\.0\.1)(:[0-9]+)?/,
             /^https?:\/\/.*.umerx.app(:[0-9]+)?/,
         ],
+        credentials: true,
     })
 );
 app.use(express.json());
