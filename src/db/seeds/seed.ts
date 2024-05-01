@@ -497,6 +497,14 @@ export async function seed(knex: Knex): Promise<void> {
                 },
                 timestamp: Date.now(),
             },
+            {
+                id: 19,
+                strategyId: 2,
+                level: LogTypes.LogLevelSchema.Enum.debug,
+                message: 'My Third SeaDogDiscountScheme Strategy',
+                data: null,
+                timestamp: Date.now(),
+            },
         ]);
         const now = Date.now()
         await trx<StrategyValueTypes.StrategyValueModelInterface>(

@@ -3,6 +3,7 @@ import {
     StrategyLog as StrategyLogTypes,
     Log as LogTypes,
 } from '@umerx/umerx-blackdog-configurator-types-typescript';
+import { ZodNullableDef } from 'zod';
 
 export class StrategyLog
     extends Model
@@ -12,7 +13,7 @@ export class StrategyLog
     strategyId!: number;
     level!: LogTypes.LogLevel;
     message!: string;
-    data?: object;
+    data?: LogTypes.LogData | null;
     timestamp!: number;
     static get prettyName() {
         return 'StrategyLog';
