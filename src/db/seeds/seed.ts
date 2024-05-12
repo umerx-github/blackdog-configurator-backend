@@ -206,13 +206,6 @@ export async function seed(knex: Knex): Promise<void> {
                 quantity: 6,
                 averagePriceInCents: 600,
             },
-            {
-                id: 7,
-                strategyId: 1,
-                symbolId: 3,
-                quantity: 10,
-                averagePriceInCents: 10000,
-            },
         ]);
         await trx<
             StrategyTemplateSeaDogDiscountSchemeTypes.StrategyTemplateSeaDogDiscountSchemeProps & {
