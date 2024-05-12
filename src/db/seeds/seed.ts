@@ -150,6 +150,16 @@ export async function seed(knex: Knex): Promise<void> {
                 quantity: 6,
                 averagePriceInCents: 600,
             },
+            {
+                id: 7,
+                strategyId: 1,
+                symbolId: 3,
+                alpacaOrderId: '7',
+                status: OrderTypes.StatusSchema.Enum.open,
+                side: OrderTypes.SideSchema.Enum.buy,
+                quantity: 2,
+                averagePriceInCents: 100,
+            },
         ]);
         await trx<PositionTypes.PositionProps & { id: number }>(
             PositionModel.tableName

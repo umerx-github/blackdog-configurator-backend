@@ -2,6 +2,7 @@ import { Order as OrderModel } from '../db/models/Order.js';
 import { Position as PositionModel } from '../db/models/Position.js';
 import {
     Order as OrderTypes,
+    Position as PositionTypes,
     StrategyLog as StrategyLogTypes,
 } from '@umerx/umerx-blackdog-configurator-types-typescript';
 import { Router, Request, Response } from 'express';
@@ -287,11 +288,13 @@ router.post(
                             })
                             .limit(1);
                         if (positions.length < 1) {
-                            await PositionModel.query(trx).insert({
+                            const positionProps: PositionTypes.PositionRequiredFields = {
                                 symbolId: symbolModel.id,
                                 strategyId: model.strategyId,
                                 quantity: model.quantity,
-                            });
+                                averagePriceInCents: model.averagePriceInCents,
+                            }
+                            await PositionModel.query(trx).insert(positionProps);
                         } else {
                             const position = positions[0];
                             // Update position quantity and averagePriceInCents, because placing a buy order means the averagePriceInCents will change depending on how the order is filled.
