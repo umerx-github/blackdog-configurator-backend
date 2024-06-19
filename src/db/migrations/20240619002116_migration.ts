@@ -38,7 +38,7 @@ export async function up(knex: Knex): Promise<void> {
                         table.bigInteger('quantity').notNullable();
                         table.check(
                             '?? > 0',
-                            ['quantity', 'price_min'],
+                            ['quantity'],
                             'position_quantity_greater_than_zero_check'
                         );
                         table.bigInteger('averagePriceInCents').notNullable();
