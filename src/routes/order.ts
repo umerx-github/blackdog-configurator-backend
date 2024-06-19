@@ -337,13 +337,20 @@ router.post(
                             );
                         }
                         // Update position quantity
-                        await PositionModel.query(trx).patchAndFetchById(
-                            position.id,
-                            {
-                                quantity: position.quantity - model.quantity,
-                                // Do not update averagePriceInCents because placing a sell order does not change it, filling a sell order does not change it, and neither does cancelling a sell order.
-                            }
-                        );
+                        // Check whether the position quantity will be zero after this fill
+                        if (position.quantity - model.quantity === 0) {
+                            // If it will be zero, delete the position
+                            await PositionModel.query(trx).deleteById(position.id);
+                        } else {
+                            // If it will not be zero, decrement the quantity
+                            await PositionModel.query(trx).patchAndFetchById(
+                                position.id,
+                                {
+                                    quantity: position.quantity - model.quantity,
+                                    // Do not update averagePriceInCents because placing a sell order does not change it, filling a sell order does not change it, and neither does cancelling a sell order.
+                                }
+                            );
+                        }
                         // Update strategy's cashInCents
                         // Check if related strategy exists
                         const strategy = await StrategyModel.query(
